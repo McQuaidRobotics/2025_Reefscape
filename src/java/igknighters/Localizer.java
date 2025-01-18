@@ -53,11 +53,9 @@ public class Localizer implements Logged {
 
     GlobalField.setObject(
         "AprilTags",
-        FieldConstants.APRIL_TAG_FIELD.getTags()
-            .stream()
+        FieldConstants.APRIL_TAG_FIELD.getTags().stream()
             .map(tag -> tag.pose.toPose2d())
-            .toArray(Pose2d[]::new)
-    );
+            .toArray(Pose2d[]::new));
   }
 
   public Sender<VisionSample> visionDataSender() {

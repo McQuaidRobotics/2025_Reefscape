@@ -9,5 +9,6 @@ public abstract class Wrist extends Component {
   public abstract boolean isAtPosition(double angleDegrees, double toleranceDegrees);
 
   public abstract void setNeutralMode(boolean shouldBeCoast);
-  
+
+  public abstract double positionRadians();
 }

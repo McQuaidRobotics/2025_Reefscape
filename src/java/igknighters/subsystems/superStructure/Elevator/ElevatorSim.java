@@ -1,7 +1,7 @@
 package igknighters.subsystems.superStructure.Elevator;
 
 public class ElevatorSim extends Elevator {
-  
+
   public ElevatorSim() {
     // TODO Auto-generated constructor stub
   }
@@ -22,6 +22,4 @@ public class ElevatorSim extends Elevator {
     // TODO Auto-generated method stub
 
   }
-  
-  
 }

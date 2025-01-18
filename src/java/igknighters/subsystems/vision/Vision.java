@@ -18,7 +18,6 @@ import igknighters.constants.RobotConfig;
 import igknighters.subsystems.Subsystems.SharedSubsystem;
 import igknighters.subsystems.vision.camera.Camera;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
-import igknighters.subsystems.vision.camera.CameraDisabled;
 import igknighters.subsystems.vision.camera.CameraRealPhoton;
 import igknighters.subsystems.vision.camera.CameraSimPhoton;
 import igknighters.util.plumbing.Channel.Sender;

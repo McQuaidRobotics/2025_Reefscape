@@ -22,6 +22,7 @@ public final class ConstValues {
     public static final double FEET_TO_METERS = 0.3048;
     public static final double INCHES_TO_METERS = 0.0254;
     public static final double DEGREES_TO_RADIANS = Math.PI / 180.0;
+    public static final double DEGREES_TO_ROTATIONS = 1.0 / 360.0;
     public static final double ROTATIONS_TO_RADIANTS = TAU;
     public static final double RPM_TO_RADIANS_PER_SECOND = TAU / 60.0;
   }
