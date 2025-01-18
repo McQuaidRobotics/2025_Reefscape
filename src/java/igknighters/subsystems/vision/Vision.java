@@ -17,9 +17,9 @@ import igknighters.constants.FieldConstants;
 import igknighters.constants.RobotConfig;
 import igknighters.subsystems.Subsystems.SharedSubsystem;
 import igknighters.subsystems.vision.camera.Camera;
-import igknighters.subsystems.vision.camera.CameraDisabled;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.subsystems.vision.camera.CameraRealPhoton;
+import igknighters.subsystems.vision.camera.CameraSimPhoton;
 import igknighters.util.plumbing.Channel.Sender;
 import java.util.HashSet;
 import java.util.List;
@@ -120,7 +120,7 @@ public class Vision implements SharedSubsystem {
 
   private Camera makeCamera(CameraConfig config, SimCtx simCtx) {
     if (Robot.isSimulation()) {
-      return new CameraDisabled(config.cameraName(), config.cameraPose());
+      return new CameraSimPhoton(config.cameraName(), config.cameraPose(), simCtx);
     } else {
       return new CameraRealPhoton(config.cameraName(), config.cameraPose());
     }

@@ -47,7 +47,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
   @Log(key = "Localizer")
   public final Localizer localizer = new Localizer();
 
-  public final SimCtx simCtx = new SimCtx();
+  public final SimCtx simCtx = new SimCtx(localizer, isSimulation());
 
   private final DriverController driverController;
 
@@ -63,8 +63,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     super(ConstValues.PERIODIC_TIME);
 
     setupLogging();
-
-    localizer.publishField();
 
     subsystems =
         new Subsystems(new Swerve(localizer, simCtx), new Vision(localizer, simCtx), new Led());
@@ -112,6 +110,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
   @Override
   public void robotPeriodic() {
     loopCount.incrementAndGet();
+    Tracer.traceFunc("SimCtx", simCtx::update);
     Tracer.traceFunc("CANSignalRefresh", CANSignalManager::refreshSignals);
     Tracer.traceFunc("Localizer", localizer::update);
     Tracer.traceFunc("CommandScheduler", scheduler::run);
