@@ -1,5 +1,6 @@
 package igknighters;
 
+import choreo.Choreo;
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
@@ -9,6 +10,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import igknighters.commands.autos.AutoController;
@@ -37,6 +39,7 @@ import monologue.Logged;
 import monologue.Monologue;
 import monologue.Monologue.MonologueConfig;
 import wpilibExt.Tracer;
+import java.io.File;
 
 public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
@@ -61,6 +64,13 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
   public Robot() {
     super(ConstValues.PERIODIC_TIME);
+
+    if (isSimulation()) {
+      Choreo.setChoreoDir(
+        new File(
+            Filesystem.getOperatingDirectory(),
+            "src" + File.separator + "deploy" + File.separator + "choreo"));
+    }
 
     setupLogging();
 
