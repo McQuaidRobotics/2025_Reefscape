@@ -41,7 +41,10 @@ public class AutoRoutine {
   private final AllianceContext allianceCtx;
 
   /** A boolean utilized in {@link #active()} to resolve trueness */
-  private boolean isActive = false;
+  boolean isActive = false;
+
+  /** A boolean indicating if a trajectory is running on the routine right now */
+  private boolean isIdle = true;
 
   /** A boolean that is true when the loop is killed */
   boolean isKilled = false;
@@ -115,6 +118,15 @@ public class AutoRoutine {
   }
 
   /**
+   * Updates the idle state of the routine.
+   *
+   * @param isIdle The new idle state of the routine.
+   */
+  void updateIdle(boolean isIdle) {
+    this.isIdle = isIdle;
+  }
+
+  /**
    * Resets the routine. This can either be called on auto init or auto end to reset the routine
    * incase you run it again. If this is called on a routine that doesn't need to be reset it will
    * do nothing.
@@ -136,13 +148,24 @@ public class AutoRoutine {
   }
 
   /**
+   * Creates a trigger that is true when the routine is idle.
+   *
+   * <p>Idle is defined as no trajectories made by the routine are running.
+   *
+   * @return A trigger that is true when the routine is idle.
+   */
+  public Trigger idle() {
+    return new Trigger(loop, () -> isIdle);
+  }
+
+  /**
    * Creates a new {@link AutoTrajectory} to be used in an auto routine.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @return A new {@link AutoTrajectory}.
    */
   public AutoTrajectory trajectory(String trajectoryName) {
-    return factory.trajectory(trajectoryName, this);
+    return factory.trajectory(trajectoryName, this, true);
   }
 
   /**
@@ -153,7 +176,7 @@ public class AutoRoutine {
    * @return A new {@link AutoTrajectory}.
    */
   public AutoTrajectory trajectory(String trajectoryName, final int splitIndex) {
-    return factory.trajectory(trajectoryName, splitIndex, this);
+    return factory.trajectory(trajectoryName, splitIndex, this, true);
   }
 
   /**
@@ -165,7 +188,7 @@ public class AutoRoutine {
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
       Trajectory<SampleType> trajectory) {
-    return factory.trajectory(trajectory, this);
+    return factory.trajectory(trajectory, this, true);
   }
 
   /**
@@ -188,14 +211,32 @@ public class AutoRoutine {
    * @param trajectory The first trajectory to watch.
    * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are finished
+   * @see AutoTrajectory#doneDelayed(int)
    */
-  public Trigger anyDone(
+  public Trigger anyDoneDelayed(
       int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
-    var trigger = trajectory.done(cyclesToDelay);
+    var trigger = trajectory.doneDelayed(cyclesToDelay);
     for (int i = 0; i < trajectories.length; i++) {
-      trigger = trigger.or(trajectories[i].done(cyclesToDelay));
+      trigger = trigger.or(trajectories[i].doneDelayed(cyclesToDelay));
     }
     return trigger.and(this.active());
+  }
+
+  /**
+   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
+   *
+   * @param cyclesToDelay The number of cycles to delay.
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are finished
+   * @see AutoTrajectory#doneDelayed(int)
+   * @see AutoRoutine#anyDoneDelayed
+   * @deprecated This method is deprecated and will be removed in 2025. Use {@link #anyDoneDelayed}
+   */
+  @Deprecated(forRemoval = true, since = "2025")
+  public Trigger anyDone(
+      int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    return anyDoneDelayed(cyclesToDelay, trajectory, trajectories);
   }
 
   /**
@@ -209,6 +250,21 @@ public class AutoRoutine {
     var trigger = trajectory.active();
     for (int i = 0; i < trajectories.length; i++) {
       trigger = trigger.or(trajectories[i].active());
+    }
+    return trigger.and(this.active());
+  }
+
+  /**
+   * Creates a trigger that returns true when any of the trajectories given are inactive.
+   *
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are inactive
+   */
+  public Trigger anyInactive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    var trigger = trajectory.inactive();
+    for (int i = 0; i < trajectories.length; i++) {
+      trigger = trigger.or(trajectories[i].inactive());
     }
     return trigger.and(this.active());
   }
