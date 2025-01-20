@@ -14,8 +14,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Current;
 
 public class IntakeReal extends Intake {
-  private final TalonFX intakeLeader = new TalonFX(IntakeContstants.INTAKE_LEADER_ID);
-  private final TalonFX intakeFollower = new TalonFX(IntakeContstants.INTAKE_FOLLOWER_ID);
+  private final TalonFX intakeLeader = new TalonFX(IntakeConstants.INTAKE_LEADER_ID);
+  private final TalonFX intakeFollower = new TalonFX(IntakeConstants.INTAKE_FOLLOWER_ID);
   private final CANrange distanceSensor = new CANrange(41);
   private final TorqueCurrentFOC controlReq = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
   private final StatusSignal<ReverseLimitValue> coralSensor;
@@ -48,7 +48,7 @@ public class IntakeReal extends Intake {
     this.currentValue = intakeLeader.getTorqueCurrent();
     intakeLeader.getConfigurator().apply(intakeConfiguration());
     distanceSensor.getConfigurator().apply(intakeSensorConfiguration());
-    intakeFollower.setControl(new Follower(IntakeContstants.INTAKE_LEADER_ID, true));
+    intakeFollower.setControl(new Follower(IntakeConstants.INTAKE_LEADER_ID, true));
   }
 
   public void setTorque(double torque) {
@@ -61,7 +61,7 @@ public class IntakeReal extends Intake {
 
   public boolean hasAlgae() {
     final boolean isTripped = hasCoral();
-    if (currentValue.getValueAsDouble() > IntakeContstants.ALGAE_TRIP_VALUE && !isTripped) {
+    if (currentValue.getValueAsDouble() > IntakeConstants.ALGAE_TRIP_VALUE && !isTripped) {
       return true;
     } else {
       return false;
