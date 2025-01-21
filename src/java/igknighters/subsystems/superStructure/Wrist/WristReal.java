@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
+import igknighters.constants.ConstValues.Conv;
 
 public class WristReal extends Wrist {
 
@@ -46,8 +47,8 @@ public class WristReal extends Wrist {
   }
 
   @Override
-  public void goToPosition(double positionDegrees) {
-    wrist.setControl(controlReq.withPosition(positionDegrees));
+  public void goToPosition(double posistionDegrees) {
+    wrist.setControl(controlReq.withPosition(Conv.DEGREES_TO_RADIANS * posistionDegrees));
   }
 
   @Override

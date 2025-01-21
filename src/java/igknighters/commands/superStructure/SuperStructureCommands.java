@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import igknighters.constants.ConstValues;
 import igknighters.constants.FieldConstants;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.superStructure.Elevator.Elevator;
 import igknighters.subsystems.superStructure.Elevator.ElevatorReal;
 import igknighters.subsystems.superStructure.Intake.Intake;
@@ -15,18 +16,13 @@ import igknighters.subsystems.superStructure.Wrist.Wrist;
 import igknighters.subsystems.superStructure.Wrist.WristReal;
 
 public class SuperStructureCommands {
-  private final ElevatorReal elevator;
-  private final WristReal wrist;
-  private final IntakeReal intake;
-  public SuperStructureCommands(ElevatorReal elevator, WristReal wrist, IntakeReal intake) {
-    this.elevator = elevator;
-    this.wrist = wrist;
-    this.intake = intake;
+  private final SuperStructure superStructure;
+  public SuperStructureCommands(SuperStructure superstructure) {
+    this.superStructure = superstructure;
   }
   public Command superStructureGoToL4() {
-    return Commands.parallel(
-      elevator.gotoPosition(FieldConstants.ReefHeight.L4.height),
-      wrist.goToPosition(ConstValues.Conv.DEGREES_TO_RADIANS * FieldConstants.ReefHeight.L4.pitch)
-    );
+    return superStructure.run(() -> superStructure.gotoPosition(FieldConstants.ReefHeight.L4.height, FieldConstants.ReefHeight.L4.pitch))
+      .until(() -> superStructure.superStructureIsAt(FieldConstants.ReefHeight.L4.height, FieldConstants.ReefHeight.L4.pitch, 0.1, 0.1));
+    
   }
 }
