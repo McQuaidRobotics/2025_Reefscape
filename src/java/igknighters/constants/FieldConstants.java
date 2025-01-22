@@ -1,13 +1,6 @@
 package igknighters.constants;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-
-/**
- * Contains various field dimensions and useful reference points. Dimensions are in meters, and sets
- * of corners start in the lower left moving clockwise.
- */
-
-
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
@@ -170,8 +163,8 @@ public class FieldConstants {
     public final double height;
     public final double pitch;
   }
-  public static final AprilTagFieldLayout APRIL_TAG_FIELD = new AprilTagFieldLayout(
-                        List.of(AprilTags.TAGS),
-                        FieldConstants.fieldLength,
-                        FieldConstants.fieldWidth);
+
+  public static final AprilTagFieldLayout APRIL_TAG_FIELD =
+      new AprilTagFieldLayout(
+          List.of(AprilTags.TAGS), FieldConstants.fieldLength, FieldConstants.fieldWidth);
 }
