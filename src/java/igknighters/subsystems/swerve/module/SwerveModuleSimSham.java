@@ -27,7 +27,7 @@ import sham.shamController.UnitSafeControl.AngularPIDFeedback;
 import sham.shamController.UnitSafeControl.AngularVelocityPIDFeedback;
 import sham.shamController.UnitSafeControl.FlywheelFeedforward;
 
-public class SwerveModuleSim3 extends SwerveModule {
+public class SwerveModuleSimSham extends SwerveModule {
 
   private boolean gotDirectionsLastCycle = false;
 
@@ -38,7 +38,8 @@ public class SwerveModuleSim3 extends SwerveModule {
   private final ClosedLoop<VoltageUnit, AngularVelocityUnit, AngleUnit> driveLoop;
   private final ClosedLoop<VoltageUnit, AngleUnit, AngleUnit> steerLoop;
 
-  public SwerveModuleSim3(final int moduleId, SimSwerveOdometryThread odoThread, ShamSwerve sim) {
+  public SwerveModuleSimSham(
+      final int moduleId, SimSwerveOdometryThread odoThread, ShamSwerve sim) {
     super("SwerveModule[" + moduleId + "]");
     this.moduleId = moduleId;
 
