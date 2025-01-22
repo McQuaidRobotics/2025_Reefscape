@@ -4,7 +4,6 @@ import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
@@ -103,8 +102,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
         "Characterize Swerve", Characterizers.characterizeSwerve(subsystems.swerve));
 
     System.gc();
-
-    Monologue.log("rajhhhhj", DCMotor.getKrakenX60Foc(1).getCurrent(0.0, 0.25));
   }
 
   @Override

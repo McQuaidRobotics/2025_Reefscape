@@ -14,7 +14,6 @@ import igknighters.constants.ConstValues.kSwerve.kSteerMotor;
 import igknighters.constants.FieldConstants;
 import igknighters.util.plumbing.Channel.Receiver;
 import monologue.GlobalField;
-
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;

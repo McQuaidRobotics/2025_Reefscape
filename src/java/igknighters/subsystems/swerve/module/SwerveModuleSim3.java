@@ -136,8 +136,8 @@ public class SwerveModuleSim3 extends SwerveModule {
 
     super.driveVolts = driveMotor.voltage().in(Volts);
     super.steerVolts = steerMotor.voltage().in(Volts);
-    super.driveAmps = driveMotor.current().in(Amps);
-    super.steerAmps = steerMotor.current().in(Amps);
+    super.driveAmps = driveMotor.statorCurrent().in(Amps);
+    super.steerAmps = steerMotor.statorCurrent().in(Amps);
   }
 
   @Override

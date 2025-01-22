@@ -11,7 +11,7 @@ public class WatchdogSilencer {
   private static void silenceWatchdog(Object obj) {
     Watchdog watchdog = (Watchdog) obj;
     watchdog.disable();
-    watchdog.setTimeout(100000.0);
+    watchdog.setTimeout(300.0);
   }
 
   public static Field getField(Object obj, String member) {

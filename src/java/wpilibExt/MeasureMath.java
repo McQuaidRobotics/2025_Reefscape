@@ -48,11 +48,58 @@ public class MeasureMath {
     return m1.baseUnitMagnitude() > m2.baseUnitMagnitude() ? m1 : m2;
   }
 
+  @SuppressWarnings("unchecked")
+  public static <U extends Unit, M extends Measure<U>> M max(M m1, M m2, M... otherMs) {
+    M max = max(m1, m2);
+    for (M m : otherMs) {
+      max = max(max, m);
+    }
+    return max;
+  }
+
+  public static <U extends Unit, M extends Measure<U>> M maxAbs(M m1, M m2) {
+    return abs(m1).baseUnitMagnitude() > abs(m2).baseUnitMagnitude() ? m1 : m2;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <U extends Unit, M extends Measure<U>> M maxAbs(M m1, M m2, M... otherMs) {
+    M max = maxAbs(m1, m2);
+    for (M m : otherMs) {
+      max = max(max, m);
+    }
+    return max;
+  }
+
   public static <U extends Unit, M extends Measure<U>> M min(M m1, M m2) {
     return m1.baseUnitMagnitude() < m2.baseUnitMagnitude() ? m1 : m2;
   }
 
+  @SuppressWarnings("unchecked")
+  public static <U extends Unit, M extends Measure<U>> M min(M m1, M m2, M... otherMs) {
+    M min = min(m1, m2);
+    for (M m : otherMs) {
+      min = min(min, m);
+    }
+    return min;
+  }
+
+  public static <U extends Unit, M extends Measure<U>> M minAbs(M m1, M m2) {
+    return abs(m1).baseUnitMagnitude() < abs(m2).baseUnitMagnitude() ? m1 : m2;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <U extends Unit, M extends Measure<U>> M minAbs(M m1, M m2, M... otherMs) {
+    M min = minAbs(m1, m2);
+    for (M m : otherMs) {
+      min = min(min, m);
+    }
+    return min;
+  }
+
   public static <U extends Unit, M extends Measure<U>> M clamp(M m, M min, M max) {
+    if (min.gt(max)) {
+      throw new IllegalArgumentException("min must be less than or equal to max");
+    }
     return max(min, min(max, m));
   }
 

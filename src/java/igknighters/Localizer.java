@@ -53,11 +53,9 @@ public class Localizer implements Logged {
 
     GlobalField.setObject(
         "AprilTags",
-        FieldConstants.APRIL_TAG_FIELD.getTags()
-            .stream()
+        FieldConstants.APRIL_TAG_FIELD.getTags().stream()
             .map(tag -> tag.pose.toPose2d())
-            .toArray(Pose2d[]::new)
-    );
+            .toArray(Pose2d[]::new));
   }
 
   public Sender<VisionSample> visionDataSender() {
@@ -92,11 +90,15 @@ public class Localizer implements Logged {
         unsortedVisionSamples.stream()
             .sorted((a, b) -> Double.compare(a.timestamp(), b.timestamp()))
             .toList();
+    final double now = Timer.getFPGATimestamp();
+    double sumLatency = 0.0;
     for (final VisionSample sample : visionSamples) {
       latestVisionPose = sample.pose();
       latestVisionTimestamp = sample.timestamp();
+      sumLatency += now - latestVisionTimestamp;
       poseEstimator.addVisionSample(latestVisionPose, latestVisionTimestamp, sample.trust());
     }
+    log("visionLatency", sumLatency / visionSamples.size());
     Tracer.endTrace();
 
     Tracer.startTrace("Prune");
