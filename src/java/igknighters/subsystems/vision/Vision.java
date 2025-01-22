@@ -66,9 +66,9 @@ public class Vision implements SharedSubsystem {
       Translation2d simplePose = pose.getTranslation().toTranslation2d();
       boolean outOfBounds =
           simplePose.getX() < 0.0
-              || simplePose.getX() > FieldConstants.FIELD_LENGTH
+              || simplePose.getX() > FieldConstants.fieldLength
               || simplePose.getY() < 0.0
-              || simplePose.getY() > FieldConstants.FIELD_WIDTH
+              || simplePose.getY() > FieldConstants.fieldWidth
               || Double.isNaN(simplePose.getX())
               || Double.isNaN(simplePose.getY());
       boolean extremeJitter =

@@ -1,4 +1,4 @@
-package igknighters.subsystems.superStructure.Intake;
+package igknighters.subsystems.Intake;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;

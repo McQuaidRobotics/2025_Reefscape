@@ -1,9 +1,6 @@
 package igknighters.constants;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 
 /**
  * Contains various field dimensions and useful reference points. Dimensions are in meters, and sets
@@ -173,4 +170,8 @@ public class FieldConstants {
     public final double height;
     public final double pitch;
   }
+  public static final AprilTagFieldLayout APRIL_TAG_FIELD = new AprilTagFieldLayout(
+                        List.of(AprilTags.TAGS),
+                        FieldConstants.fieldLength,
+                        FieldConstants.fieldWidth);
 }

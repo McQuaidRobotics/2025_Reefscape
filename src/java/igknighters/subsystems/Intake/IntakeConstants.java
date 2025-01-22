@@ -1,4 +1,4 @@
-package igknighters.subsystems.superStructure.Intake;
+package igknighters.subsystems.Intake;
 
 public class IntakeConstants {
   public static final int INTAKE_LEADER_ID = 3;

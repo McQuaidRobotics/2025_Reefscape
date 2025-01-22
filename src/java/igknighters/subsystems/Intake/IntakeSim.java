@@ -1,4 +1,4 @@
-package igknighters.subsystems.superStructure.Intake;
+package igknighters.subsystems.Intake;
 
 public class IntakeSim {
 

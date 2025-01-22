@@ -1,4 +1,4 @@
-package igknighters.subsystems.superStructure.Intake;
+package igknighters.subsystems.Intake;
 
 import igknighters.subsystems.Component;
 

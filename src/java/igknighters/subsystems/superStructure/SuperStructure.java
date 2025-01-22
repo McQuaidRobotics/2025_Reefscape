@@ -2,10 +2,10 @@ package igknighters.subsystems.superStructure;
 
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import igknighters.Robot;
+import igknighters.subsystems.Intake.Intake;
+import igknighters.subsystems.Intake.IntakeReal;
 import igknighters.subsystems.superStructure.Elevator.Elevator;
 import igknighters.subsystems.superStructure.Elevator.ElevatorReal;
-import igknighters.subsystems.superStructure.Intake.Intake;
-import igknighters.subsystems.superStructure.Intake.IntakeReal;
 import igknighters.subsystems.superStructure.Wrist.Wrist;
 import igknighters.subsystems.superStructure.Wrist.WristReal;
 
