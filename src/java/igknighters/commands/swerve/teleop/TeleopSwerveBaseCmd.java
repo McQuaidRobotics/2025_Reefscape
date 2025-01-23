@@ -7,7 +7,7 @@ import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj2.command.Command;
 import igknighters.Robot;
 import igknighters.constants.ConstValues.kSwerve;
-import igknighters.controllers.ControllerBase;
+import igknighters.controllers.DriverController;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.util.AllianceFlip;
 import igknighters.util.plumbing.TunableValues;
@@ -50,7 +50,7 @@ public class TeleopSwerveBaseCmd extends Command implements StructSerializable {
   private final TunableDouble translationMod;
   private final TunableDouble rotationMod;
 
-  public TeleopSwerveBaseCmd(Swerve swerve, ControllerBase controller) {
+  public TeleopSwerveBaseCmd(Swerve swerve, DriverController controller) {
     this.swerve = swerve;
     addRequirements(swerve);
 
