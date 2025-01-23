@@ -114,5 +114,4 @@ public class OperatorController {
     C4R5 = getButtonTrigger(4, 5);
     C4R6 = getButtonTrigger(4, 6);
   }
-
 }
