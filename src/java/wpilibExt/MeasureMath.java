@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.AccelerationUnit;
 import edu.wpi.first.units.AngleUnit;
@@ -119,6 +120,20 @@ public class MeasureMath {
   public record XY<M extends Measure<?>>(M x, M y) {
     public static XY<Distance> of(Translation2d t) {
       return new XY<>(Meters.of(t.getX()), Meters.of(t.getY()));
+    }
+
+    public static <M extends Measure<?>> XY<M> of(M x, M y) {
+      return new XY<>(x, y);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <M extends Measure<?>> XY<M> of(M mag, Rotation2d rot) {
+      return new XY<>((M) mag.times(rot.getCos()), (M) mag.times(rot.getSin()));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <U extends Unit> XY<Measure<U>> zero(U unit) {
+      return new XY<>((Measure<U>) unit.zero(), (Measure<U>) unit.zero());
     }
 
     public <UN extends Unit, N extends Measure<UN>, R extends Measure<?>> N cross(

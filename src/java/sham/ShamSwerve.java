@@ -151,6 +151,7 @@ public class ShamSwerve extends ShamDriveTrain {
             .div(timing.dt());
     logger.log("Friction/xFrictionAccelPreClamp", xFrictionAccel);
     logger.log("Friction/yFrictionAccelPreClamp", yFrictionAccel);
+    logger.log("Friction/angularFrictionAccelPreClamp", angularFrictionAccel);
     xFrictionAccel = MeasureMath.clamp(xFrictionAccel, xAccelNeededToStop);
     yFrictionAccel = MeasureMath.clamp(yFrictionAccel, yAccelNeededToStop);
     angularFrictionAccel = MeasureMath.clamp(angularFrictionAccel, angularAccelNeededToStop);
@@ -166,6 +167,11 @@ public class ShamSwerve extends ShamDriveTrain {
     final Force xFrictionForce = chassisMass.forceDueToAcceleration(xFrictionAccel);
     final Force yFrictionForce = chassisMass.forceDueToAcceleration(yFrictionAccel);
     final Torque angularFrictionTorque = chassisMass.torqueDueToAcceleration(angularFrictionAccel);
+
+    logger.log("Friction/xFrictionForce", xFrictionForce);
+    logger.log("Friction/yFrictionForce", yFrictionForce);
+    logger.log("Friction/angularFrictionTorque", angularFrictionTorque);
+
     chassis.applyForce(new Vector2(xFrictionForce.in(Newtons), yFrictionForce.in(Newtons)));
     chassis.applyTorque(angularFrictionTorque.in(NewtonMeters));
   }

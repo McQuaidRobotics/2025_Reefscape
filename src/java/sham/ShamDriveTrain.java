@@ -125,12 +125,12 @@ public class ShamDriveTrain {
    */
   public ChassisSpeeds getChassisWorldSpeeds() {
     return GeometryConvertor.toWpilibChassisSpeeds(
-        chassis.getLinearVelocity(), chassis.getInvertedAngularVelocity());
+        chassis.getLinearVelocity(), chassis.getAngularVelocity());
   }
 
   protected Twist2d getTickTwist() {
     Vector2 dXY = chassis.getChangeInPosition();
-    double dTheta = chassis.getInvertedAngularVelocity() * timing.dt().in(Seconds);
+    double dTheta = chassis.getAngularVelocity() * timing.dt().in(Seconds);
     return new Twist2d(dXY.x, dXY.y, dTheta);
   }
 

@@ -99,7 +99,7 @@ public class SwerveCommands {
     };
   }
 
-  public static Command driveChassisSpeed(Swerve swerve, final Speeds speeds) {
+  public static Command drive(Swerve swerve, final Speeds speeds) {
     return Commands.run(() -> swerve.drive(speeds), swerve);
   }
 }
