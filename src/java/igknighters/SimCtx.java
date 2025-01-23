@@ -25,7 +25,7 @@ import sham.configs.ShamMechanismConfig;
 import sham.configs.ShamSwerveConfig;
 import sham.configs.ShamSwerveModuleConfig;
 import sham.configs.ShamSwerveModuleConfig.WheelCof;
-import sham.seasonspecific.Crescendo;
+import sham.seasonspecific.Reefscape;
 import sham.utils.GearRatio;
 import wpilibExt.DCMotorExt;
 
@@ -79,7 +79,7 @@ public class SimCtx {
     isSimulation = isSim;
     resetReceiver = localizer.poseResetsReceiver();
     if (isSimulation) {
-      arena = new Crescendo.CrescendoSimArena(Seconds.of(ConstValues.PERIODIC_TIME), 5);
+      arena = new Reefscape.ReefscapeShamArena(Seconds.of(ConstValues.PERIODIC_TIME), 5);
       simRobot = new ShamRobot<>(arena, "User", swerveConfig, 1);
       aprilTagSim = new VisionSystemSim("AprilTags");
       aprilTagSim.addAprilTags(FieldConstants.APRIL_TAG_FIELD);

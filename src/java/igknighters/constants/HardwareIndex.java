@@ -7,20 +7,4 @@ public class HardwareIndex {
     AngleMotor,
     AngleEncoder
   }
-
-  public static enum UmbrellaHW {
-    RightShooterMotor,
-    LeftShooterMotor,
-    UpperIntakeMotor,
-    LowerIntakeMotor;
-  }
-
-  public static enum StemHW {
-    LeaderMotor,
-    FollowerMotor,
-    Pigeon2,
-    WristMotor,
-    WristEncoder,
-    TelescopeMotor;
-  }
 }

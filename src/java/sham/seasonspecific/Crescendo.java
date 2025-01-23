@@ -33,7 +33,7 @@ public class Crescendo {
           true,
           0.2);
 
-  public static class CrescendoSimArena extends ShamArena {
+  public static class CrescendoShamArena extends ShamArena {
     /** the obstacles on the 2024 competition field */
     public static final class CrescendoFieldObstaclesMap extends FieldMap {
       private static final double FIELD_WIDTH = 16.54;
@@ -107,7 +107,7 @@ public class Crescendo {
           new Translation2d(13.64, 7),
         };
 
-    public CrescendoSimArena(Time period, int ticksPerPeriod) {
+    public CrescendoShamArena(Time period, int ticksPerPeriod) {
       super(new CrescendoFieldObstaclesMap(), period.in(Seconds), ticksPerPeriod);
     }
 
