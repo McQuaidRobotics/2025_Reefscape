@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.Volts;
 import static wpilibExt.MeasureMath.div;
 
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.AngularAccelerationUnit;
@@ -19,6 +20,9 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Force;
+import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Torque;
@@ -28,6 +32,7 @@ import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 import monologue.ProceduralStructGenerator;
 import sham.ShamArena.ShamEnvTiming;
 import sham.ShamMotorController.ControllerOutput;
@@ -35,10 +40,9 @@ import sham.utils.GearRatio;
 import sham.utils.RuntimeLog;
 import wpilibExt.DCMotorExt;
 import wpilibExt.MeasureMath;
+import wpilibExt.MeasureMath.Constants;
 
 public class ShamMechanism {
-  private static final double kMotorEfficiency = 0.85;
-
   private static final Random RAND = new Random();
 
   private static final AngleUnit Rad = Radians;
@@ -81,6 +85,46 @@ public class ShamMechanism {
 
     static MechanismDynamics zero() {
       return MechanismDynamics.of(NewtonMeters.zero());
+    }
+
+    static MechanismDynamics forElevator(Mass mass, Distance spoolDiameter, Supplier<Rotation2d> tilt) {
+      return new MechanismDynamics() {
+        @Override
+        public Torque environment(MechanismState state) {
+          Force f = mass.times(Constants.kGravity).times(tilt.get().getSin());
+          Distance r = spoolDiameter.div(2.0);
+          return MeasureMath.times(f, r);
+        }
+
+        @Override
+        public MomentOfInertia extraInertia() {
+          return KilogramSquareMeters.zero();
+        }
+      };
+    }
+
+    static MechanismDynamics forElevator(Mass mass, Distance spoolDiameter, Rotation2d tilt) {
+      return forElevator(mass, spoolDiameter, () -> tilt);
+    }
+
+    static MechanismDynamics forElevator(Mass mass, Distance spoolDiameter) {
+      return forElevator(mass, spoolDiameter, Rotation2d.kCCW_90deg);
+    }
+
+    static MechanismDynamics forArm(Mass mass, Distance comDistance) {
+      return new MechanismDynamics() {
+        @Override
+        public Torque environment(MechanismState state) {
+          Force f = mass.times(Constants.kGravity);
+          Distance r = comDistance.times(new Rotation2d(state.position()).getSin());
+          return MeasureMath.times(f, r);
+        }
+
+        @Override
+        public MomentOfInertia extraInertia() {
+          return KilogramSquareMeters.zero();
+        }
+      };
     }
   }
 
@@ -195,21 +239,16 @@ public class ShamMechanism {
 
   /** Defines some variables of a mechanism in the current time step. */
   public record MechanismVariables(
-      Torque torque, Voltage statorVoltage, Voltage supplyVoltage, Current statorCurrent)
+      Torque torque, Voltage statorVoltage, Voltage supplyVoltage, Current statorCurrent, Current supplyCurrent)
       implements StructSerializable {
 
-    public Current supplyCurrent() {
-      // https://www.chiefdelphi.com/t/current-limiting-talonfx-values/374780/10;
-      return statorCurrent.times(statorVoltage.div(supplyVoltage)).div(kMotorEfficiency);
-    }
-
     public static MechanismVariables of(
-        Torque torque, Voltage voltage, Voltage supplyVoltage, Current statorCurrent) {
-      return new MechanismVariables(torque, voltage, supplyVoltage, statorCurrent);
+        Torque torque, Voltage voltage, Voltage supplyVoltage, Current statorCurrent, Current supplyCurrent) {
+      return new MechanismVariables(torque, voltage, supplyVoltage, statorCurrent, supplyCurrent);
     }
 
     public static MechanismVariables zero() {
-      return new MechanismVariables(NewtonMeters.zero(), Volts.zero(), Volts.zero(), Amps.zero());
+      return new MechanismVariables(NewtonMeters.zero(), Volts.zero(), Volts.zero(), Amps.zero(), Amps.zero());
     }
 
     public static final Struct<MechanismVariables> struct =
@@ -311,7 +350,7 @@ public class ShamMechanism {
   public MechanismVariables motorVariables() {
     var v = variables();
     return MechanismVariables.of(
-        v.torque.div(gearRatio.getReduction()), v.statorVoltage, v.supplyVoltage, v.statorCurrent);
+        v.torque.div(gearRatio.getReduction()), v.statorVoltage, v.supplyVoltage, v.statorCurrent, v.supplyCurrent);
   }
 
   /**
@@ -478,12 +517,14 @@ public class ShamMechanism {
         state = MechanismState.of(angle, velocity, acceleration);
       }
       // capture the "variables"
+      Voltage voltageInput = motor.getVoltage(motorTorque, motorState().velocity());
       variables =
           MechanismVariables.of(
               mechanismTorque,
-              motor.getVoltage(motorTorque, motorState().velocity()),
+              voltageInput,
               supplyVoltage,
-              motorCurrent);
+              motorCurrent,
+              motor.getSupplyCurrent(motorState().velocity(), voltageInput, motorCurrent));
     } finally {
       logger.log("Update/state", state, MechanismState.struct);
       logger.log("Update/motorState", motorState(), MechanismState.struct);

@@ -20,6 +20,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.VelocityUnit;
 import edu.wpi.first.units.measure.Acceleration;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -35,6 +36,15 @@ import java.util.function.BiFunction;
 import monologue.ProceduralStructGenerator;
 
 public class MeasureMath {
+
+  public static final class Constants {
+    public static final Angle kPi = Radian.of(Math.PI);
+    public static final Angle kCCW_2Pi = Radian.of(2.0 * Math.PI);
+    public static final Angle kCW_2Pi = Radian.of(-2.0 * Math.PI);
+
+    public static final LinearAcceleration kGravity = MetersPerSecondPerSecond.of(9.8);
+  }
+
   @SuppressWarnings("unchecked")
   public static <U extends Unit, M extends Measure<U>> M abs(M m) {
     return (M) m.unit().ofBaseUnits(Math.abs(m.baseUnitMagnitude()));
