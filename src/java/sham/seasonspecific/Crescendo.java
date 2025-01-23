@@ -1,7 +1,6 @@
 package sham.seasonspecific;
 
 import static edu.wpi.first.units.Units.Seconds;
-import static sham.utils.FieldMirroringUtils.toCurrentAllianceTranslation;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -10,7 +9,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import java.util.List;
 import org.dyn4j.geometry.Geometry;
 import sham.ShamArena;
@@ -117,25 +115,25 @@ public class Crescendo {
         super.createGamePiece(VARIANT).place(notePosition);
     }
 
-    private static final Translation3d BLUE_SOURCE_POSITION = new Translation3d(15.6, 0.8, 0.1);
-    private double previousThrowTimeSeconds = 0;
+    // private static final Translation3d BLUE_SOURCE_POSITION = new Translation3d(15.6, 0.8, 0.1);
+    // private double previousThrowTimeSeconds = 0;
 
     @Override
     protected void competitionPeriodic() {
       if (!DriverStation.isTeleopEnabled()) return;
 
-      if (Timer.getFPGATimestamp() - previousThrowTimeSeconds < 1) return;
+      // if (Timer.getFPGATimestamp() - previousThrowTimeSeconds < 1) return;
 
-      final Translation3d sourcePosition = toCurrentAllianceTranslation(BLUE_SOURCE_POSITION);
-      /* if there is any game-piece 0.5 meters within the human player station, we don't throw a new note */
-      boolean gpNearSource =
-          gamePieces.stream()
-              .anyMatch(gp -> gp.pose().getTranslation().getDistance(sourcePosition) < 0.6);
-      if (gpNearSource) return;
+      // final Translation3d sourcePosition = toCurrentAllianceTranslation(BLUE_SOURCE_POSITION);
+      // /* if there is any game-piece 0.5 meters within the human player station, we don't throw a new note */
+      // boolean gpNearSource =
+      //     gamePieces.stream()
+      //         .anyMatch(gp -> gp.pose().getTranslation().getDistance(sourcePosition) < 0.6);
+      // if (gpNearSource) return;
 
-      /* otherwise, place a note */
-      super.createGamePiece(VARIANT).place(sourcePosition.toTranslation2d());
-      previousThrowTimeSeconds = Timer.getFPGATimestamp();
+      // /* otherwise, place a note */
+      // super.createGamePiece(VARIANT).place(sourcePosition.toTranslation2d());
+      // previousThrowTimeSeconds = Timer.getFPGATimestamp();
     }
   }
 }

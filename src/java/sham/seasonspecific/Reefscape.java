@@ -8,18 +8,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Time;
 import java.util.Arrays;
 import sham.ShamArena;
-import sham.utils.FieldMirroringUtils;
+import wpilibExt.AllianceFlipper;
 
 public class Reefscape {
-
-
-
-
-
-
-
-
-
   public static class ReefscapeShamArena extends ShamArena {
     public static final class ReefscapeFieldObstacleMap extends FieldMap {
       public ReefscapeFieldObstacleMap() {
@@ -64,11 +55,7 @@ public class Reefscape {
         // red reef
         final Translation2d[] reefVorticesRed =
             Arrays.stream(reefVorticesBlue)
-                .map(
-                    pointAtBlue ->
-                        new Translation2d(
-                            FieldMirroringUtils.FIELD_WIDTH - pointAtBlue.getX(),
-                            pointAtBlue.getY()))
+                .map(pointAtBlue -> AllianceFlipper.flip(pointAtBlue))
                 .toArray(Translation2d[]::new);
         for (int i = 0; i < 6; i++) {
           super.addBorderLine(reefVorticesRed[i], reefVorticesRed[(i + 1) % 6]);

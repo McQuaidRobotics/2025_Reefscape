@@ -1,9 +1,4 @@
-// Copyright (c) Choreo contributors
-
-package choreo.util;
-
-import static choreo.util.FieldDimensions.FIELD_LENGTH;
-import static choreo.util.FieldDimensions.FIELD_WIDTH;
+package wpilibExt;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -25,7 +20,7 @@ import java.util.HashMap;
  * <p>This API still allows vendors and users to match case against the flipping variant as a way to
  * specially handle cases or throw errors if a variant is explicitly not supported.
  */
-public class ChoreoAllianceFlipUtil {
+public class AllianceFlipper {
   /** The flipper to use for flipping coordinates. */
   public static enum Flipper {
     /**
@@ -92,14 +87,14 @@ public class ChoreoAllianceFlipUtil {
       new HashMap<Integer, YearInfo>() {
         {
           put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
-          put(2025, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
+          put(2025, new YearInfo(Flipper.ROTATE_AROUND, 17.548, 8.052));
         }
       };
 
   private static YearInfo activeYear = flipperMap.get(2025);
 
   /** Default constructor. */
-  private ChoreoAllianceFlipUtil() {}
+  private AllianceFlipper() {}
 
   /**
    * Get the flipper that is currently active for flipping coordinates. It's recommended not to
@@ -225,5 +220,13 @@ public class ChoreoAllianceFlipUtil {
    */
   public static Pose3d flip(Pose3d pose) {
     return new Pose3d(flip(pose.getTranslation()), flip(pose.getRotation()));
+  }
+
+  public static boolean isBlue() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue;
+  }
+
+  public static boolean isRed() {
+    return !isBlue();
   }
 }

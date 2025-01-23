@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import igknighters.Localizer;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.control.RotationalController;
-import igknighters.util.AllianceFlip;
+import wpilibExt.AllianceFlipper;
 import wpilibExt.Speeds;
 import wpilibExt.Speeds.RobotSpeeds;
 
@@ -34,7 +34,7 @@ public class SwerveCommands {
   public static Command orientGyro(Swerve swerve, Localizer localizer) {
     return swerve.runOnce(
         () -> {
-          if (AllianceFlip.isBlue()) {
+          if (AllianceFlipper.isBlue()) {
             swerve.setYaw(Rotation2d.kZero);
             var pose = new Pose2d(localizer.pose().getTranslation(), Rotation2d.kZero);
             localizer.reset(pose);
