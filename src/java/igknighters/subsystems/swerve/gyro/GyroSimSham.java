@@ -9,9 +9,9 @@ import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.util.logging.BootupLogger;
 import sham.ShamGyro;
 
-public class GyroSim2 extends Gyro {
+public class GyroSimSham extends Gyro {
 
-  public GyroSim2(ShamGyro simGyro, SimSwerveOdometryThread odoThread) {
+  public GyroSimSham(ShamGyro simGyro, SimSwerveOdometryThread odoThread) {
     simGyro.setUpdateConsumer(
         (yawPair, accelVector) -> {
           super.yawRads = yawPair.getFirst().in(Radians);

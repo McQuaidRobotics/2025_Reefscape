@@ -121,7 +121,7 @@ public final class ConstValues {
 
       public static CameraConfig[] forRobot(RobotID id) {
         return switch (RobotConfig.getRobotID()) {
-          case CRASH -> CameraConfigs.CRASH.cameras;
+          case Mk1 -> CameraConfigs.CRASH.cameras;
           default -> CameraConfigs.BURN.cameras;
         };
       }

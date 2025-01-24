@@ -129,6 +129,16 @@ public class ShamMCX implements ShamMotorController {
         ProceduralStructGenerator.genRecord(CurrentLimits.class);
   }
 
+  public record PeakOutputConfig(
+      Voltage peakForwardVoltage,
+      Voltage peakReverseVoltage,
+      Current peakForwardStatorCurrent,
+      Current peakReverseStatorCurrent) {
+    public static final PeakOutputConfig base() {
+      return new PeakOutputConfig(Volts.of(16.0), Volts.of(-16.0), Amps.of(300.0), Amps.of(-300.0));
+    }
+  }
+
   public enum SoftLimitTrigger {
     NONE,
     REVERSE,
@@ -149,10 +159,12 @@ public class ShamMCX implements ShamMotorController {
   private Angle forwardSoftLimit = Radians.of(Double.POSITIVE_INFINITY);
   private Angle reverseSoftLimit = Radians.of(Double.NEGATIVE_INFINITY);
 
+  private PeakOutputConfig peakOutputConfig = PeakOutputConfig.base();
+
   private Optional<Output> output = Optional.empty();
   private boolean brakeMode = false;
 
-  private Current lastCurrent = Amps.of(0.0);
+  private Current lastStatorCurrent = Amps.of(0.0);
   private Voltage lastVoltage = Volts.of(0.0);
   private MechanismState lastState = MechanismState.zero();
 
@@ -173,6 +185,11 @@ public class ShamMCX implements ShamMotorController {
 
   public ShamMCX configSensorToMechanismRatio(double ratio) {
     this.sensorToMechanismRatio = ratio;
+    return this;
+  }
+
+  public ShamMCX configurePeakOutput(PeakOutputConfig peakOutputConfig) {
+    this.peakOutputConfig = peakOutputConfig;
     return this;
   }
 
@@ -315,8 +332,12 @@ public class ShamMCX implements ShamMotorController {
     return lastState.acceleration();
   }
 
-  public Current current() {
-    return lastCurrent;
+  public Current statorCurrent() {
+    return lastStatorCurrent;
+  }
+
+  public Current supplyCurrent() {
+    return motor.getSupplyCurrent(lastState.velocity(), lastVoltage, lastStatorCurrent);
   }
 
   public Voltage voltage() {
@@ -335,9 +356,10 @@ public class ShamMCX implements ShamMotorController {
     lastState = state;
     return output
         .map(o -> o.run(dt, supply, state, logger.getNested("controlLoop")))
-        .map(o -> logControllerOutput(o))
+        .map(this::logControllerOutput)
         .map(o -> softLimit(o, state))
         .map(o -> currentLimit(dt, o, state, supply))
+        .map(this::peakLimit)
         .orElseGet(() -> ControllerOutput.zero());
   }
 
@@ -385,56 +407,59 @@ public class ShamMCX implements ShamMotorController {
       voltageInput = motor.getVoltage(statorCurrent, velocity);
     }
 
-    logger.log("output/rawStatorCurrent", statorCurrent);
-    logger.log("output/rawVoltageInput", voltageInput);
-
     voltageInput = MeasureMath.clamp(voltageInput, supplyVoltage);
+    statorCurrent = motor.getCurrent(velocity, voltageInput);
     supplyCurrent = motor.getSupplyCurrent(velocity, voltageInput, statorCurrent);
 
+    logger.log("output/rawStatorCurrent", statorCurrent);
+    logger.log("output/rawVoltageInput", voltageInput);
     logger.log("output/rawSupplyCurrent", supplyCurrent);
     logger.log("output/rawSupplyVoltage", supplyVoltage);
 
-    boolean overStatorLimit = statorCurrent.gt(limits.statorCurrentLimit);
-    boolean overSupplyLimit = supplyCurrent.gt(limits.supplyCurrentLimit);
-    boolean overLowerSupplyLimit =
-        supplyCurrent.gt(limits.supplyCurrentLowerLimit)
-            && timeOverSupplyLimit.gt(limits.lowerLimitTriggerTime);
-
-    logger.log("output/overStatorLimit", overStatorLimit);
-    logger.log("output/overSupplyLimit", overSupplyLimit);
-    logger.log("output/overLowerSupplyLimit", overLowerSupplyLimit);
-
-    if (overStatorLimit) {
-      statorCurrent = limits.statorCurrentLimit;
-      voltageInput = motor.getVoltage(statorCurrent, velocity);
-      supplyCurrent = motor.getSupplyCurrent(velocity, voltageInput, statorCurrent);
-    }
-
-    if (overSupplyLimit) {
+    if (MeasureMath.abs(supplyCurrent).gt(limits.supplyCurrentLimit)) {
       timeOverSupplyLimit = timeOverSupplyLimit.plus(dt);
-      Current supplyLimit = limits.supplyCurrentLimit;
-      if (timeOverSupplyLimit.gt(limits.lowerLimitTriggerTime)) {
-        supplyLimit = limits.supplyCurrentLowerLimit;
-      }
-      statorCurrent =
-          motor.getCurrent(velocity, voltageInput, supplyLimit, limits.statorCurrentLimit);
-      voltageInput = motor.getVoltage(statorCurrent, velocity);
     } else {
       timeOverSupplyLimit = Seconds.of(0.0);
     }
 
+    final Current supplyLimit =
+        timeOverSupplyLimit.gt(limits.lowerLimitTriggerTime)
+            ? limits.supplyCurrentLowerLimit
+            : limits.supplyCurrentLimit;
+
+    statorCurrent =
+        motor.getCurrent(velocity, voltageInput, supplyLimit, limits.statorCurrentLimit);
+
+    lastStatorCurrent = statorCurrent;
+    lastVoltage = motor.getVoltage(statorCurrent, velocity);
+
     logger.log("output/timeOverSupplyLimit", timeOverSupplyLimit);
-
-    lastVoltage = voltageInput;
-    lastCurrent = statorCurrent;
-
     logger.log("output/finalStatorCurrent", statorCurrent);
     logger.log("output/finalVoltageInput", voltageInput);
+    logger.log(
+        "output/finalSupplyCurrent", motor.getSupplyCurrent(velocity, voltageInput, statorCurrent));
 
     if (requestedOutput instanceof VoltageOutput) {
       return ControllerOutput.of(voltageInput);
     } else {
       return ControllerOutput.of(statorCurrent);
+    }
+  }
+
+  private ControllerOutput peakLimit(ControllerOutput requestedOutput) {
+    if (requestedOutput instanceof VoltageOutput vo) {
+      return ControllerOutput.of(
+          MeasureMath.clamp(
+              vo.voltage(),
+              peakOutputConfig.peakReverseVoltage,
+              peakOutputConfig.peakForwardVoltage));
+    } else {
+      CurrentOutput co = (CurrentOutput) requestedOutput;
+      return ControllerOutput.of(
+          MeasureMath.clamp(
+              co.current(),
+              peakOutputConfig.peakReverseStatorCurrent,
+              peakOutputConfig.peakForwardStatorCurrent));
     }
   }
 }

@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.SimCtx;
@@ -18,6 +19,7 @@ import igknighters.constants.RobotConfig;
 import igknighters.subsystems.Subsystems.SharedSubsystem;
 import igknighters.subsystems.vision.camera.Camera;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
+import igknighters.subsystems.vision.camera.CameraDisabled;
 import igknighters.subsystems.vision.camera.CameraRealPhoton;
 import igknighters.subsystems.vision.camera.CameraSimPhoton;
 import igknighters.util.plumbing.Channel.Sender;
@@ -66,9 +68,9 @@ public class Vision implements SharedSubsystem {
       Translation2d simplePose = pose.getTranslation().toTranslation2d();
       boolean outOfBounds =
           simplePose.getX() < 0.0
-              || simplePose.getX() > FieldConstants.fieldLength
+              || simplePose.getX() > FieldConstants.FIELD_LENGTH
               || simplePose.getY() < 0.0
-              || simplePose.getY() > FieldConstants.fieldWidth
+              || simplePose.getY() > FieldConstants.FIELD_WIDTH
               || Double.isNaN(simplePose.getX())
               || Double.isNaN(simplePose.getY());
       boolean extremeJitter =
@@ -119,10 +121,16 @@ public class Vision implements SharedSubsystem {
   }
 
   private Camera makeCamera(CameraConfig config, SimCtx simCtx) {
-    if (Robot.isSimulation()) {
-      return new CameraSimPhoton(config.cameraName(), config.cameraPose(), simCtx);
-    } else {
-      return new CameraRealPhoton(config.cameraName(), config.cameraPose());
+    try {
+      if (Robot.isSimulation()) {
+        return new CameraSimPhoton(config.cameraName(), config.cameraTransform(), simCtx);
+      } else {
+        return new CameraRealPhoton(config.cameraName(), config.cameraTransform());
+      }
+    } catch (Exception e) {
+      // if the camera fails to initialize, return a disabled camera to not crash the code
+      DriverStation.reportError("Failed to initialize camera: " + config.cameraName(), false);
+      return new CameraDisabled(config.cameraName(), config.cameraTransform());
     }
   }
 
@@ -197,7 +205,11 @@ public class Vision implements SharedSubsystem {
 
     for (final Camera camera : cameras) {
       Tracer.startTrace(camera.getName() + "Periodic");
-      camera.periodic();
+      try {
+        camera.periodic();
+      } catch (Exception e) {
+        DriverStation.reportError("Error in camera " + camera.getName(), false);
+      }
 
       camera.flushUpdates().stream()
           .map(this::gaugeTrust)

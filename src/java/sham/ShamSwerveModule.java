@@ -138,9 +138,7 @@ public class ShamSwerveModule {
     logger.log("isSkidding", isSkidding);
     logger.log("propellingForce", propellingForce);
 
-    return new XY<Force>(
-        propellingForce.times(steerMechAngle.getCos()),
-        propellingForce.times(steerMechAngle.getSin()));
+    return XY.of(propellingForce, steerMechAngle);
   }
 
   protected XY<Force> friction(ChassisSpeeds chassisSpeeds, Rotation2d robotHeading) {
