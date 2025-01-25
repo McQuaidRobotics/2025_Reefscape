@@ -3,7 +3,7 @@ package igknighters.subsystems.vision.camera;
 import edu.wpi.first.math.geometry.Transform3d;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
-import igknighters.subsystems.vision.Vision.VisionUpdateFaults;
+import igknighters.subsystems.vision.Vision.VisionUpdateFlaws;
 import igknighters.util.logging.BootupLogger;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,13 +41,11 @@ public class CameraRealPhoton extends Camera {
   }
 
   private VisionUpdate update(EstimatedRobotPose estRoboPose) {
-
-    seenTags.clear();
     for (PhotonTrackedTarget target : estRoboPose.targetsUsed) {
       seenTags.add(target.fiducialId);
     }
 
-    VisionUpdateFaults faults = VisionUpdateFaults.empty();
+    VisionUpdateFlaws faults = VisionUpdateFlaws.empty();
     if (previousUpdate.isPresent()) {
       double avgDistance =
           estRoboPose.targetsUsed.stream()
@@ -59,7 +57,7 @@ public class CameraRealPhoton extends Camera {
               .orElseGet(() -> 100.0);
 
       faults =
-          VisionUpdateFaults.solve(
+          VisionUpdateFlaws.solve(
               estRoboPose.estimatedPose,
               previousUpdate.get().pose(),
               estRoboPose.timestampSeconds - previousUpdate.get().timestamp(),
@@ -98,6 +96,7 @@ public class CameraRealPhoton extends Camera {
 
   @Override
   public void periodic() {
+    seenTags.clear();
     camera.getAllUnreadResults().stream()
         .map(poseEstimator::update)
         .filter(Optional::isPresent)

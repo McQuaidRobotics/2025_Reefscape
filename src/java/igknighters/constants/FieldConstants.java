@@ -55,43 +55,60 @@ public class FieldConstants {
     public static final double faceToZoneLine =
         Units.inchesToMeters(12); // Side of the reef to the inside of the reef zone line
 
-    public static final Pose2d[] CENTER_FACES =
-        new Pose2d[6]; // Starting facing the driver station in clockwise order
+    public static final Pose2d[] CENTER_FACES;
     public static final List<Map<ReefHeight, Pose3d>> BRANCH_POSITIONS =
         new ArrayList<>(); // Starting at the right branch facing the driver station in clockwise
 
+    public static final Pose2d CLOSE_MID_FACE;
+    public static final Pose2d CLOSE_LEFT_FACE;
+    public static final Pose2d FAR_LEFT_FACE;
+    public static final Pose2d FAR_MID_FACE;
+    public static final Pose2d FAR_RIGHT_FACE;
+    public static final Pose2d CLOSE_RIGHT_FACE;
+
     static {
       // Initialize faces
-      CENTER_FACES[0] =
+      CLOSE_MID_FACE =
           new Pose2d(
               Units.inchesToMeters(144.003),
               Units.inchesToMeters(158.500),
-              Rotation2d.fromDegrees(180));
-      CENTER_FACES[1] =
+              Rotation2d.fromDegrees(180).plus(Rotation2d.kPi));
+      // close left
+      CLOSE_LEFT_FACE =
           new Pose2d(
               Units.inchesToMeters(160.373),
               Units.inchesToMeters(186.857),
-              Rotation2d.fromDegrees(120));
-      CENTER_FACES[2] =
+              Rotation2d.fromDegrees(120).plus(Rotation2d.kPi));
+      // far left
+      FAR_LEFT_FACE =
           new Pose2d(
               Units.inchesToMeters(193.116),
               Units.inchesToMeters(186.858),
-              Rotation2d.fromDegrees(60));
-      CENTER_FACES[3] =
+              Rotation2d.fromDegrees(60).plus(Rotation2d.kPi));
+      // far mid
+      FAR_MID_FACE =
           new Pose2d(
               Units.inchesToMeters(209.489),
               Units.inchesToMeters(158.502),
-              Rotation2d.fromDegrees(0));
-      CENTER_FACES[4] =
+              Rotation2d.fromDegrees(0).plus(Rotation2d.kPi));
+      // far right
+      FAR_RIGHT_FACE =
           new Pose2d(
               Units.inchesToMeters(193.118),
               Units.inchesToMeters(130.145),
-              Rotation2d.fromDegrees(-60));
-      CENTER_FACES[5] =
+              Rotation2d.fromDegrees(-60).plus(Rotation2d.kPi));
+      // close right
+      CLOSE_RIGHT_FACE =
           new Pose2d(
               Units.inchesToMeters(160.375),
               Units.inchesToMeters(130.144),
-              Rotation2d.fromDegrees(-120));
+              Rotation2d.fromDegrees(-120).plus(Rotation2d.kPi));
+
+      CENTER_FACES =
+          new Pose2d[] {
+            CLOSE_MID_FACE, CLOSE_LEFT_FACE, FAR_LEFT_FACE,
+            FAR_MID_FACE, FAR_RIGHT_FACE, CLOSE_RIGHT_FACE
+          };
 
       // Initialize branch positions
       for (int face = 0; face < 6; face++) {
@@ -133,8 +150,8 @@ public class FieldConstants {
                       Units.degreesToRadians(level.pitch),
                       poseDirection.getRotation().getRadians())));
         }
-        BRANCH_POSITIONS.add((face * 2) + 1, fillRight);
-        BRANCH_POSITIONS.add((face * 2) + 2, fillLeft);
+        // BRANCH_POSITIONS.add((face * 2) + 1, fillRight);
+        // BRANCH_POSITIONS.add((face * 2) + 2, fillLeft);
       }
     }
   }

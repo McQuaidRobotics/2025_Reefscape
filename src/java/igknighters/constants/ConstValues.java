@@ -97,18 +97,34 @@ public final class ConstValues {
                 "photon_module_1",
                 new Transform3d(
                     new Translation3d(
-                        -11.3 * Conv.INCHES_TO_METERS,
+                        -9 * Conv.INCHES_TO_METERS,
                         -8.6 * Conv.INCHES_TO_METERS,
                         8.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(0.0, -20.0 * Conv.DEGREES_TO_RADIANS, Math.PI))),
+                    new Rotation3d(0.0, -10.0 * Conv.DEGREES_TO_RADIANS, Math.PI))),
             new CameraConfig(
                 "photon_module_2",
                 new Transform3d(
                     new Translation3d(
-                        -11.3 * Conv.INCHES_TO_METERS,
+                        -9 * Conv.INCHES_TO_METERS,
                         8.6 * Conv.INCHES_TO_METERS,
                         8.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(0.0, -20.0 * Conv.DEGREES_TO_RADIANS, Math.PI)))
+                    new Rotation3d(0.0, -10.0 * Conv.DEGREES_TO_RADIANS, Math.PI))),
+            new CameraConfig(
+                "photon_elevator_1",
+                new Transform3d(
+                    new Translation3d(
+                        3.0 * Conv.INCHES_TO_METERS,
+                        8.0 * Conv.INCHES_TO_METERS,
+                        38.0 * Conv.INCHES_TO_METERS),
+                    new Rotation3d(0.0, 0.0, Math.PI / 6.0))),
+            new CameraConfig(
+                "photon_elevator_2",
+                new Transform3d(
+                    new Translation3d(
+                        3.0 * Conv.INCHES_TO_METERS,
+                        -8.0 * Conv.INCHES_TO_METERS,
+                        38.0 * Conv.INCHES_TO_METERS),
+                    new Rotation3d(0.0, 0.0, -Math.PI / 6.0)))
           }),
       BURN(new CameraConfig[] {});
 
@@ -198,19 +214,17 @@ public final class ConstValues {
       public static final double kI = 0.0;
       public static final double kD = 0.0;
 
-      public static final double kS = 0.15;
-      public static final double kV =
-          12.0
-              / (kSwerve.MAX_DRIVE_VELOCITY
-                  / (kSwerve.WHEEL_CIRCUMFERENCE / kSwerve.DRIVE_GEAR_RATIO));
+      public static final double kS = 0.0;
+      // public static final double kS = 0.15;
+      public static final double kV = 0.12;
     }
 
     public static final class kSteerMotor {
-      public static final double kP = 11.0;
+      public static final double kP = 30.0;
       public static final double kI = 0.0;
       public static final double kD = 0.0;
 
-      public static final double kS = 0.7;
+      public static final double kS = 0.0;
     }
 
     public static final class kRotationController {

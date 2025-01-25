@@ -125,7 +125,8 @@ public class Crescendo {
       // if (Timer.getFPGATimestamp() - previousThrowTimeSeconds < 1) return;
 
       // final Translation3d sourcePosition = toCurrentAllianceTranslation(BLUE_SOURCE_POSITION);
-      // /* if there is any game-piece 0.5 meters within the human player station, we don't throw a new note */
+      // /* if there is any game-piece 0.5 meters within the human player station, we don't throw a
+      // new note */
       // boolean gpNearSource =
       //     gamePieces.stream()
       //         .anyMatch(gp -> gp.pose().getTranslation().getDistance(sourcePosition) < 0.6);

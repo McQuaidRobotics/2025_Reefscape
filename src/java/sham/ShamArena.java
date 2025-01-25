@@ -184,7 +184,7 @@ public abstract class ShamArena {
    * <p>It should be implemented differently for each season-specific subclass of {@link ShamArena}
    * to reflect the unique game piece placements for that season's game.
    */
-  protected abstract void placeGamePiecesOnField();
+  protected void placeGamePiecesOnField() {}
 
   /**
    *
@@ -204,7 +204,7 @@ public abstract class ShamArena {
    * <p>This method should be implemented in the season-specific subclass of {@link ShamArena} to
    * reflect the unique aspects of that season's game.
    */
-  protected abstract void competitionPeriodic();
+  protected void competitionPeriodic() {}
 
   /**
    *

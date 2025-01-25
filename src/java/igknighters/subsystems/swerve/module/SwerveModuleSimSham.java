@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -105,7 +106,7 @@ public class SwerveModuleSimSham extends SwerveModule {
             ? new Rotation2d(super.steerAbsoluteRads)
             : desiredState.angle;
     super.targetSteerAbsoluteRads = angle.getRadians();
-    steerMotor.controlVoltage(steerLoop, desiredState.angle.getMeasure());
+    steerMotor.controlVoltage(steerLoop, angle.getMeasure());
   }
 
   private void setSpeed(SwerveModuleState desiredState) {
@@ -132,7 +133,7 @@ public class SwerveModuleSimSham extends SwerveModule {
         driveMotor.velocity().div(kSwerve.DRIVE_GEAR_RATIO).in(RotationsPerSecond)
             * kSwerve.WHEEL_CIRCUMFERENCE;
 
-    super.steerAbsoluteRads = steerMotor.position().in(Radians);
+    super.steerAbsoluteRads = MathUtil.angleModulus(steerMotor.position().in(Radians));
     super.steerVeloRadPS = steerMotor.velocity().in(RadiansPerSecond);
 
     super.driveVolts = driveMotor.voltage().in(Volts);

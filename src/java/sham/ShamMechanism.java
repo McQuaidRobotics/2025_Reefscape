@@ -87,7 +87,8 @@ public class ShamMechanism {
       return MechanismDynamics.of(NewtonMeters.zero());
     }
 
-    static MechanismDynamics forElevator(Mass mass, Distance spoolDiameter, Supplier<Rotation2d> tilt) {
+    static MechanismDynamics forElevator(
+        Mass mass, Distance spoolDiameter, Supplier<Rotation2d> tilt) {
       return new MechanismDynamics() {
         @Override
         public Torque environment(MechanismState state) {
@@ -239,16 +240,25 @@ public class ShamMechanism {
 
   /** Defines some variables of a mechanism in the current time step. */
   public record MechanismVariables(
-      Torque torque, Voltage statorVoltage, Voltage supplyVoltage, Current statorCurrent, Current supplyCurrent)
+      Torque torque,
+      Voltage statorVoltage,
+      Voltage supplyVoltage,
+      Current statorCurrent,
+      Current supplyCurrent)
       implements StructSerializable {
 
     public static MechanismVariables of(
-        Torque torque, Voltage voltage, Voltage supplyVoltage, Current statorCurrent, Current supplyCurrent) {
+        Torque torque,
+        Voltage voltage,
+        Voltage supplyVoltage,
+        Current statorCurrent,
+        Current supplyCurrent) {
       return new MechanismVariables(torque, voltage, supplyVoltage, statorCurrent, supplyCurrent);
     }
 
     public static MechanismVariables zero() {
-      return new MechanismVariables(NewtonMeters.zero(), Volts.zero(), Volts.zero(), Amps.zero(), Amps.zero());
+      return new MechanismVariables(
+          NewtonMeters.zero(), Volts.zero(), Volts.zero(), Amps.zero(), Amps.zero());
     }
 
     public static final Struct<MechanismVariables> struct =
@@ -350,7 +360,11 @@ public class ShamMechanism {
   public MechanismVariables motorVariables() {
     var v = variables();
     return MechanismVariables.of(
-        v.torque.div(gearRatio.getReduction()), v.statorVoltage, v.supplyVoltage, v.statorCurrent, v.supplyCurrent);
+        v.torque.div(gearRatio.getReduction()),
+        v.statorVoltage,
+        v.supplyVoltage,
+        v.statorCurrent,
+        v.supplyCurrent);
   }
 
   /**

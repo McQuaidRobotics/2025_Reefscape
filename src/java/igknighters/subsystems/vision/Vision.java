@@ -39,7 +39,7 @@ public class Vision implements SharedSubsystem {
 
   private final HashSet<Integer> seenTags = new HashSet<>();
 
-  public record VisionUpdateFaults(
+  public record VisionUpdateFlaws(
       boolean extremeJitter,
       boolean outOfBounds,
       boolean outOfRange,
@@ -51,14 +51,14 @@ public class Vision implements SharedSubsystem {
       boolean singleTag)
       implements StructSerializable {
 
-    private static final VisionUpdateFaults kEmpty =
-        new VisionUpdateFaults(false, false, false, false, false, false, false, false, false);
+    private static final VisionUpdateFlaws kEmpty =
+        new VisionUpdateFlaws(false, false, false, false, false, false, false, false, false);
 
-    public static VisionUpdateFaults empty() {
+    public static VisionUpdateFlaws empty() {
       return kEmpty;
     }
 
-    public static VisionUpdateFaults solve(
+    public static VisionUpdateFlaws solve(
         Pose3d pose,
         Pose3d lastPose,
         double time,
@@ -83,7 +83,7 @@ public class Vision implements SharedSubsystem {
       boolean noTags = tagsList.size() == 0;
       boolean singleTag = tagsList.size() == 1;
       boolean sketchyTags = tagsList.stream().anyMatch(sketchyTagsList::contains);
-      return new VisionUpdateFaults(
+      return new VisionUpdateFlaws(
           extremeJitter,
           outOfBounds,
           outOfRange,
@@ -95,15 +95,15 @@ public class Vision implements SharedSubsystem {
           singleTag);
     }
 
-    public static final Struct<VisionUpdateFaults> struct =
-        ProceduralStructGenerator.genRecord(VisionUpdateFaults.class);
+    public static final Struct<VisionUpdateFlaws> struct =
+        ProceduralStructGenerator.genRecord(VisionUpdateFlaws.class);
   }
 
-  public record VisionUpdate(Pose3d pose, double timestamp, VisionUpdateFaults faults)
+  public record VisionUpdate(Pose3d pose, double timestamp, VisionUpdateFlaws faults)
       implements StructSerializable {
 
     private static final VisionUpdate kEmpty =
-        new VisionUpdate(Pose3d.kZero, 0.0, VisionUpdateFaults.empty());
+        new VisionUpdate(Pose3d.kZero, 0.0, VisionUpdateFlaws.empty());
 
     public static VisionUpdate empty() {
       return kEmpty;
@@ -124,6 +124,7 @@ public class Vision implements SharedSubsystem {
     try {
       if (Robot.isSimulation()) {
         return new CameraSimPhoton(config.cameraName(), config.cameraTransform(), simCtx);
+        // return new CameraDisabled(config.cameraName(), config.cameraTransform());
       } else {
         return new CameraRealPhoton(config.cameraName(), config.cameraTransform());
       }
@@ -146,7 +147,7 @@ public class Vision implements SharedSubsystem {
   }
 
   private Optional<VisionSample> gaugeTrust(final VisionUpdate update) {
-    final VisionUpdateFaults faults = update.faults();
+    final VisionUpdateFlaws faults = update.faults();
 
     // These are "fatal" faults that should always invalidate the update
     if (faults.noTags
@@ -166,9 +167,7 @@ public class Vision implements SharedSubsystem {
     // If any tags seen are sketchy reduce the trust
     // If the only tag seen is sketchy massively reduce the trust
     if (faults.singleTag || faults.sketchyTags) {
-      trust /= 3.0;
-    } else if (faults.sketchyTags) {
-      trust /= 1.5;
+      trust /= 2.0;
     }
 
     // Completely arbitrary values for the velocity thresholds.

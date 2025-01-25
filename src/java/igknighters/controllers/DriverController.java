@@ -1,8 +1,13 @@
 package igknighters.controllers;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import igknighters.Localizer;
 import igknighters.commands.swerve.SwerveCommands;
+import igknighters.constants.FieldConstants;
+import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
 
 public class DriverController extends ControllerBase {
@@ -12,14 +17,28 @@ public class DriverController extends ControllerBase {
 
     // disregard null safety for subsystems as it is checked on assignment
 
-    /// FACE BUTTONS
-    this.A.onTrue(Commands.none());
+    Pose2d face2 = FieldConstants.Reef.CENTER_FACES[4];
 
-    this.B.onTrue(Commands.none());
+    /// FACE BUTTONS
+    this.A.onTrue(
+        SwerveCommands.moveTo(
+            subsystems.swerve,
+            localizer,
+            new Pose2d(
+                face2.getTranslation().plus(new Translation2d(0.33, -0.33)),
+                face2.getRotation().plus(Rotation2d.kPi)),
+            PathObstacles.FAR_RIGHT_REEF));
+
+    this.B.onTrue(subsystems.swerve.runOnce(() -> {}));
 
     this.X.onTrue(Commands.none());
 
-    this.Y.onTrue(Commands.none());
+    this.Y.onTrue(
+        SwerveCommands.moveTo(
+            subsystems.swerve,
+            localizer,
+            new Pose2d(new Translation2d(1.0, 1.0), Rotation2d.fromDegrees(-125.0)),
+            PathObstacles.Other));
 
     /// BUMPER
     this.RB.onTrue(Commands.none());

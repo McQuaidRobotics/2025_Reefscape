@@ -118,6 +118,13 @@ public class Swerve implements ExclusiveSubsystem {
     RobotSpeeds robotSpeeds = speeds.asRobotRelative(getYaw());
     log("targetSpeed", robotSpeeds);
 
+    if (!Double.isFinite(robotSpeeds.vx())
+        || !Double.isFinite(robotSpeeds.vy())
+        || !Double.isFinite(robotSpeeds.omega())) {
+      DriverStation.reportError("Drivetrain driven at NAN", false);
+      return;
+    }
+
     setpoint =
         setpointGenerator.generateSimpleSetpoint(setpoint, robotSpeeds, ConstValues.PERIODIC_TIME);
 

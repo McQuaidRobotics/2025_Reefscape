@@ -128,7 +128,11 @@ public class TwistyPoseEst {
   }
 
   private double oldestTimestamp() {
-    return samples.firstKey();
+    if (samples.isEmpty()) {
+      return Timer.getFPGATimestamp();
+    } else {
+      return samples.firstKey();
+    }
   }
 
   /**

@@ -79,6 +79,7 @@ public class SimCtx {
     isSimulation = isSim;
     resetReceiver = localizer.poseResetsReceiver();
     if (isSimulation) {
+      // arena = new ShamArena(new FieldMap(), ConstValues.PERIODIC_TIME, 5) {};
       arena = new Reefscape.ReefscapeShamArena(Seconds.of(ConstValues.PERIODIC_TIME), 5);
       simRobot = new ShamRobot<>(arena, "User", swerveConfig, 1);
       aprilTagSim = new VisionSystemSim("AprilTags");

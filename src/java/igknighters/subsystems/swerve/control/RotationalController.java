@@ -27,7 +27,6 @@ public class RotationalController {
     this.swerve = swerve;
   }
 
-  // OBJ_COUNT: 4
   public double calculate(double target, double deadband) {
     double measurement = MathUtil.angleModulus(swerve.getYawRads());
 
