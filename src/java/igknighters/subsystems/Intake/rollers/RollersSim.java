@@ -1,4 +1,4 @@
-package igknighters.subsystems.Intake;
+package igknighters.subsystems.Intake.rollers;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
@@ -18,13 +18,13 @@ import sham.shamController.ShamMCX;
 import sham.utils.GearRatio;
 import wpilibExt.DCMotorExt;
 
-public class IntakeSim extends Intake {
+public class RollersSim extends Rollers {
   private final ShamMCX shamMCX = new ShamMCX("IntakeMotor");
   private final ShamMechanism shamMechanism;
   private final ShamIntake shamIntake;
   private final ShamIndexer indexer;
 
-  public IntakeSim(SimCtx simCtx) {
+  public RollersSim(SimCtx simCtx) {
     shamMechanism =
         new ShamMechanism(
             "IntakeMechanism",

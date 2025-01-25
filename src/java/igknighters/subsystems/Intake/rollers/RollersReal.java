@@ -1,4 +1,4 @@
-package igknighters.subsystems.Intake;
+package igknighters.subsystems.Intake.rollers;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
@@ -13,9 +13,9 @@ import com.ctre.phoenix6.signals.UpdateModeValue;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Current;
 
-public class IntakeReal extends Intake {
-  private final TalonFX intakeLeader = new TalonFX(IntakeConstants.INTAKE_LEADER_ID);
-  private final TalonFX intakeFollower = new TalonFX(IntakeConstants.INTAKE_FOLLOWER_ID);
+public class RollersReal extends Rollers {
+  private final TalonFX intakeLeader = new TalonFX(RollersConstants.INTAKE_LEADER_ID);
+  private final TalonFX intakeFollower = new TalonFX(RollersConstants.INTAKE_FOLLOWER_ID);
   private final CANrange distanceSensor = new CANrange(41);
   private final TorqueCurrentFOC controlReq = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
   private final StatusSignal<ReverseLimitValue> coralSensor;
@@ -43,12 +43,12 @@ public class IntakeReal extends Intake {
     return cfg;
   }
 
-  public IntakeReal() {
+  public RollersReal() {
     coralSensor = intakeLeader.getReverseLimit();
     this.currentValue = intakeLeader.getTorqueCurrent();
     intakeLeader.getConfigurator().apply(intakeConfiguration());
     distanceSensor.getConfigurator().apply(intakeSensorConfiguration());
-    intakeFollower.setControl(new Follower(IntakeConstants.INTAKE_LEADER_ID, true));
+    intakeFollower.setControl(new Follower(RollersConstants.INTAKE_LEADER_ID, true));
   }
 
   public void setCurrent(double torque) {
@@ -61,7 +61,7 @@ public class IntakeReal extends Intake {
 
   public boolean hasAlgae() {
     final boolean isTripped = hasCoral();
-    if (currentValue.getValueAsDouble() > IntakeConstants.ALGAE_TRIP_VALUE && !isTripped) {
+    if (currentValue.getValueAsDouble() > RollersConstants.ALGAE_TRIP_VALUE && !isTripped) {
       return true;
     } else {
       return false;
