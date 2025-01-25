@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Optional;
@@ -145,6 +146,7 @@ public class AutoTrajectory {
     isActive = true;
     isCompleted = false;
     logTrajectory(true);
+    routine.updateIdle(false);
   }
 
   @SuppressWarnings("unchecked")
@@ -173,10 +175,11 @@ public class AutoTrajectory {
     isCompleted = !interrupted;
     cmdExecute(); // will force the controller to be fed the final sample
     logTrajectory(false);
+    routine.updateIdle(true);
   }
 
   private boolean cmdIsFinished() {
-    return timer.get() > trajectory.getTotalTime() || !routine.active().getAsBoolean();
+    return timer.get() > trajectory.getTotalTime() || !routine.isActive;
   }
 
   /**
@@ -197,6 +200,18 @@ public class AutoTrajectory {
             this::cmdIsFinished,
             driveSubsystem)
         .withName("Trajectory_" + name);
+  }
+
+  /**
+   * Creates a command that will schedule <b>another</b> command that will follow the trajectory.
+   *
+   * <p>This can be useful when putting {@link AutoTrajectory} commands in sequences that require
+   * subsystems that the AutoTrajectory triggers require.
+   *
+   * @return The command that will schedule the trajectory following command.
+   */
+  public Command spawnCmd() {
+    return new ScheduleCommand(cmd()).withName("Trajectory_" + name + "_Spawner");
   }
 
   /**
@@ -293,7 +308,22 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that rises to true when the trajectory ends and falls after one pulse.
+   * Returns a trigger that rises to true a number of cycles after the trajectory ends and falls
+   * after one pulse.
+   *
+   * @param cycles The number of cycles to delay the trigger from rising to true.
+   * @return A trigger that is true when the trajectory is finished.
+   * @see #doneDelayed(int)
+   * @deprecated Use {@link #doneDelayed(int)} instead.
+   */
+  @Deprecated(forRemoval = true, since = "2025")
+  public Trigger done(int cycles) {
+    return doneDelayed(cycles);
+  }
+
+  /**
+   * Returns a trigger that rises to true a number of cycles after the trajectory ends and falls
+   * after one pulse.
    *
    * <p>This is different from inactive() in a few ways.
    *
@@ -316,18 +346,18 @@ public class AutoTrajectory {
    *
    * routine.enabled().onTrue(rushMidTraj.cmd());
    *
-   * rushMidTraj.done(10).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
-   * rushMidTraj.done(10).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
+   * rushMidTraj.doneDelayed(10).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
+   * rushMidTraj.doneDelayed(10).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
    *
    * // If done never falls when a new trajectory is scheduled
    * // then these triggers leak into the next trajectory, causing the next note pickup
    * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
    * </code></pre>
    *
-   * @param cyclesToDelay The number of cycles to delay the trigger from rising to true.
+   * @param cycles The number of cycles to delay the trigger from rising to true.
    * @return A trigger that is true when the trajectory is finished.
    */
-  public Trigger done(int cyclesToDelay) {
+  public Trigger doneDelayed(int cycles) {
     BooleanSupplier checker =
         new BooleanSupplier() {
           /** The last used value for trajectory completeness */
@@ -338,22 +368,25 @@ public class AutoTrajectory {
 
           @Override
           public boolean getAsBoolean() {
-            if (!isCompleted) {
+            if (!isCompleted || isActive) {
               // update last seen value
               lastCompleteness = false;
+              cycleTarget = -1;
               return false;
             }
-            if (!lastCompleteness && isCompleted) {
+            if (isCompleted) {
               // if just flipped to completed update last seen value
               // and store the cycleTarget based of the current cycle
+              if (!lastCompleteness) {
+                cycleTarget = routine.pollCount() + cycles;
+              }
               lastCompleteness = true;
-              cycleTarget = routine.pollCount() + cyclesToDelay;
             }
             // finally if check the cycle matches the target
             return routine.pollCount() == cycleTarget;
           }
         };
-    return inactive().and(new Trigger(routine.loop(), checker));
+    return new Trigger(routine.loop(), checker);
   }
 
   /**
@@ -391,7 +424,69 @@ public class AutoTrajectory {
    * @return A trigger that is true when the trajectory is finished.
    */
   public Trigger done() {
-    return done(0);
+    return doneDelayed(0);
+  }
+
+  /**
+   * Returns a trigger that stays true for a number of cycles after the trajectory ends.
+   *
+   * @param cycles The number of cycles to stay true after the trajectory ends.
+   * @return A trigger that stays true for a number of cycles after the trajectory ends.
+   */
+  public Trigger doneFor(int cycles) {
+    BooleanSupplier enterPulse = doneDelayed(0);
+    BooleanSupplier exitPulse = doneDelayed(cycles + 1);
+    BooleanSupplier checker =
+        new BooleanSupplier() {
+          boolean output = false;
+
+          @Override
+          public boolean getAsBoolean() {
+            if (enterPulse.getAsBoolean()) {
+              output = true;
+            }
+            if (exitPulse.getAsBoolean()) {
+              output = false;
+            }
+            return output;
+          }
+        };
+    return inactive().and(new Trigger(routine.loop(), checker));
+  }
+
+  /**
+   * Returns a trigger that is true when the trajectory was the last one active and is done.
+   *
+   * @return A trigger that is true when the trajectory was the last one active and is done.
+   */
+  public Trigger recentlyDone() {
+    BooleanSupplier enterPulse = doneDelayed(0);
+    BooleanSupplier exitPulse = routine.idle().negate();
+    BooleanSupplier checker =
+        new BooleanSupplier() {
+          boolean output = false;
+
+          @Override
+          public boolean getAsBoolean() {
+            if (enterPulse.getAsBoolean()) {
+              output = true;
+            }
+            if (exitPulse.getAsBoolean()) {
+              output = false;
+            }
+            return output;
+          }
+        };
+    return inactive().and(new Trigger(routine.loop(), checker));
+  }
+
+  /**
+   * A shorthand for `.done().onTrue(otherTrajectory.cmd())`
+   *
+   * @param otherTrajectory The other trajectory to run when this one is done.
+   */
+  public void chain(AutoTrajectory otherTrajectory) {
+    done().onTrue(otherTrajectory.cmd());
   }
 
   /**
@@ -416,19 +511,20 @@ public class AutoTrajectory {
     // Make the trigger only be high for 1 cycle when the time has elapsed,
     // this is needed for better support of multi-time triggers for multi events
     return new Trigger(
-        routine.loop(),
-        new BooleanSupplier() {
-          double lastTimestamp = timer.get();
+            routine.loop(),
+            new BooleanSupplier() {
+              double lastTimestamp = timer.get();
 
-          public boolean getAsBoolean() {
-            double nowTimestamp = timer.get();
-            try {
-              return lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
-            } finally {
-              lastTimestamp = nowTimestamp;
-            }
-          }
-        });
+              public boolean getAsBoolean() {
+                double nowTimestamp = timer.get();
+                try {
+                  return lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
+                } finally {
+                  lastTimestamp = nowTimestamp;
+                }
+              }
+            })
+        .and(active());
   }
 
   /**
