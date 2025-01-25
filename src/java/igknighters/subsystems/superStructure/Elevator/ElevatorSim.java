@@ -69,11 +69,11 @@ public class ElevatorSim extends Elevator {
         ),
         idk -> Meters.of(1.0)
     );
+    shamMCX.configSensorToMechanismRatio(Elevator)
   }
 
   @Override
   public void gotoPosition(double heightMeters) {
-  
   }
 
   @Override
