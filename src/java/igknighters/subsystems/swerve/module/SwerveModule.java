@@ -70,7 +70,7 @@ public abstract class SwerveModule extends Component {
   protected double getOffset(int moduleId) {
     double[] offsetStore =
         switch (RobotConfig.getRobotID()) {
-          case CRASH -> kSwerve.CRASH_ROTATION_OFFSETS;
+          case Mk1 -> kSwerve.CRASH_ROTATION_OFFSETS;
           default -> kSwerve.BURN_ROTATION_OFFSETS;
         };
 

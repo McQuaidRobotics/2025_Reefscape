@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import igknighters.constants.ConstValues.kSwerve;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.swerve.odometryThread.SwerveDriveSample;
@@ -17,9 +16,8 @@ import igknighters.util.plumbing.Channel.Sender;
 import igknighters.util.plumbing.Channel.ThreadSafetyMarker;
 import java.util.List;
 import monologue.Annotations.Log;
-import monologue.LogSink;
+import monologue.GlobalField;
 import monologue.Logged;
-import monologue.Monologue;
 import wpilibExt.Tracer;
 
 public class Localizer implements Logged {
@@ -47,36 +45,17 @@ public class Localizer implements Logged {
   @Log(key = "visionTimestamp")
   private double latestVisionTimestamp = 0;
 
-  final Field2d field;
-
-  public static record NamedPositions(String name, Pose2d[] positions) {
-    public NamedPositions(String name, Pose2d positions) {
-      this(name, new Pose2d[] {positions});
-    }
-  }
-
-  private final Channel<NamedPositions> namedPositionsChannel =
-      new Channel<>(new NamedPositions[0]);
-  private final Receiver<NamedPositions> namedPositionsReceiver =
-      namedPositionsChannel.openReceiver(24, ThreadSafetyMarker.CONCURRENT);
-
   private final Channel<Pose2d> poseResetsChannel = new Channel<>(new Pose2d[0]);
   private final Sender<Pose2d> poseResetsSender = poseResetsChannel.sender();
 
   public Localizer() {
     poseEstimator = new TwistyPoseEst();
-    field = new Field2d();
 
-    field
-        .getObject("AprilTags")
-        .setPoses(
-            FieldConstants.APRIL_TAG_FIELD.getTags().stream()
-                .map(tag -> tag.pose.toPose2d())
-                .toArray(Pose2d[]::new));
-  }
-
-  public void publishField() {
-    Monologue.publishSendable("/Visualizers/Field", field, LogSink.NT);
+    GlobalField.setObject(
+        "AprilTags",
+        FieldConstants.APRIL_TAG_FIELD.getTags().stream()
+            .map(tag -> tag.pose.toPose2d())
+            .toArray(Pose2d[]::new));
   }
 
   public Sender<VisionSample> visionDataSender() {
@@ -85,10 +64,6 @@ public class Localizer implements Logged {
 
   public Sender<SwerveDriveSample> swerveDataSender() {
     return swerveDataChannel.sender();
-  }
-
-  public Sender<NamedPositions> namedPositionsSender() {
-    return namedPositionsChannel.sender();
   }
 
   public Receiver<Pose2d> poseResetsReceiver() {
@@ -115,24 +90,23 @@ public class Localizer implements Logged {
         unsortedVisionSamples.stream()
             .sorted((a, b) -> Double.compare(a.timestamp(), b.timestamp()))
             .toList();
+    final double now = Timer.getFPGATimestamp();
+    double sumLatency = 0.0;
     for (final VisionSample sample : visionSamples) {
       latestVisionPose = sample.pose();
       latestVisionTimestamp = sample.timestamp();
+      sumLatency += now - latestVisionTimestamp;
       poseEstimator.addVisionSample(latestVisionPose, latestVisionTimestamp, sample.trust());
     }
+    log("visionLatency", sumLatency / visionSamples.size());
     Tracer.endTrace();
 
     Tracer.startTrace("Prune");
     poseEstimator.prune(0.25);
     Tracer.endTrace();
 
-    while (namedPositionsReceiver.hasData()) {
-      var namedPositions = namedPositionsReceiver.recv();
-      field.getObject(namedPositions.name()).setPoses(namedPositions.positions());
-    }
-
     latestPose = Tracer.traceFunc("ReadEstPose", poseEstimator::getEstimatedPose);
-    field.getRobotObject().setPose(latestPose);
+    GlobalField.setObject("Robot", latestPose);
 
     Pose2d poseFromABitAgo = poseEstimator.getEstimatedPoseFromPast(0.05);
     Twist2d twist = poseFromABitAgo.log(latestPose);

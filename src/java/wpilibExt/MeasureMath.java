@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.AccelerationUnit;
 import edu.wpi.first.units.AngleUnit;
@@ -19,6 +20,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.VelocityUnit;
 import edu.wpi.first.units.measure.Acceleration;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -34,6 +36,15 @@ import java.util.function.BiFunction;
 import monologue.ProceduralStructGenerator;
 
 public class MeasureMath {
+
+  public static final class Constants {
+    public static final Angle kPi = Radian.of(Math.PI);
+    public static final Angle kCCW_2Pi = Radian.of(2.0 * Math.PI);
+    public static final Angle kCW_2Pi = Radian.of(-2.0 * Math.PI);
+
+    public static final LinearAcceleration kGravity = MetersPerSecondPerSecond.of(9.8);
+  }
+
   @SuppressWarnings("unchecked")
   public static <U extends Unit, M extends Measure<U>> M abs(M m) {
     return (M) m.unit().ofBaseUnits(Math.abs(m.baseUnitMagnitude()));
@@ -48,11 +59,58 @@ public class MeasureMath {
     return m1.baseUnitMagnitude() > m2.baseUnitMagnitude() ? m1 : m2;
   }
 
+  @SuppressWarnings("unchecked")
+  public static <U extends Unit, M extends Measure<U>> M max(M m1, M m2, M... otherMs) {
+    M max = max(m1, m2);
+    for (M m : otherMs) {
+      max = max(max, m);
+    }
+    return max;
+  }
+
+  public static <U extends Unit, M extends Measure<U>> M maxAbs(M m1, M m2) {
+    return abs(m1).baseUnitMagnitude() > abs(m2).baseUnitMagnitude() ? m1 : m2;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <U extends Unit, M extends Measure<U>> M maxAbs(M m1, M m2, M... otherMs) {
+    M max = maxAbs(m1, m2);
+    for (M m : otherMs) {
+      max = max(max, m);
+    }
+    return max;
+  }
+
   public static <U extends Unit, M extends Measure<U>> M min(M m1, M m2) {
     return m1.baseUnitMagnitude() < m2.baseUnitMagnitude() ? m1 : m2;
   }
 
+  @SuppressWarnings("unchecked")
+  public static <U extends Unit, M extends Measure<U>> M min(M m1, M m2, M... otherMs) {
+    M min = min(m1, m2);
+    for (M m : otherMs) {
+      min = min(min, m);
+    }
+    return min;
+  }
+
+  public static <U extends Unit, M extends Measure<U>> M minAbs(M m1, M m2) {
+    return abs(m1).baseUnitMagnitude() < abs(m2).baseUnitMagnitude() ? m1 : m2;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <U extends Unit, M extends Measure<U>> M minAbs(M m1, M m2, M... otherMs) {
+    M min = minAbs(m1, m2);
+    for (M m : otherMs) {
+      min = min(min, m);
+    }
+    return min;
+  }
+
   public static <U extends Unit, M extends Measure<U>> M clamp(M m, M min, M max) {
+    if (min.gt(max)) {
+      throw new IllegalArgumentException("min must be less than or equal to max");
+    }
     return max(min, min(max, m));
   }
 
@@ -72,6 +130,20 @@ public class MeasureMath {
   public record XY<M extends Measure<?>>(M x, M y) {
     public static XY<Distance> of(Translation2d t) {
       return new XY<>(Meters.of(t.getX()), Meters.of(t.getY()));
+    }
+
+    public static <M extends Measure<?>> XY<M> of(M x, M y) {
+      return new XY<>(x, y);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <M extends Measure<?>> XY<M> of(M mag, Rotation2d rot) {
+      return new XY<>((M) mag.times(rot.getCos()), (M) mag.times(rot.getSin()));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <U extends Unit> XY<Measure<U>> zero(U unit) {
+      return new XY<>((Measure<U>) unit.zero(), (Measure<U>) unit.zero());
     }
 
     public <UN extends Unit, N extends Measure<UN>, R extends Measure<?>> N cross(

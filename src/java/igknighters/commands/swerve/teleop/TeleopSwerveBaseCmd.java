@@ -9,9 +9,10 @@ import igknighters.Robot;
 import igknighters.constants.ConstValues.kSwerve;
 import igknighters.controllers.ControllerBase;
 import igknighters.subsystems.swerve.Swerve;
-import igknighters.util.AllianceFlip;
 import igknighters.util.plumbing.TunableValues;
 import igknighters.util.plumbing.TunableValues.TunableDouble;
+import wpilibExt.AllianceFlipper;
+
 import java.nio.ByteBuffer;
 import java.util.function.DoubleSupplier;
 
@@ -71,7 +72,7 @@ public class TeleopSwerveBaseCmd extends Command implements StructSerializable {
   private double invert() {
     if (shouldOrientForSim()) {
       return 1;
-    } else if (AllianceFlip.isRed()) {
+    } else if (AllianceFlipper.isRed()) {
       return -1;
     } else {
       return 1;

@@ -8,8 +8,8 @@ import java.util.Map;
 public class RobotConfig {
 
   public enum RobotID {
-    CRASH,
-    BURN,
+    Mk1,
+    Mk2,
     Unlabeled;
 
     public final String name;
@@ -26,14 +26,14 @@ public class RobotConfig {
   /** If there are duplicate serial entries the tests will fail!!!! */
   private static final Map<String, RobotID> serialToID =
       Map.of(
-          "0306adcf", RobotID.CRASH,
-          "0306adf3", RobotID.CRASH,
-          "ffffffff", RobotID.CRASH,
-          "aaaaaaaa", RobotID.CRASH,
-          "03260af0", RobotID.CRASH,
-          "03260abb", RobotID.CRASH,
-          "0306adb6", RobotID.CRASH,
-          "032b4b20", RobotID.CRASH);
+          "0306adcf", RobotID.Mk1,
+          "0306adf3", RobotID.Mk1,
+          "ffffffff", RobotID.Mk1,
+          "aaaaaaaa", RobotID.Mk1,
+          "03260af0", RobotID.Mk1,
+          "03260abb", RobotID.Mk1,
+          "0306adb6", RobotID.Mk1,
+          "032b4b20", RobotID.Mk1);
 
   private static RobotID currentID = RobotID.Unlabeled;
 

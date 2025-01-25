@@ -122,6 +122,15 @@ public class TwistyPoseEst {
     samples.values().removeIf(sample -> sample.timestamp < pruneBefore);
   }
 
+  private void forcePrune(double pruneBefore, Pose2d newRoot) {
+    rootPose = newRoot;
+    samples.values().removeIf(sample -> sample.timestamp < pruneBefore);
+  }
+
+  private double oldestTimestamp() {
+    return samples.firstKey();
+  }
+
   /**
    * Adds a sample to the estimator
    *
@@ -130,12 +139,19 @@ public class TwistyPoseEst {
    * @param weight the weight of the sample (0.0 to 1.0)
    */
   public void addVisionSample(Pose2d pose, double timestamp, double weight) {
+    if (timestamp < oldestTimestamp()) {
+      return;
+    }
     Pose2d lastPose = poseAtTimestamp(timestamp);
+    if (lastPose.getTranslation().getDistance(pose.getTranslation()) < 0.01) {
+      forcePrune(timestamp, new Pose2d(pose.getTranslation(), lastPose.getRotation()));
+      return;
+    }
     Twist2d twist = lastPose.log(pose);
-    samples.put(
-        timestamp,
-        new TimestampedTwist2d(
-            twist.dx * weight, twist.dy * weight, twist.dtheta * weight * 0.01, timestamp));
+    twist.dx *= weight;
+    twist.dy *= weight;
+    twist.dtheta = 0.0;
+    forcePrune(timestamp, lastPose.exp(twist));
   }
 
   @SuppressWarnings("unchecked")
