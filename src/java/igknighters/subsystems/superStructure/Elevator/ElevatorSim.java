@@ -57,7 +57,7 @@ public class ElevatorSim extends Elevator {
             TrapezoidProfile.forAngle(
                 RotationsPerSecond.of(ElevatorConstants.MAX_VELOCITY),
                 RotationsPerSecondPerSecond.of(ElevatorConstants.MAX_ACCELERATION)));
-    shamMCX.configSensorToMechanismRatio(ElevatorConstants.ELEVATOR_GEAR_RATIO);
+    shamMCX.configSensorToMechanismRatio(ElevatorConstants.GEAR_RATIO);
   }
 
   @Override

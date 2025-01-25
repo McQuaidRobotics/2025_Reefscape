@@ -31,7 +31,7 @@ public class ElevatorReal extends Elevator {
     cfg.Slot0.kS = ElevatorConstants.KS;
     cfg.Slot0.kA = ElevatorConstants.KA;
 
-    cfg.Feedback.SensorToMechanismRatio = ElevatorConstants.ELEVATOR_GEAR_RATIO;
+    cfg.Feedback.SensorToMechanismRatio = ElevatorConstants.GEAR_RATIO;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =

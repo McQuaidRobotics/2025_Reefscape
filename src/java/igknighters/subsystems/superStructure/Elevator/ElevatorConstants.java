@@ -3,7 +3,7 @@ package igknighters.subsystems.superStructure.Elevator;
 import igknighters.constants.ConstValues.Conv;
 
 public class ElevatorConstants {
-  public static final double ELEVATOR_GEAR_RATIO = (Math.PI * 2.0) * (6.0 / 1.0);
+  public static final double GEAR_RATIO = (Math.PI * 2.0) * (6.0 / 1.0);
   public static final double KP = 0.0;
   public static final double KD = 0.0;
   public static final double KG = 0.0;
