@@ -51,7 +51,7 @@ public class IntakeReal extends Intake {
     intakeFollower.setControl(new Follower(IntakeConstants.INTAKE_LEADER_ID, true));
   }
 
-  public void setTorque(double torque) {
+  public void setCurrent(double torque) {
     intakeLeader.setControl(controlReq.withOutput(torque));
   }
 

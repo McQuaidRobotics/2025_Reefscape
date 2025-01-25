@@ -112,7 +112,7 @@ public class ShamRobot<DrvTrn extends ShamDriveTrain> {
    *
    * @return the {@link ShamIndexer} object that is used to store {@link ShamGamePiece}s.
    */
-  public ShamIndexer getGamePieceStorage() {
+  public ShamIndexer getIndexer() {
     return gamePieceStorage;
   }
 }

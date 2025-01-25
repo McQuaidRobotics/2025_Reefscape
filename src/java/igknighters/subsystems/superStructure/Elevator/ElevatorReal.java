@@ -25,11 +25,11 @@ public class ElevatorReal extends Elevator {
 
     var cfg = new TalonFXConfiguration();
 
-    cfg.Slot0.kP = ElevatorConstants.ELEVATOR_KP;
+    cfg.Slot0.kP = ElevatorConstants.KP;
     cfg.Slot0.kG = ElevatorConstants.ELEVATOR_KG;
-    cfg.Slot0.kD = ElevatorConstants.ELEVATOR_KD;
-    cfg.Slot0.kS = ElevatorConstants.ELEVATOR_KS;
-    cfg.Slot0.kA = ElevatorConstants.ELEVATOR_KA;
+    cfg.Slot0.kD = ElevatorConstants.KD;
+    cfg.Slot0.kS = ElevatorConstants.KS;
+    cfg.Slot0.kA = ElevatorConstants.KA;
 
     cfg.Feedback.SensorToMechanismRatio = ElevatorConstants.ELEVATOR_GEAR_RATIO;
 

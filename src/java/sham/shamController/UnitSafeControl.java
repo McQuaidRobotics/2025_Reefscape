@@ -118,7 +118,7 @@ public class UnitSafeControl {
     public LinearPIDFeedback(
         Per<O, DistanceUnit> kP,
         Per<O, DistanceUnit> kI,
-        Per<O, PerUnit<DistanceUnit, TimeUnit>> kD) {
+        Per<O, LinearVelocityUnit> kD) {
       super(
           kP,
           kI,
@@ -126,7 +126,7 @@ public class UnitSafeControl {
               .ofNative(kD.baseUnitMagnitude()));
     }
 
-    public LinearPIDFeedback(Per<O, DistanceUnit> kP, Per<O, PerUnit<DistanceUnit, TimeUnit>> kD) {
+    public LinearPIDFeedback(Per<O, DistanceUnit> kP, Per<O, LinearVelocityUnit> kD) {
       super(
           kP,
           PerUnit.combine(kD.unit().numerator(), VelocityUnit.combine(Meters, Second))
@@ -313,13 +313,13 @@ public class UnitSafeControl {
     private final edu.wpi.first.math.controller.ElevatorFeedforward internalFeedforward;
     private final O outputUnit;
     final Measure<O> kS;
-    final Per<O, VelocityUnit<DistanceUnit>> kV;
-    final Per<O, AccelerationUnit<DistanceUnit>> kA;
+    final Per<O, LinearVelocityUnit> kV;
+    final Per<O, LinearAccelerationUnit> kA;
 
     public ElevatorFeedforward(
         Measure<O> kS,
-        Per<O, VelocityUnit<DistanceUnit>> kV,
-        Per<O, AccelerationUnit<DistanceUnit>> kA) {
+        Per<O, LinearVelocityUnit> kV,
+        Per<O, LinearAccelerationUnit> kA) {
       outputUnit = kS.unit();
       internalFeedforward =
           new edu.wpi.first.math.controller.ElevatorFeedforward(
