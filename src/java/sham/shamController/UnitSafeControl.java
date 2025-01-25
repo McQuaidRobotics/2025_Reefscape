@@ -116,9 +116,7 @@ public class UnitSafeControl {
   public static class LinearPIDFeedback<O extends Unit> extends PIDFeedback<O, DistanceUnit> {
 
     public LinearPIDFeedback(
-        Per<O, DistanceUnit> kP,
-        Per<O, DistanceUnit> kI,
-        Per<O, LinearVelocityUnit> kD) {
+        Per<O, DistanceUnit> kP, Per<O, DistanceUnit> kI, Per<O, LinearVelocityUnit> kD) {
       super(
           kP,
           kI,
@@ -317,9 +315,7 @@ public class UnitSafeControl {
     final Per<O, LinearAccelerationUnit> kA;
 
     public ElevatorFeedforward(
-        Measure<O> kS,
-        Per<O, LinearVelocityUnit> kV,
-        Per<O, LinearAccelerationUnit> kA) {
+        Measure<O> kS, Per<O, LinearVelocityUnit> kV, Per<O, LinearAccelerationUnit> kA) {
       outputUnit = kS.unit();
       internalFeedforward =
           new edu.wpi.first.math.controller.ElevatorFeedforward(

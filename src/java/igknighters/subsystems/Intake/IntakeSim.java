@@ -2,7 +2,6 @@ package igknighters.subsystems.Intake;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.NewtonMeters;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Rectangle2d;
@@ -26,21 +25,21 @@ public class IntakeSim extends Intake {
   private final ShamIndexer indexer;
 
   public IntakeSim(SimCtx simCtx) {
-    shamMechanism = new ShamMechanism(
-      "IntakeMechanism",
-      new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1),
-      shamMCX,
-      KilogramSquareMeters.of(0.07),
-      GearRatio.reduction(2.0),
-      Friction.of(DCMotor.getKrakenX60Foc(1), Volts.of(0.5)),
-      MechanismDynamics.zero(),
-      HardLimits.unbounded(),
-      0.0,
-      simCtx.robot().timing()
-    );
+    shamMechanism =
+        new ShamMechanism(
+            "IntakeMechanism",
+            new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1),
+            shamMCX,
+            KilogramSquareMeters.of(0.07),
+            GearRatio.reduction(2.0),
+            Friction.of(DCMotor.getKrakenX60Foc(1), Volts.of(0.5)),
+            MechanismDynamics.zero(),
+            HardLimits.unbounded(),
+            0.0,
+            simCtx.robot().timing());
     simCtx.robot().addMechanism(shamMechanism);
-    shamIntake = simCtx.robot()
-      .createIntake(new Rectangle2d(new Translation2d(), new Translation2d()));
+    shamIntake =
+        simCtx.robot().createIntake(new Rectangle2d(new Translation2d(), new Translation2d()));
     indexer = simCtx.robot().getIndexer();
   }
 

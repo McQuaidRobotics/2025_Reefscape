@@ -15,10 +15,10 @@ public class ElevatorReal extends Elevator {
       new DynamicMotionMagicTorqueCurrentFOC(0.0, 0.0, 0.0, 0.0).withUpdateFreqHz(0.0);
 
   public ElevatorReal() {
-    elevatorLeader = new TalonFX(ElevatorConstants.Elevator_LEADER_ID);
+    elevatorLeader = new TalonFX(ElevatorConstants.LEADER_ID);
     elevatorFollower = new TalonFX(1);
     elevatorLeader.getConfigurator().apply(elevatorConfiguration());
-    elevatorFollower.setControl(new Follower(ElevatorConstants.Elevator_LEADER_ID, true));
+    elevatorFollower.setControl(new Follower(ElevatorConstants.LEADER_ID, true));
   }
 
   private TalonFXConfiguration elevatorConfiguration() {
@@ -26,7 +26,7 @@ public class ElevatorReal extends Elevator {
     var cfg = new TalonFXConfiguration();
 
     cfg.Slot0.kP = ElevatorConstants.KP;
-    cfg.Slot0.kG = ElevatorConstants.ELEVATOR_KG;
+    cfg.Slot0.kG = ElevatorConstants.KG;
     cfg.Slot0.kD = ElevatorConstants.KD;
     cfg.Slot0.kS = ElevatorConstants.KS;
     cfg.Slot0.kA = ElevatorConstants.KA;
@@ -35,18 +35,19 @@ public class ElevatorReal extends Elevator {
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        ElevatorConstants.ELEVATOR_MAX_HEIGHT + ElevatorConstants.Elevator_HEIGHT_ABOVE_GROUND;
+        ElevatorConstants.MAX_HEIGHT + ElevatorConstants.HEIGHT_ABOVE_GROUND;
 
     cfg.HardwareLimitSwitch.ReverseLimitEnable = true;
     cfg.HardwareLimitSwitch.ReverseLimitAutosetPositionValue =
-        ElevatorConstants.Elevator_HEIGHT_ABOVE_GROUND;
+        ElevatorConstants.HEIGHT_ABOVE_GROUND;
 
     return cfg;
   }
 
   @Override
   public void gotoPosition(double heightMeters) {
-    elevatorLeader.setControl(controlReq.withPosition(heightMeters));
+    elevatorLeader.setControl(
+        controlReq.withPosition(heightMeters * ElevatorConstants.WHEEL_RADIUS));
   }
 
   @Override

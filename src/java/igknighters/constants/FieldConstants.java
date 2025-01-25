@@ -168,7 +168,7 @@ public class FieldConstants {
       new AprilTagFieldLayout(
           List.of(AprilTags.TAGS), FieldConstants.FIELD_LENGTH, FieldConstants.FIELD_WIDTH);
 
-          public static final Translation2d TRANSLATION2D_CENTER =
-          new Translation2d(FieldConstants.FIELD_LENGTH / 2.0, FieldConstants.FIELD_WIDTH / 2.0);
-      public static final Pose2d POSE2D_CENTER = new Pose2d(TRANSLATION2D_CENTER, Rotation2d.kZero);
+  public static final Translation2d TRANSLATION2D_CENTER =
+      new Translation2d(FieldConstants.FIELD_LENGTH / 2.0, FieldConstants.FIELD_WIDTH / 2.0);
+  public static final Pose2d POSE2D_CENTER = new Pose2d(TRANSLATION2D_CENTER, Rotation2d.kZero);
 }
