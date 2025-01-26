@@ -2,7 +2,8 @@ package igknighters.subsystems.superStructure.Elevator;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
@@ -40,11 +41,9 @@ public class ElevatorSim extends Elevator {
             shamMCX,
             KilogramSquareMeters.of(.2),
             GearRatio.reduction(ElevatorConstants.GEAR_RATIO),
-            // Friction.of(DCMotor.getKrakenX60Foc(2), Volts.of(0.25)),
-            // MechanismDynamics.forElevator(Pounds.of(35.0),
-            // Meters.of(ElevatorConstants.WHEEL_RADIUS * 2.0)),
-            Friction.zero(),
-            MechanismDynamics.zero(),
+            Friction.of(DCMotor.getKrakenX60Foc(2), Volts.of(0.25)),
+            MechanismDynamics.forElevator(
+                Pounds.of(35.0), Meters.of(ElevatorConstants.WHEEL_RADIUS * 2.0)),
             HardLimits.of(
                 Rotations.of(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE),
                 Rotations.of(ElevatorConstants.MAX_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE)),
@@ -68,16 +67,21 @@ public class ElevatorSim extends Elevator {
 
   @Override
   public void gotoPosition(double heightMeters) {
-    shamMCX.controlCurrent(elevatorLoop, Radians.of(heightMeters / ElevatorConstants.WHEEL_RADIUS));
+    super.whereItsTryingToGetToInMeters = heightMeters;
+
+    shamMCX.controlCurrent(
+        elevatorLoop, Rotations.of(heightMeters / ElevatorConstants.WHEEL_CIRCUMFERENCE));
   }
 
   @Override
   public boolean isAtPosition(double heightMeters, double toleranceMeters) {
-    super.targetingMeters = heightMeters;
-    super.whereItThinksItIsInIsAt = shamMCX.position().in(Radians) * ElevatorConstants.WHEEL_RADIUS;
+    super.whatIsAtIsCheckingAgainst = heightMeters;
+    super.whereMotorThinksItIsInMeters =
+        shamMCX.position().in(Rotations) * ElevatorConstants.WHEEL_CIRCUMFERENCE;
+
     return MathUtil.isNear(
         heightMeters,
-        shamMCX.position().in(Radians) * ElevatorConstants.WHEEL_RADIUS,
+        shamMCX.position().in(Rotations) * ElevatorConstants.WHEEL_CIRCUMFERENCE,
         toleranceMeters);
   }
 
@@ -93,12 +97,12 @@ public class ElevatorSim extends Elevator {
 
   @Override
   public void periodic() {
-    super.meters = shamMCX.position().in(Radians) * ElevatorConstants.WHEEL_RADIUS;
+    super.meters = shamMCX.position().in(Rotations) * ElevatorConstants.WHEEL_CIRCUMFERENCE;
     super.amps = shamMCX.statorCurrent().in(Amps);
     super.volts = shamMCX.voltage().in(Volts);
     super.isHomed = true;
     super.isLimitTrip = MathUtil.isNear(0.0, super.meters, 0.01);
     super.metersPerSecond =
-        shamMCX.velocity().in(RadiansPerSecond) * ElevatorConstants.WHEEL_RADIUS;
+        shamMCX.velocity().in(RadiansPerSecond) * ElevatorConstants.WHEEL_CIRCUMFERENCE;
   }
 }
