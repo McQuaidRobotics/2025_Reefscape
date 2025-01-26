@@ -2,20 +2,24 @@ package igknighters.controllers;
 
 import edu.wpi.first.wpilibj2.command.Commands;
 import igknighters.Localizer;
+import igknighters.commands.superStructure.StateManager;
 import igknighters.commands.swerve.SwerveCommands;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.superStructure.SuperStructureState;
 
 public class DriverController extends ControllerBase {
 
   public DriverController(int port, Localizer localizer, Subsystems subsystems) {
     super(port, true);
 
+    StateManager stateManager = new StateManager();
+
     // disregard null safety for subsystems as it is checked on assignment
 
     /// FACE BUTTONS
-    this.A.onTrue(Commands.none());
+    this.A.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.IntakeHp));
 
-    this.B.onTrue(Commands.none());
+    this.B.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.Stow));
 
     this.X.onTrue(Commands.none());
 

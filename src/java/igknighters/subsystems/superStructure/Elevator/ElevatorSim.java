@@ -2,10 +2,10 @@ package igknighters.subsystems.superStructure.Elevator;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotation;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -36,17 +36,21 @@ public class ElevatorSim extends Elevator {
     shamMechanism =
         new ShamMechanism(
             "ElevatorMechanism",
-            new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1),
+            new DCMotorExt(DCMotor.getKrakenX60Foc(2), 2),
             shamMCX,
             KilogramSquareMeters.of(.2),
-            GearRatio.reduction(25),
-            Friction.of(DCMotor.getKrakenX60Foc(1), Volts.of(1)),
-            MechanismDynamics.forElevator(
-                Pounds.of(35.0),
-                Meters.of(ElevatorConstants.MAX_HEIGHT - ElevatorConstants.HEIGHT_ABOVE_GROUND)),
-            HardLimits.of(Radians.of(0.0), Radians.of(1.605)),
+            GearRatio.reduction(ElevatorConstants.GEAR_RATIO),
+            // Friction.of(DCMotor.getKrakenX60Foc(2), Volts.of(0.25)),
+            // MechanismDynamics.forElevator(Pounds.of(35.0),
+            // Meters.of(ElevatorConstants.WHEEL_RADIUS * 2.0)),
+            Friction.zero(),
+            MechanismDynamics.zero(),
+            HardLimits.of(
+                Rotations.of(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE),
+                Rotations.of(ElevatorConstants.MAX_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE)),
             0.0,
             simCtx.robot().timing());
+
     simCtx.robot().addMechanism(shamMechanism);
     elevatorLoop =
         ClosedLoop.forCurrentAngle(
@@ -73,7 +77,24 @@ public class ElevatorSim extends Elevator {
         toleranceMeters);
   }
 
-  public void setNuetralMode(boolean shouldBeCoast) {
+  @Override
+  public void setNeutralMode(boolean shouldBeCoast) {
     shamMCX.setBrakeMode(!shouldBeCoast);
+  }
+
+  @Override
+  public boolean home() {
+    return true;
+  }
+
+  @Override
+  public void periodic() {
+    super.meters = shamMCX.position().in(Radians) * ElevatorConstants.WHEEL_RADIUS;
+    super.amps = shamMCX.statorCurrent().in(Amps);
+    super.volts = shamMCX.voltage().in(Volts);
+    super.isHomed = true;
+    super.isLimitTrip = MathUtil.isNear(0.0, super.meters, 0.01);
+    super.metersPerSecond =
+        shamMCX.velocity().in(RadiansPerSecond) * ElevatorConstants.WHEEL_RADIUS;
   }
 }

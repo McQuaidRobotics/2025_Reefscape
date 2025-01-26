@@ -1,11 +1,16 @@
 package igknighters.subsystems.superStructure.Elevator;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DynamicMotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.ReverseLimitValue;
 import edu.wpi.first.math.MathUtil;
+import igknighters.util.can.CANSignalManager;
 
 public class ElevatorReal extends Elevator {
   private final TalonFX elevatorFollower;
@@ -13,12 +18,27 @@ public class ElevatorReal extends Elevator {
 
   private final DynamicMotionMagicTorqueCurrentFOC controlReq =
       new DynamicMotionMagicTorqueCurrentFOC(0.0, 0.0, 0.0, 0.0).withUpdateFreqHz(0.0);
+  private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
+
+  private final BaseStatusSignal position, velocity, voltage, current;
+  private final StatusSignal<ReverseLimitValue> reverseLimit;
 
   public ElevatorReal() {
-    elevatorLeader = new TalonFX(ElevatorConstants.LEADER_ID);
-    elevatorFollower = new TalonFX(1);
+    elevatorLeader = new TalonFX(ElevatorConstants.LEADER_ID, ElevatorConstants.CANBUS);
+    elevatorFollower = new TalonFX(ElevatorConstants.FOLLOWER_ID, ElevatorConstants.CANBUS);
     elevatorLeader.getConfigurator().apply(elevatorConfiguration());
     elevatorFollower.setControl(new Follower(ElevatorConstants.LEADER_ID, true));
+
+    position = elevatorLeader.getPosition();
+    velocity = elevatorLeader.getVelocity();
+    voltage = elevatorLeader.getMotorVoltage();
+    current = elevatorLeader.getTorqueCurrent();
+
+    reverseLimit = elevatorLeader.getReverseLimit();
+    reverseLimit.setUpdateFrequency(400);
+
+    CANSignalManager.registerSignals(
+        ElevatorConstants.CANBUS, position, velocity, voltage, current);
   }
 
   private TalonFXConfiguration elevatorConfiguration() {
@@ -34,12 +54,9 @@ public class ElevatorReal extends Elevator {
     cfg.Feedback.SensorToMechanismRatio = ElevatorConstants.GEAR_RATIO;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        ElevatorConstants.MAX_HEIGHT + ElevatorConstants.HEIGHT_ABOVE_GROUND;
+    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ElevatorConstants.MAX_HEIGHT;
 
     cfg.HardwareLimitSwitch.ReverseLimitEnable = true;
-    cfg.HardwareLimitSwitch.ReverseLimitAutosetPositionValue =
-        ElevatorConstants.HEIGHT_ABOVE_GROUND;
 
     return cfg;
   }
@@ -56,7 +73,8 @@ public class ElevatorReal extends Elevator {
         heightMeters, elevatorLeader.getPosition().getValueAsDouble(), toleranceMeters);
   }
 
-  public void setNuetralMode(boolean shouldBeCoast) {
+  @Override
+  public void setNeutralMode(boolean shouldBeCoast) {
     if (shouldBeCoast) {
       elevatorLeader.setNeutralMode(NeutralModeValue.Coast);
       elevatorFollower.setNeutralMode(NeutralModeValue.Coast);
@@ -64,5 +82,31 @@ public class ElevatorReal extends Elevator {
       elevatorLeader.setNeutralMode(NeutralModeValue.Brake);
       elevatorFollower.setNeutralMode(NeutralModeValue.Brake);
     }
+  }
+
+  @Override
+  public boolean home() {
+    if (!super.isHomed) {
+      elevatorLeader.setControl(voltageOut.withOutput(0.5));
+      if (super.isLimitTrip) {
+        elevatorLeader.setControl(voltageOut.withOutput(0.0));
+        elevatorFollower.setPosition(
+            ElevatorConstants.MIN_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE);
+        super.isHomed = true;
+      }
+      return super.isHomed;
+    } else {
+      elevatorLeader.setControl(voltageOut.withOutput(0.0));
+      return true;
+    }
+  }
+
+  @Override
+  public void periodic() {
+    super.meters = position.getValueAsDouble() * ElevatorConstants.WHEEL_CIRCUMFERENCE;
+    super.metersPerSecond = velocity.getValueAsDouble() * ElevatorConstants.WHEEL_CIRCUMFERENCE;
+    super.volts = voltage.getValueAsDouble();
+    super.amps = current.getValueAsDouble();
+    super.isLimitTrip = reverseLimit.getValue() == ReverseLimitValue.ClosedToGround;
   }
 }

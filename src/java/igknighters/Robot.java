@@ -21,13 +21,16 @@ import igknighters.constants.ConstValues;
 import igknighters.constants.FieldConstants;
 import igknighters.controllers.DriverController;
 import igknighters.controllers.OperatorController;
+import igknighters.subsystems.Intake.Intake;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.led.Led;
+import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
 import igknighters.util.UnitTestableRobot;
 import igknighters.util.can.CANSignalManager;
 import igknighters.util.logging.WatchdogSilencer;
+import java.io.File;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -38,7 +41,6 @@ import monologue.Logged;
 import monologue.Monologue;
 import monologue.Monologue.MonologueConfig;
 import wpilibExt.Tracer;
-import java.io.File;
 
 public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
@@ -66,15 +68,20 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
     if (isSimulation()) {
       Choreo.setChoreoDir(
-        new File(
-            Filesystem.getOperatingDirectory(),
-            "src" + File.separator + "deploy" + File.separator + "choreo"));
+          new File(
+              Filesystem.getOperatingDirectory(),
+              "src" + File.separator + "deploy" + File.separator + "choreo"));
     }
 
     setupLogging();
 
     subsystems =
-        new Subsystems(new Swerve(localizer, simCtx), new Vision(localizer, simCtx), new Led());
+        new Subsystems(
+            new Swerve(localizer, simCtx),
+            new Vision(localizer, simCtx),
+            new Led(),
+            new SuperStructure(simCtx),
+            new Intake(simCtx));
 
     localizer.reset(FieldConstants.POSE2D_CENTER);
 

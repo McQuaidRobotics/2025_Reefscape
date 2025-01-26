@@ -1,20 +1,25 @@
 package igknighters.commands.superStructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import igknighters.constants.FieldConstants.ReefHeight;
+import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
 import igknighters.subsystems.superStructure.SuperStructure;
+import igknighters.subsystems.superStructure.Wrist.WristConstants;
 
 public class SuperStructureCommands {
-  private final SuperStructure superStructure;
 
-  public SuperStructureCommands(SuperStructure superstructure) {
-    this.superStructure = superstructure;
-  }
-
-  public Command superStructureGoTo(ReefHeight reefHeight) {
+  public static Command moveTo(
+      SuperStructure superStructure,
+      double elevatorMeters,
+      double wristRads,
+      double toleranceScalar) {
     return superStructure
-        .run(() -> superStructure.gotoPosition(reefHeight.height, reefHeight.pitch))
+        .run(() -> superStructure.goTo(elevatorMeters, wristRads))
         .until(
-            () -> superStructure.superStructureIsAt(reefHeight.height, reefHeight.pitch, 0.1, 0.1));
+            () ->
+                superStructure.isAt(
+                    elevatorMeters,
+                    wristRads,
+                    ElevatorConstants.TOLERANCE * toleranceScalar,
+                    WristConstants.TOLERANCE * toleranceScalar));
   }
 }

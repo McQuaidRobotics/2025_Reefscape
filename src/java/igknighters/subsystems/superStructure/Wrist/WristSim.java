@@ -17,7 +17,7 @@ import sham.shamController.ShamMCX;
 import sham.utils.GearRatio;
 import wpilibExt.DCMotorExt;
 
-public class WristSim {
+public class WristSim extends Wrist {
   private final ShamMCX shamMCX = new ShamMCX("WristMotor");
   private final ShamMechanism WristMechanism;
 
@@ -39,18 +39,16 @@ public class WristSim {
     simCtx.robot().addMechanism(WristMechanism);
   }
 
-  public void setPower(double power) {
-    // TODO Auto-generated method stub
+  @Override
+  public void goToPosition(double angleDegrees) {}
 
+  @Override
+  public double positionRadians() {
+    return shamMCX.position().in(Radian);
   }
 
+  @Override
   public void setNeutralMode(boolean shouldBeCoast) {
-    // TODO Auto-generated method stub
-
-  }
-
-  public double positionDegrees() {
-    // TODO Auto-generated method stub
-    return 0;
+    shamMCX.setBrakeMode(!shouldBeCoast);
   }
 }

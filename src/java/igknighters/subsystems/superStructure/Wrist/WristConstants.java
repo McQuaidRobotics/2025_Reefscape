@@ -14,4 +14,5 @@ public class WristConstants {
   public static final double GEAR_RATIO = 40.0;
   public static final int CANCODER_ID = 42;
   public static final double ANGLE_OFFSET = 0.0;
+  public static final double TOLERANCE = 1.0 * Conv.DEGREES_TO_RADIANS;
 }

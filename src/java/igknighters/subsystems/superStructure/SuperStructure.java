@@ -1,35 +1,43 @@
 package igknighters.subsystems.superStructure;
 
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import igknighters.Robot;
+import igknighters.SimCtx;
+import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.superStructure.Elevator.Elevator;
 import igknighters.subsystems.superStructure.Elevator.ElevatorReal;
+import igknighters.subsystems.superStructure.Elevator.ElevatorSim;
 import igknighters.subsystems.superStructure.Wrist.Wrist;
 import igknighters.subsystems.superStructure.Wrist.WristReal;
+import igknighters.subsystems.superStructure.Wrist.WristSim;
 
-public class SuperStructure implements Subsystem {
+public class SuperStructure implements ExclusiveSubsystem {
   private final Wrist wrist;
   private final Elevator elevator;
 
-  public SuperStructure() {
+  public SuperStructure(SimCtx simCtx) {
     if (Robot.isReal()) {
       wrist = new WristReal();
       elevator = new ElevatorReal();
     } else {
-      wrist = null;
-      elevator = null;
-      throw new RuntimeException("Sim not supported yet");
+      wrist = new WristSim(simCtx);
+      elevator = new ElevatorSim(simCtx);
     }
   }
 
-  public void gotoPosition(double elevatorHeight, double wristAngle) {
-    elevator.gotoPosition(elevatorHeight);
-    wrist.goToPosition(wristAngle);
+  public void goTo(double elevatorMeters, double wristRads) {
+    elevator.gotoPosition(elevatorMeters);
+    wrist.goToPosition(wristRads);
   }
 
-  public boolean superStructureIsAt(
+  public boolean isAt(
       double height, double wristAngle, double elevatorTolerance, double wristTolerance) {
     return elevator.isAtPosition(height, elevatorTolerance)
         && wrist.isAtPosition(wristAngle, wristTolerance);
+  }
+
+  @Override
+  public void periodic() {
+    elevator.periodic();
+    wrist.periodic();
   }
 }

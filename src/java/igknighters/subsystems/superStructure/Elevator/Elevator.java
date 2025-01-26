@@ -15,5 +15,7 @@ public abstract class Elevator extends Component {
 
   public abstract boolean isAtPosition(double position, double tolerance);
 
-  public abstract void setNuetralMode(boolean shoodBeCoast);
+  public abstract void setNeutralMode(boolean shoodBeCoast);
+
+  public abstract boolean home();
 }
