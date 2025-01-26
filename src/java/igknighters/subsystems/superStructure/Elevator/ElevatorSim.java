@@ -68,14 +68,16 @@ public class ElevatorSim extends Elevator {
 
   @Override
   public void gotoPosition(double heightMeters) {
-    shamMCX.controlCurrent(elevatorLoop, Radians.of(heightMeters));
+    shamMCX.controlCurrent(elevatorLoop, Radians.of(heightMeters / ElevatorConstants.WHEEL_RADIUS));
   }
 
   @Override
   public boolean isAtPosition(double heightMeters, double toleranceMeters) {
+    super.targetingMeters = heightMeters;
+    super.whereItThinksItIsInIsAt = shamMCX.position().in(Radians) * ElevatorConstants.WHEEL_RADIUS;
     return MathUtil.isNear(
-        heightMeters / ElevatorConstants.WHEEL_RADIUS,
-        shamMCX.position().in(Radians),
+        heightMeters,
+        shamMCX.position().in(Radians) * ElevatorConstants.WHEEL_RADIUS,
         toleranceMeters);
   }
 

@@ -11,6 +11,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import edu.wpi.first.math.MathUtil;
 import igknighters.util.can.CANSignalManager;
+import monologue.Monologue;
 
 public class ElevatorReal extends Elevator {
   private final TalonFX elevatorFollower;
@@ -68,8 +69,9 @@ public class ElevatorReal extends Elevator {
 
   @Override
   public void gotoPosition(double heightMeters) {
+    Monologue.log("elevatorTargeting", heightMeters / ElevatorConstants.WHEEL_RADIUS);
     elevatorLeader.setControl(
-        controlReq.withPosition(heightMeters * ElevatorConstants.WHEEL_RADIUS));
+        controlReq.withPosition(heightMeters / ElevatorConstants.WHEEL_RADIUS));
   }
 
   @Override

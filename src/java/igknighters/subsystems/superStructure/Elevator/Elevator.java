@@ -10,6 +10,8 @@ public abstract class Elevator extends Component {
   @Log protected boolean isHomed;
   @Log protected boolean isLimitTrip;
   @Log protected double metersPerSecond;
+  @Log protected double targetingMeters;
+  @Log protected double whereItThinksItIsInIsAt;
 
   public abstract void gotoPosition(double height);
 

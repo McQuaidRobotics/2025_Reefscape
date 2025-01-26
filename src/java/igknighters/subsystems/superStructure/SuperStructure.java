@@ -31,8 +31,8 @@ public class SuperStructure implements ExclusiveSubsystem {
 
   public boolean isAt(
       double height, double wristAngle, double elevatorTolerance, double wristTolerance) {
-    return elevator.isAtPosition(height, elevatorTolerance)
-        && wrist.isAtPosition(wristAngle, wristTolerance);
+    return (elevator.isAtPosition(height, elevatorTolerance)
+        && wrist.isAtPosition(wristAngle, wristTolerance));
   }
 
   @Override
