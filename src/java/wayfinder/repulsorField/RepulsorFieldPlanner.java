@@ -6,12 +6,15 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.ArrayList;
 import java.util.List;
+import wayfinder.controllers.CircularSlewRateLimiter;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wpilibExt.Speeds.FieldSpeeds;
 
 public class RepulsorFieldPlanner {
   private final PositionalController controller;
+  private final CircularSlewRateLimiter angluarRateLimit =
+      new CircularSlewRateLimiter(Math.PI * 15.0);
   private final List<Obstacle> fixedObstacles = new ArrayList<>();
 
   public RepulsorFieldPlanner(PositionalController controller, Obstacle... obstacles) {
@@ -41,6 +44,10 @@ public class RepulsorFieldPlanner {
       Translation2d force = obs.getForceAtPosition(curLocation, goal);
       xForceObs += force.getX();
       yForceObs += force.getY();
+
+      if (!Double.isFinite(xForceObs) || !Double.isFinite(yForceObs)) {
+        System.out.println("nan force");
+      }
     }
 
     return new Translation2d(xForceGoal + xForceObs, yForceGoal + yForceObs);
@@ -54,6 +61,9 @@ public class RepulsorFieldPlanner {
     } else {
       Translation2d netForce = getForce(measurement.getTranslation(), target.getTranslation());
       netForce = netForce.times(straightDist / netForce.getNorm());
+      Rotation2d targetDirection = netForce.getAngle();
+      Rotation2d limited = new Rotation2d(angluarRateLimit.calculate(targetDirection.getRadians()));
+      netForce = netForce.rotateBy(limited.minus(targetDirection));
       return controller.calculate(
           period,
           measurement,
@@ -68,13 +78,13 @@ public class RepulsorFieldPlanner {
   }
 
   public Pose2d[] getArrows(Translation2d goal, double xCount, double yCount) {
+    final double FIELD_WIDTH = 8.0518;
+    final double FIELD_LENGTH = 17.54825;
     Pose2d[] arrows = new Pose2d[(int) (xCount * yCount + yCount + 1)];
     for (int x = 0; x <= xCount; x++) {
       for (int y = 0; y <= yCount; y++) {
         Translation2d translation =
-            new Translation2d(
-                x * (FieldObstacles.FIELD_LENGTH / 2.0) / xCount,
-                y * FieldObstacles.FIELD_WIDTH / yCount);
+            new Translation2d(x * (FIELD_LENGTH / 2.0) / xCount, y * FIELD_WIDTH / yCount);
         Translation2d force = getForce(translation, goal);
         Rotation2d rotation;
         if (force.getNorm() > 1e-6) {
@@ -89,26 +99,26 @@ public class RepulsorFieldPlanner {
     return arrows;
   }
 
-  public ArrayList<Translation2d> getTrajectory(
-      Translation2d goal, Translation2d loc, double stepSize_m) {
-    ArrayList<Translation2d> trajectory = new ArrayList<>();
-    Translation2d robot = loc;
-    for (int i = 0; i < 400; i++) {
-      var err = robot.minus(goal);
-      if (err.getNorm() < stepSize_m * 1.5) {
-        trajectory.add(goal);
-        break;
-      } else {
-        var netForce = getForce(robot, goal);
-        if (netForce.getNorm() == 0) {
-          break;
-        }
-        var step = new Translation2d(stepSize_m, netForce.getAngle());
-        var intermediateGoal = robot.plus(step);
-        trajectory.add(intermediateGoal);
-        robot = intermediateGoal;
-      }
-    }
-    return trajectory;
-  }
+  // public ArrayList<Translation2d> getTrajectory(
+  //     Translation2d goal, Translation2d loc, double stepSize_m) {
+  //   ArrayList<Translation2d> trajectory = new ArrayList<>();
+  //   Translation2d robot = loc;
+  //   for (int i = 0; i < 400; i++) {
+  //     var err = robot.minus(goal);
+  //     if (err.getNorm() < stepSize_m * 1.5) {
+  //       trajectory.add(goal);
+  //       break;
+  //     } else {
+  //       var netForce = getForce(robot, goal);
+  //       if (netForce.getNorm() == 0) {
+  //         break;
+  //       }
+  //       var step = new Translation2d(stepSize_m, netForce.getAngle());
+  //       var intermediateGoal = robot.plus(step);
+  //       trajectory.add(intermediateGoal);
+  //       robot = intermediateGoal;
+  //     }
+  //   }
+  //   return trajectory;
+  // }
 }

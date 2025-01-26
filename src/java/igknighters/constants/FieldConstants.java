@@ -3,6 +3,7 @@ package igknighters.constants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import igknighters.constants.ConstValues.Conv;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,8 +14,8 @@ import java.util.Map;
  * have a blue alliance origin.
  */
 public class FieldConstants {
-  public static final double FIELD_LENGTH = Units.inchesToMeters(690.876);
-  public static final double FIELD_WIDTH = Units.inchesToMeters(317);
+  public static final double FIELD_LENGTH = 690.876 * Conv.INCHES_TO_METERS;
+  public static final double FIELD_WIDTH = 317 * Conv.INCHES_TO_METERS;
   public static final double STARTING_LINE_X =
       Units.inchesToMeters(299.438); // Measured from the inside of starting line
 

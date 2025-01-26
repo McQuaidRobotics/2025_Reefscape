@@ -11,6 +11,7 @@ import igknighters.constants.ConstValues.kSwerve;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.swerve.Swerve;
 import java.util.function.Supplier;
+import monologue.GlobalField;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.TranslationController;
@@ -120,6 +121,7 @@ public class SwerveCommands {
       Supplier<ChassisConstraints> constraints) {
     return swerve.run(
         () -> {
+          GlobalField.setObject("arrows", planner.getArrows(target.getTranslation(), 20, 10));
           swerve.drive(
               planner.calculate(
                   ConstValues.PERIODIC_TIME, localizer.pose(), target, constraints.get()));

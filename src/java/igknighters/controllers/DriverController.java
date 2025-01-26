@@ -17,7 +17,8 @@ public class DriverController extends ControllerBase {
 
     // disregard null safety for subsystems as it is checked on assignment
 
-    Pose2d face2 = FieldConstants.Reef.CENTER_FACES[4];
+    Pose2d face2 = FieldConstants.Reef.FAR_RIGHT_FACE;
+    Pose2d face3 = FieldConstants.Reef.CLOSE_LEFT_FACE;
 
     /// FACE BUTTONS
     this.A.onTrue(
@@ -31,7 +32,13 @@ public class DriverController extends ControllerBase {
 
     this.B.onTrue(subsystems.swerve.runOnce(() -> {}));
 
-    this.X.onTrue(Commands.none());
+    this.X.onTrue(
+        SwerveCommands.moveTo(
+            subsystems.swerve,
+            localizer,
+            new Pose2d(
+                face3.getTranslation().plus(new Translation2d(-0.33, 0.33)), face3.getRotation()),
+            PathObstacles.CLOSE_LEFT_REEF));
 
     this.Y.onTrue(
         SwerveCommands.moveTo(
