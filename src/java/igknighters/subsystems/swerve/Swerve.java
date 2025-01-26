@@ -17,11 +17,9 @@ import igknighters.subsystems.swerve.control.SwerveSetpoint;
 import igknighters.subsystems.swerve.control.SwerveSetpointGenerator;
 import igknighters.subsystems.swerve.gyro.Gyro;
 import igknighters.subsystems.swerve.gyro.GyroReal;
-import igknighters.subsystems.swerve.gyro.GyroSimSham;
 import igknighters.subsystems.swerve.module.SwerveModule;
 import igknighters.subsystems.swerve.module.SwerveModule.AdvancedSwerveModuleState;
 import igknighters.subsystems.swerve.module.SwerveModuleReal;
-import igknighters.subsystems.swerve.module.SwerveModuleSimSham;
 import igknighters.subsystems.swerve.odometryThread.RealSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SwerveOdometryThread;
@@ -74,22 +72,22 @@ public class Swerve implements ExclusiveSubsystem {
       sim = Optional.of((ShamSwerve) simCtx.robot().getDriveTrain());
       final SimSwerveOdometryThread ot =
           new SimSwerveOdometryThread(250, localizer.swerveDataSender());
-      swerveMods =
-          new SwerveModule[] {
-            new SwerveModuleSimSham(0, ot, sim.get()),
-            new SwerveModuleSimSham(1, ot, sim.get()),
-            new SwerveModuleSimSham(2, ot, sim.get()),
-            new SwerveModuleSimSham(3, ot, sim.get()),
-          };
-      gyro = new GyroSimSham(sim.get().getGyro(), ot);
       // swerveMods =
       //     new SwerveModule[] {
-      //       new SwerveModuleSim(0, ot),
-      //       new SwerveModuleSim(1, ot),
-      //       new SwerveModuleSim(2, ot),
-      //       new SwerveModuleSim(3, ot),
+      //       new SwerveModuleSimSham(0, ot, sim.get()),
+      //       new SwerveModuleSimSham(1, ot, sim.get()),
+      //       new SwerveModuleSimSham(2, ot, sim.get()),
+      //       new SwerveModuleSimSham(3, ot, sim.get()),
       //     };
-      // gyro = new GyroSim(this::getRobotSpeeds, ot);
+      // gyro = new GyroSimSham(sim.get().getGyro(), ot);
+      swerveMods =
+          new SwerveModule[] {
+            new igknighters.subsystems.swerve.module.SwerveModuleSim(0, ot),
+            new igknighters.subsystems.swerve.module.SwerveModuleSim(1, ot),
+            new igknighters.subsystems.swerve.module.SwerveModuleSim(2, ot),
+            new igknighters.subsystems.swerve.module.SwerveModuleSim(3, ot),
+          };
+      gyro = new igknighters.subsystems.swerve.gyro.GyroSim(this::getRobotSpeeds, ot);
       odometryThread = ot;
     } else {
       sim = Optional.empty();
