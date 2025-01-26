@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.wpilibj.Timer;
 import igknighters.constants.ConstValues.kSwerve;
 import igknighters.constants.FieldConstants;
@@ -48,6 +49,8 @@ public class Localizer implements Logged {
   private final Channel<Pose2d> poseResetsChannel = new Channel<>(new Pose2d[0]);
   private final Sender<Pose2d> poseResetsSender = poseResetsChannel.sender();
 
+  private final SwerveDriveKinematics kinematics =  new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_OFFSETS);
+
   public Localizer() {
     poseEstimator = new TwistyPoseEst();
 
@@ -80,7 +83,7 @@ public class Localizer implements Logged {
     final SwerveDriveSample[] swerveSamples = log("swerveSamples", swerveDataReceiver.recvAll());
     for (final SwerveDriveSample sample : swerveSamples) {
       poseEstimator.addDriveSample(
-          kSwerve.KINEMATICS, sample.modulePositions(), sample.gyroYaw(), sample.timestamp(), 1.0);
+          kinematics, sample.modulePositions(), sample.gyroYaw(), sample.timestamp(), 1.0);
     }
     Tracer.endTrace();
     Tracer.startTrace("VisionSamples");

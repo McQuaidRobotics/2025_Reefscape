@@ -1,6 +1,7 @@
 package igknighters.subsystems.swerve;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -63,6 +64,8 @@ public class Swerve implements ExclusiveSubsystem {
           kSwerve.WHEEL_DIAMETER,
           1.5,
           0.0);
+  private final SwerveDriveKinematics kinematics =
+      new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_OFFSETS);
 
   private final Optional<ShamSwerve> sim;
 
@@ -162,7 +165,7 @@ public class Swerve implements ExclusiveSubsystem {
   public void setModuleStates(AdvancedSwerveModuleState[] desiredStates) {
     log(
         "regurgitatedSpeed",
-        Speeds.fromRobotRelative(kSwerve.KINEMATICS.toChassisSpeeds(desiredStates)));
+        Speeds.fromRobotRelative(kinematics.toChassisSpeeds(desiredStates)));
 
     for (SwerveModule module : swerveMods) {
       module.setDesiredState(desiredStates[module.getModuleId()]);
@@ -178,7 +181,7 @@ public class Swerve implements ExclusiveSubsystem {
   }
 
   public RobotSpeeds getRobotSpeeds() {
-    return Speeds.fromRobotRelative(kSwerve.KINEMATICS.toChassisSpeeds(getModuleStates()));
+    return Speeds.fromRobotRelative(kinematics.toChassisSpeeds(getModuleStates()));
   }
 
   public FieldSpeeds getFieldSpeeds() {

@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import igknighters.constants.RobotConfig.RobotID;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.util.LerpTable;
@@ -264,9 +263,6 @@ public final class ConstValues {
           new Translation2d(-TRACK_WIDTH / 2.0, TRACK_WIDTH / 2.0),
           new Translation2d(TRACK_WIDTH / 2.0, TRACK_WIDTH / 2.0)
         };
-
-    public static final SwerveDriveKinematics KINEMATICS =
-        new SwerveDriveKinematics(MODULE_CHASSIS_OFFSETS);
   }
 
   public static final class kAuto {
