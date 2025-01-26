@@ -59,8 +59,10 @@ public class ElevatorSim extends Elevator {
                 Amps.per(RotationsPerSecond).ofNative(ElevatorConstants.KD)),
             new FlywheelFeedforward<CurrentUnit>(Amps.of(ElevatorConstants.KS)),
             TrapezoidProfile.forAngle(
-                RotationsPerSecond.of(ElevatorConstants.MAX_VELOCITY),
-                RotationsPerSecondPerSecond.of(ElevatorConstants.MAX_ACCELERATION)));
+                RotationsPerSecond.of(
+                    ElevatorConstants.MAX_VELOCITY / ElevatorConstants.WHEEL_CIRCUMFERENCE),
+                RotationsPerSecondPerSecond.of(
+                    ElevatorConstants.MAX_ACCELERATION / ElevatorConstants.WHEEL_CIRCUMFERENCE)));
     shamMCX.configSensorToMechanismRatio(ElevatorConstants.GEAR_RATIO);
   }
 

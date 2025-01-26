@@ -3,8 +3,8 @@ package igknighters.subsystems.superStructure.Elevator;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DynamicMotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -16,8 +16,8 @@ public class ElevatorReal extends Elevator {
   private final TalonFX elevatorFollower;
   private final TalonFX elevatorLeader;
 
-  private final DynamicMotionMagicTorqueCurrentFOC controlReq =
-      new DynamicMotionMagicTorqueCurrentFOC(0.0, 0.0, 0.0, 0.0).withUpdateFreqHz(0.0);
+  private final MotionMagicTorqueCurrentFOC controlReq =
+      new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
 
   private final BaseStatusSignal position, velocity, voltage, current;
@@ -57,6 +57,11 @@ public class ElevatorReal extends Elevator {
     cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ElevatorConstants.MAX_HEIGHT;
 
     cfg.HardwareLimitSwitch.ReverseLimitEnable = true;
+
+    cfg.MotionMagic.MotionMagicCruiseVelocity =
+        ElevatorConstants.MAX_VELOCITY / ElevatorConstants.WHEEL_CIRCUMFERENCE;
+    cfg.MotionMagic.MotionMagicAcceleration =
+        ElevatorConstants.MAX_ACCELERATION / ElevatorConstants.WHEEL_CIRCUMFERENCE;
 
     return cfg;
   }
