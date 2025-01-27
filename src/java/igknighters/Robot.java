@@ -28,6 +28,7 @@ import igknighters.subsystems.vision.Vision;
 import igknighters.util.UnitTestableRobot;
 import igknighters.util.can.CANSignalManager;
 import igknighters.util.logging.WatchdogSilencer;
+import java.io.File;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -38,7 +39,6 @@ import monologue.Logged;
 import monologue.Monologue;
 import monologue.Monologue.MonologueConfig;
 import wpilibExt.Tracer;
-import java.io.File;
 
 public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
@@ -66,9 +66,9 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
     if (isSimulation()) {
       Choreo.setChoreoDir(
-        new File(
-            Filesystem.getOperatingDirectory(),
-            "src" + File.separator + "deploy" + File.separator + "choreo"));
+          new File(
+              Filesystem.getOperatingDirectory(),
+              "src" + File.separator + "deploy" + File.separator + "choreo"));
     }
 
     setupLogging();
