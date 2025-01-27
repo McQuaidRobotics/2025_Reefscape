@@ -32,7 +32,6 @@ import monologue.ProceduralStructGenerator;
 import wpilibExt.MeasureMath;
 
 public class UnitTrapezoidProfile<DIM extends Unit> {
-  private final edu.wpi.first.math.trajectory.TrapezoidProfile internalProfile;
   private final Measure<DIM> maxValue;
   private final Velocity<DIM> maxSlew;
   private final Acceleration<DIM> maxSlewSlew;
@@ -74,10 +73,6 @@ public class UnitTrapezoidProfile<DIM extends Unit> {
     this.maxValue = maxValue;
     this.maxSlew = maxSlew;
     this.maxSlewSlew = maxSlewSlew;
-    internalProfile =
-        new edu.wpi.first.math.trajectory.TrapezoidProfile(
-            new edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints(
-                maxSlew.baseUnitMagnitude(), maxSlewSlew.baseUnitMagnitude()));
   }
 
   public static UnitTrapezoidProfile<AngleUnit> forAngle(
@@ -125,6 +120,10 @@ public class UnitTrapezoidProfile<DIM extends Unit> {
 
   @SuppressWarnings("unchecked")
   public State<DIM> calculate(State<DIM> current, State<DIM> goal, Time deltaTime) {
+    final edu.wpi.first.math.trajectory.TrapezoidProfile internalProfile =
+        new edu.wpi.first.math.trajectory.TrapezoidProfile(
+            new edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints(
+                maxSlew.baseUnitMagnitude(), maxSlewSlew.baseUnitMagnitude()));
     var internalState =
         internalProfile.calculate(
             deltaTime.baseUnitMagnitude(),
@@ -133,8 +132,14 @@ public class UnitTrapezoidProfile<DIM extends Unit> {
             new edu.wpi.first.math.trajectory.TrapezoidProfile.State(
                 goal.value.baseUnitMagnitude(), goal.slew.baseUnitMagnitude()));
 
-    Measure<DIM> value = (Measure<DIM>) current.value.unit().of(internalState.position);
-    Velocity<DIM> slew = VelocityUnit.combine(value.unit(), Second).of(internalState.velocity);
+    Measure<DIM> value = (Measure<DIM>) current.value.baseUnit().of(internalState.position);
+    Velocity<DIM> slew = VelocityUnit.combine(value.baseUnit(), Second).of(internalState.velocity);
+
+    // if (Math.abs(current.value().baseUnitMagnitude()) > 10000.0
+    //     || Math.abs(goal.value().baseUnitMagnitude()) > 10000.0
+    //     || Math.abs(value.baseUnitMagnitude()) > 10000.0) {
+    //   System.out.println("yuh");
+    // }
     if (MeasureMath.abs(value).gt(maxValue)) {
       value = MeasureMath.clamp(value, maxValue);
       return new State<>(value, (Velocity<DIM>) slew.unit().zero());

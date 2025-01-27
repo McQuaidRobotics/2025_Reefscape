@@ -39,6 +39,8 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
   private final boolean useFeedbackSign;
   private final Function<Measure<AngleUnit>, Measure<DistanceUnit>> angleToDistance;
 
+  private State<INPUT> lastStep = null;
+
   private ClosedLoop(
       PIDFeedback<OUTPUT, INPUT> feedback,
       UnitFeedforward<OUTPUT, INPUT_DIMENSION> feedforward,
@@ -251,7 +253,12 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
     if (optTrapezoidProfile.isPresent()) {
       logger.log("profilePresent", true);
       var trapezoidProfile = optTrapezoidProfile.get();
-      State<INPUT> step = trapezoidProfile.calculate(state, goal, dt);
+      if (lastStep == null) {
+        lastStep = state;
+      }
+      State<INPUT> step = trapezoidProfile.calculate(lastStep, goal, dt);
+      State<INPUT> capturedLastStep = lastStep;
+      lastStep = step;
       logger.log("step", step, State.struct);
       Measure<OUTPUT> feedforwardOutput = (Measure<OUTPUT>) feedback.getOutputUnit().zero();
       if (feedforward.getClass().equals(SimpleFeedforward.class)) {
@@ -261,7 +268,9 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
                 ? flywheelFF.calculate(
                     RadiansPerSecond.of(step.value().baseUnitMagnitude()),
                     RadiansPerSecondPerSecond.of(step.slew().baseUnitMagnitude()))
-                : flywheelFF.calculate(RadiansPerSecond.of(step.slew().baseUnitMagnitude()));
+                : flywheelFF.calculate(
+                  RadiansPerSecond.of(capturedLastStep.slew().baseUnitMagnitude()),
+                  RadiansPerSecond.of(step.slew().baseUnitMagnitude()));
       } else if (feedforward.getClass().equals(ElevatorFeedforward.class)) {
         var elevatorFF = (ElevatorFeedforward<OUTPUT>) feedforward;
         feedforwardOutput =
@@ -269,7 +278,9 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
                 ? elevatorFF.calculate(
                     MetersPerSecond.of(step.value().baseUnitMagnitude()),
                     MetersPerSecondPerSecond.of(step.slew().baseUnitMagnitude()))
-                : elevatorFF.calculate(MetersPerSecond.of(step.slew().baseUnitMagnitude()));
+                : elevatorFF.calculate(
+                  MetersPerSecond.of(capturedLastStep.slew().baseUnitMagnitude()),
+                  MetersPerSecond.of(step.slew().baseUnitMagnitude()));
       } else if (feedforward.getClass().equals(ElevatorFeedforwardAngularAdapter.class)) {
         var elevatorFF = (ElevatorFeedforwardAngularAdapter<OUTPUT>) feedforward;
         feedforwardOutput =
@@ -277,7 +288,9 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
                 ? elevatorFF.calculate(
                     RadiansPerSecond.of(step.value().baseUnitMagnitude()),
                     RadiansPerSecondPerSecond.of(step.slew().baseUnitMagnitude()))
-                : elevatorFF.calculate(RadiansPerSecond.of(step.slew().baseUnitMagnitude()));
+                : elevatorFF.calculate(
+                    RadiansPerSecond.of(capturedLastStep.slew().baseUnitMagnitude()),
+                    RadiansPerSecond.of(step.slew().baseUnitMagnitude()));
       } else if (feedforward.getClass().equals(ArmFeedforward.class)) {
         var armFF = (ArmFeedforward<OUTPUT>) feedforward;
         feedforwardOutput =
@@ -288,6 +301,7 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
                     RadiansPerSecondPerSecond.of(step.slew().baseUnitMagnitude()))
                 : armFF.calculate(
                     Radians.of(step.value().baseUnitMagnitude()),
+                    RadiansPerSecond.of(capturedLastStep.slew().baseUnitMagnitude()),
                     RadiansPerSecond.of(step.slew().baseUnitMagnitude()));
       } else {
         throw new UnsupportedOperationException("Feedforward type not supported");
@@ -420,5 +434,9 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
       logger.log("feedbackOutput", feedbackOutput);
       return feedbackOutput.plus(feedforwardOutput);
     }
+  }
+
+  public void reset() {
+    lastStep = null;
   }
 }
