@@ -360,6 +360,31 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
                     MetersPerSecond.of(goal.slew().baseUnitMagnitude()));
           }
         }
+      } else if (feedforward.getClass().equals(ElevatorFeedforwardAngularAdapter.class)) {
+        var elevatorFF = (ElevatorFeedforwardAngularAdapter<OUTPUT>) feedforward;
+        if (isVelocity) {
+          if (goal.slew() == null) {
+            feedforwardOutput =
+                elevatorFF.calculate(RadiansPerSecond.of(goal.value().baseUnitMagnitude()));
+          } else {
+            feedforwardOutput =
+                elevatorFF.calculate(
+                    RadiansPerSecond.of(goal.value().baseUnitMagnitude()),
+                    RadiansPerSecondPerSecond.of(goal.slew().baseUnitMagnitude()));
+          }
+        } else {
+          if (goal.slew() == null) {
+            feedforwardOutput =
+                elevatorFF.calculate(
+                    RadiansPerSecond.of(goal.value().baseUnitMagnitude()),
+                    RadiansPerSecond.of(velocitySign));
+          } else {
+            feedforwardOutput =
+                elevatorFF.calculate(
+                    RadiansPerSecond.of(goal.value().baseUnitMagnitude()),
+                    RadiansPerSecond.of(goal.slew().baseUnitMagnitude()));
+          }
+        }
       } else if (feedforward.getClass().equals(ArmFeedforward.class)) {
         var armFF = (ArmFeedforward<OUTPUT>) feedforward;
         if (isVelocity) {
