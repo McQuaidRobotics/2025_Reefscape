@@ -30,7 +30,7 @@ import sham.ShamMechanism.MechanismState;
 import sham.ShamMotorController;
 import sham.ShamMotorController.ControllerOutput.CurrentOutput;
 import sham.ShamMotorController.ControllerOutput.VoltageOutput;
-import sham.shamController.UnitSafeControl.TrapezoidProfile.State;
+import sham.shamController.unitSafeControl.UnitTrapezoidProfile.State;
 import sham.utils.RuntimeLog;
 import wpilibExt.DCMotorExt;
 import wpilibExt.MeasureMath;

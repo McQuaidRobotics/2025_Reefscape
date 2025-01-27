@@ -23,25 +23,26 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
 import java.util.Optional;
 import java.util.function.Function;
-import sham.shamController.UnitSafeControl.ArmFeedforward;
-import sham.shamController.UnitSafeControl.ElevatorFeedforward;
-import sham.shamController.UnitSafeControl.Feedforward;
-import sham.shamController.UnitSafeControl.FlywheelFeedforward;
-import sham.shamController.UnitSafeControl.PIDFeedback;
-import sham.shamController.UnitSafeControl.TrapezoidProfile;
-import sham.shamController.UnitSafeControl.TrapezoidProfile.State;
+import sham.shamController.unitSafeControl.UnitFeedback.PIDFeedback;
+import sham.shamController.unitSafeControl.UnitFeedforward;
+import sham.shamController.unitSafeControl.UnitFeedforward.ArmFeedforward;
+import sham.shamController.unitSafeControl.UnitFeedforward.ElevatorFeedforward;
+import sham.shamController.unitSafeControl.UnitFeedforward.ElevatorFeedforwardAngularAdapter;
+import sham.shamController.unitSafeControl.UnitFeedforward.SimpleFeedforward;
+import sham.shamController.unitSafeControl.UnitTrapezoidProfile;
+import sham.shamController.unitSafeControl.UnitTrapezoidProfile.State;
 
 public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION extends Unit> {
   private final PIDFeedback<OUTPUT, INPUT> feedback;
-  private final Feedforward<OUTPUT, INPUT_DIMENSION> feedforward;
-  private final Optional<TrapezoidProfile<INPUT>> optTrapezoidProfile;
+  private final UnitFeedforward<OUTPUT, INPUT_DIMENSION> feedforward;
+  private final Optional<UnitTrapezoidProfile<INPUT>> optTrapezoidProfile;
   private final boolean useFeedbackSign;
   private final Function<Measure<AngleUnit>, Measure<DistanceUnit>> angleToDistance;
 
   private ClosedLoop(
       PIDFeedback<OUTPUT, INPUT> feedback,
-      Feedforward<OUTPUT, INPUT_DIMENSION> feedforward,
-      Optional<TrapezoidProfile<INPUT>> trapezoidProfile,
+      UnitFeedforward<OUTPUT, INPUT_DIMENSION> feedforward,
+      Optional<UnitTrapezoidProfile<INPUT>> trapezoidProfile,
       boolean useFeedbackSign) {
     this.feedback = feedback;
     this.feedforward = feedforward;
@@ -52,8 +53,8 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
 
   private ClosedLoop(
       PIDFeedback<OUTPUT, INPUT> feedback,
-      Feedforward<OUTPUT, INPUT_DIMENSION> feedforward,
-      Optional<TrapezoidProfile<INPUT>> trapezoidProfile,
+      UnitFeedforward<OUTPUT, INPUT_DIMENSION> feedforward,
+      Optional<UnitTrapezoidProfile<INPUT>> trapezoidProfile,
       boolean useFeedbackSign,
       Function<Measure<AngleUnit>, Measure<DistanceUnit>> angleToDistance) {
     this.feedback = feedback;
@@ -65,62 +66,62 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
 
   public static ClosedLoop<VoltageUnit, AngleUnit, AngleUnit> forVoltageAngle(
       PIDFeedback<VoltageUnit, AngleUnit> feedback,
-      Feedforward<VoltageUnit, AngleUnit> feedforward,
-      TrapezoidProfile<AngleUnit> trapezoidProfile) {
+      UnitFeedforward<VoltageUnit, AngleUnit> feedforward,
+      UnitTrapezoidProfile<AngleUnit> trapezoidProfile) {
     return new ClosedLoop<>(feedback, feedforward, Optional.of(trapezoidProfile), false);
   }
 
   public static ClosedLoop<VoltageUnit, AngleUnit, AngleUnit> forVoltageAngle(
       PIDFeedback<VoltageUnit, AngleUnit> feedback,
-      Feedforward<VoltageUnit, AngleUnit> feedforward,
+      UnitFeedforward<VoltageUnit, AngleUnit> feedforward,
       boolean useFeedbackSign) {
     return new ClosedLoop<>(feedback, feedforward, Optional.empty(), useFeedbackSign);
   }
 
   public static ClosedLoop<VoltageUnit, AngularVelocityUnit, AngleUnit> forVoltageAngularVelocity(
       PIDFeedback<VoltageUnit, AngularVelocityUnit> feedback,
-      Feedforward<VoltageUnit, AngleUnit> feedforward,
-      TrapezoidProfile<AngularVelocityUnit> trapezoidProfile) {
+      UnitFeedforward<VoltageUnit, AngleUnit> feedforward,
+      UnitTrapezoidProfile<AngularVelocityUnit> trapezoidProfile) {
     return new ClosedLoop<>(feedback, feedforward, Optional.of(trapezoidProfile), false);
   }
 
   public static ClosedLoop<VoltageUnit, AngularVelocityUnit, AngleUnit> forVoltageAngularVelocity(
       PIDFeedback<VoltageUnit, AngularVelocityUnit> feedback,
-      Feedforward<VoltageUnit, AngleUnit> feedforward) {
+      UnitFeedforward<VoltageUnit, AngleUnit> feedforward) {
     return new ClosedLoop<>(feedback, feedforward, Optional.empty(), false);
   }
 
   public static ClosedLoop<CurrentUnit, AngleUnit, AngleUnit> forCurrentAngle(
       PIDFeedback<CurrentUnit, AngleUnit> feedback,
-      Feedforward<CurrentUnit, AngleUnit> feedforward,
-      TrapezoidProfile<AngleUnit> trapezoidProfile) {
+      UnitFeedforward<CurrentUnit, AngleUnit> feedforward,
+      UnitTrapezoidProfile<AngleUnit> trapezoidProfile) {
     return new ClosedLoop<>(feedback, feedforward, Optional.of(trapezoidProfile), false);
   }
 
   public static ClosedLoop<CurrentUnit, AngleUnit, AngleUnit> forCurrentAngle(
       PIDFeedback<CurrentUnit, AngleUnit> feedback,
-      Feedforward<CurrentUnit, AngleUnit> feedforward,
+      UnitFeedforward<CurrentUnit, AngleUnit> feedforward,
       boolean useFeedbackSign) {
     return new ClosedLoop<>(feedback, feedforward, Optional.empty(), useFeedbackSign);
   }
 
   public static ClosedLoop<CurrentUnit, AngularVelocityUnit, AngleUnit> forCurrentAngularVelocity(
       PIDFeedback<CurrentUnit, AngularVelocityUnit> feedback,
-      Feedforward<CurrentUnit, AngleUnit> feedforward,
-      TrapezoidProfile<AngularVelocityUnit> trapezoidProfile) {
+      UnitFeedforward<CurrentUnit, AngleUnit> feedforward,
+      UnitTrapezoidProfile<AngularVelocityUnit> trapezoidProfile) {
     return new ClosedLoop<>(feedback, feedforward, Optional.of(trapezoidProfile), false);
   }
 
   public static ClosedLoop<CurrentUnit, AngularVelocityUnit, AngleUnit> forCurrentAngularVelocity(
       PIDFeedback<CurrentUnit, AngularVelocityUnit> feedback,
-      Feedforward<CurrentUnit, AngleUnit> feedforward) {
+      UnitFeedforward<CurrentUnit, AngleUnit> feedforward) {
     return new ClosedLoop<>(feedback, feedforward, Optional.empty(), false);
   }
 
   public static ClosedLoop<VoltageUnit, DistanceUnit, DistanceUnit> forVoltageDistance(
       PIDFeedback<VoltageUnit, DistanceUnit> feedback,
-      Feedforward<VoltageUnit, DistanceUnit> feedforward,
-      TrapezoidProfile<DistanceUnit> trapezoidProfile,
+      UnitFeedforward<VoltageUnit, DistanceUnit> feedforward,
+      UnitTrapezoidProfile<DistanceUnit> trapezoidProfile,
       Function<Measure<AngleUnit>, Measure<DistanceUnit>> angleToDistance) {
     return new ClosedLoop<>(
         feedback, feedforward, Optional.of(trapezoidProfile), false, angleToDistance);
@@ -128,15 +129,15 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
 
   public static ClosedLoop<VoltageUnit, DistanceUnit, DistanceUnit> forVoltageDistance(
       PIDFeedback<VoltageUnit, DistanceUnit> feedback,
-      Feedforward<VoltageUnit, DistanceUnit> feedforward,
+      UnitFeedforward<VoltageUnit, DistanceUnit> feedforward,
       Function<Measure<AngleUnit>, Measure<DistanceUnit>> angleToDistance) {
     return new ClosedLoop<>(feedback, feedforward, Optional.empty(), false, angleToDistance);
   }
 
   public static ClosedLoop<CurrentUnit, DistanceUnit, DistanceUnit> forCurrentDistance(
       PIDFeedback<CurrentUnit, DistanceUnit> feedback,
-      Feedforward<CurrentUnit, DistanceUnit> feedforward,
-      TrapezoidProfile<DistanceUnit> trapezoidProfile,
+      UnitFeedforward<CurrentUnit, DistanceUnit> feedforward,
+      UnitTrapezoidProfile<DistanceUnit> trapezoidProfile,
       Function<Measure<AngleUnit>, Measure<DistanceUnit>> angleToDistance) {
     return new ClosedLoop<>(
         feedback, feedforward, Optional.of(trapezoidProfile), false, angleToDistance);
@@ -144,7 +145,7 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
 
   public static ClosedLoop<CurrentUnit, DistanceUnit, DistanceUnit> forCurrentDistance(
       PIDFeedback<CurrentUnit, DistanceUnit> feedback,
-      Feedforward<CurrentUnit, DistanceUnit> feedforward,
+      UnitFeedforward<CurrentUnit, DistanceUnit> feedforward,
       boolean useFeedbackSign,
       Function<Measure<AngleUnit>, Measure<DistanceUnit>> angleToDistance) {
     return new ClosedLoop<>(
@@ -253,8 +254,8 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
       State<INPUT> step = trapezoidProfile.calculate(state, goal, dt);
       logger.log("step", step, State.struct);
       Measure<OUTPUT> feedforwardOutput = (Measure<OUTPUT>) feedback.getOutputUnit().zero();
-      if (feedforward.getClass().equals(FlywheelFeedforward.class)) {
-        var flywheelFF = (FlywheelFeedforward<OUTPUT>) feedforward;
+      if (feedforward.getClass().equals(SimpleFeedforward.class)) {
+        var flywheelFF = (SimpleFeedforward<OUTPUT>) feedforward;
         feedforwardOutput =
             isVelocity
                 ? flywheelFF.calculate(
@@ -269,6 +270,14 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
                     MetersPerSecond.of(step.value().baseUnitMagnitude()),
                     MetersPerSecondPerSecond.of(step.slew().baseUnitMagnitude()))
                 : elevatorFF.calculate(MetersPerSecond.of(step.slew().baseUnitMagnitude()));
+      } else if (feedforward.getClass().equals(ElevatorFeedforwardAngularAdapter.class)) {
+        var elevatorFF = (ElevatorFeedforwardAngularAdapter<OUTPUT>) feedforward;
+        feedforwardOutput =
+            isVelocity
+                ? elevatorFF.calculate(
+                    RadiansPerSecond.of(step.value().baseUnitMagnitude()),
+                    RadiansPerSecondPerSecond.of(step.slew().baseUnitMagnitude()))
+                : elevatorFF.calculate(RadiansPerSecond.of(step.slew().baseUnitMagnitude()));
       } else if (feedforward.getClass().equals(ArmFeedforward.class)) {
         var armFF = (ArmFeedforward<OUTPUT>) feedforward;
         feedforwardOutput =
@@ -301,8 +310,8 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
               : 0.00001
                   * Math.signum(
                       goal.value().baseUnitMagnitude() - state.value().baseUnitMagnitude());
-      if (feedforward.getClass().equals(FlywheelFeedforward.class)) {
-        var flywheelFF = (FlywheelFeedforward<OUTPUT>) feedforward;
+      if (feedforward.getClass().equals(SimpleFeedforward.class)) {
+        var flywheelFF = (SimpleFeedforward<OUTPUT>) feedforward;
         if (isVelocity) {
           if (goal.slew() == null) {
             feedforwardOutput =
