@@ -36,7 +36,7 @@ public class WristSim extends Wrist {
                 Radian.of(Conv.DEGREES_TO_RADIANS * WristConstants.MAX_ANGLE)),
             0,
             simCtx.robot().timing());
-    // simCtx.robot().addMechanism(WristMechanism);
+    simCtx.robot().addMechanism(WristMechanism);
   }
 
   @Override
