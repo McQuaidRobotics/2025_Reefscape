@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
@@ -23,6 +25,7 @@ import sham.shamController.ClosedLoop;
 import sham.shamController.ShamMCX;
 import sham.shamController.unitSafeControl.UnitFeedback.PIDFeedback;
 import sham.shamController.unitSafeControl.UnitFeedforward.ElevatorFeedforward;
+import sham.shamController.unitSafeControl.UnitTrapezoidProfile;
 import sham.utils.GearRatio;
 import wpilibExt.DCMotorExt;
 
@@ -45,8 +48,6 @@ public class ElevatorSim extends Elevator {
             HardLimits.of(
                 Rotations.of(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE),
                 Rotations.of(ElevatorConstants.MAX_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE)),
-            // MechanismDynamics.zero(),
-            // HardLimits.unbounded(),
             0.0,
             simCtx.robot().timing());
     shamMechanism.setState(
@@ -54,24 +55,8 @@ public class ElevatorSim extends Elevator {
             Radians.of(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.WHEEL_RADIUS),
             RadiansPerSecond.zero(),
             RadiansPerSecondPerSecond.zero()));
-
     simCtx.robot().addMechanism(shamMechanism);
-    // elevatorLoop =
-    //     ClosedLoop.forVoltageAngle(
-    //         PIDFeedback.forAngular(Volts, Rotations, ElevatorConstants.KP, ElevatorConstants.KD),
-    //         ElevatorFeedforward.forAngularVoltage(
-    //             Rotations,
-    //             ElevatorConstants.KS,
-    //             ElevatorConstants.KG,
-    //             ElevatorConstants.KV,
-    //             0.0,
-    //             simCtx.timing().dt()),
-    //         UnitTrapezoidProfile.forAngle(
-    //             RotationsPerSecond.of(
-    //                 ElevatorConstants.MAX_VELOCITY / ElevatorConstants.WHEEL_CIRCUMFERENCE),
-    //             RotationsPerSecondPerSecond.of(
-    //                 ElevatorConstants.MAX_ACCELERATION /
-    // ElevatorConstants.WHEEL_CIRCUMFERENCE)));
+
     elevatorLoop =
         ClosedLoop.forVoltageAngle(
             PIDFeedback.forAngular(Volts, Rotations, ElevatorConstants.KP, ElevatorConstants.KD),
@@ -82,7 +67,11 @@ public class ElevatorSim extends Elevator {
                 ElevatorConstants.KV,
                 0.0,
                 simCtx.timing().dt()),
-            true);
+            UnitTrapezoidProfile.forAngle(
+                RotationsPerSecond.of(
+                    ElevatorConstants.MAX_VELOCITY / ElevatorConstants.WHEEL_CIRCUMFERENCE),
+                RotationsPerSecondPerSecond.of(
+                    ElevatorConstants.MAX_ACCELERATION / ElevatorConstants.WHEEL_CIRCUMFERENCE)));
     shamMCX.configSensorToMechanismRatio(ElevatorConstants.GEAR_RATIO);
   }
 
