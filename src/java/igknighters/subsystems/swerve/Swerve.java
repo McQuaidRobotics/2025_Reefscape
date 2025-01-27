@@ -1,10 +1,12 @@
 package igknighters.subsystems.swerve;
 
+import edu.wpi.first.epilogue.logging.NTEpilogueBackend;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import igknighters.Localizer;
@@ -14,13 +16,10 @@ import igknighters.commands.swerve.teleop.TeleopSwerveBaseCmd;
 import igknighters.constants.ConstValues;
 import igknighters.constants.ConstValues.kSwerve;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
-import igknighters.subsystems.swerve.control.SwerveSetpoint;
-import igknighters.subsystems.swerve.control.SwerveSetpointGenerator;
 import igknighters.subsystems.swerve.gyro.Gyro;
 import igknighters.subsystems.swerve.gyro.GyroReal;
 import igknighters.subsystems.swerve.gyro.GyroSimSham;
 import igknighters.subsystems.swerve.module.SwerveModule;
-import igknighters.subsystems.swerve.module.SwerveModule.AdvancedSwerveModuleState;
 import igknighters.subsystems.swerve.module.SwerveModuleReal;
 import igknighters.subsystems.swerve.module.SwerveModuleSimSham;
 import igknighters.subsystems.swerve.odometryThread.RealSwerveOdometryThread;
@@ -28,6 +27,10 @@ import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SwerveOdometryThread;
 import java.util.Optional;
 import sham.ShamSwerve;
+import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
+import wayfinder.setpointGenerator.SwerveSetpoint;
+import wayfinder.setpointGenerator.SwerveSetpointGenerator;
+import wpilibExt.DCMotorExt;
 import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Speeds.RobotSpeeds;
@@ -55,15 +58,19 @@ public class Swerve implements ExclusiveSubsystem {
   private final SwerveVisualizer visualizer;
   private final SwerveSetpointGenerator setpointGenerator =
       new SwerveSetpointGenerator(
+          new NTEpilogueBackend(NetworkTableInstance.getDefault())
+              .getNested("/Robot/Swerve/setpointGenerator"),
           kSwerve.MODULE_CHASSIS_OFFSETS,
-          DCMotor.getKrakenX60Foc(1).withReduction(kSwerve.DRIVE_GEAR_RATIO),
+          new DCMotorExt(DCMotor.getKrakenX60Foc(1).withReduction(kSwerve.DRIVE_GEAR_RATIO), 1),
           DCMotor.getFalcon500(1).withReduction(kSwerve.STEER_GEAR_RATIO),
           kSwerve.SLIP_CURRENT,
-          65.0,
-          7.0,
+          kSwerve.SLIP_CURRENT,
+          60.0,
+          5.3,
           kSwerve.WHEEL_DIAMETER,
-          1.5,
+          2.2,
           0.0);
+
   private final SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_OFFSETS);
 
@@ -163,9 +170,7 @@ public class Swerve implements ExclusiveSubsystem {
   }
 
   public void setModuleStates(AdvancedSwerveModuleState[] desiredStates) {
-    log(
-        "regurgitatedSpeed",
-        Speeds.fromRobotRelative(kinematics.toChassisSpeeds(desiredStates)));
+    log("regurgitatedSpeed", Speeds.fromRobotRelative(kinematics.toChassisSpeeds(desiredStates)));
 
     for (SwerveModule module : swerveMods) {
       module.setDesiredState(desiredStates[module.getModuleId()]);

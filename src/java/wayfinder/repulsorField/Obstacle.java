@@ -29,33 +29,6 @@ public abstract class Obstacle {
     return Math.cos(radians) * rhs;
   }
 
-  public static class PointObstacle extends Obstacle {
-    Translation2d loc;
-    double effectMaxRange = 0.5;
-
-    public PointObstacle(Translation2d loc, double strength, boolean positive) {
-      super(strength, positive);
-      this.loc = loc;
-    }
-
-    public Translation2d getForceAtPosition(Translation2d position, Translation2d target) {
-      var dist = loc.getDistance(position);
-      if (dist > effectMaxRange) {
-        return Translation2d.kZero;
-      }
-      var outwardsMag = distToForceMag(loc.getDistance(position), effectMaxRange);
-      var outwardsVector = new Translation2d(outwardsMag, position.minus(loc).getAngle());
-      // theta = angle between position->target vector and obstacle->position vector
-      var theta = target.minus(position).getAngle().minus(position.minus(loc).getAngle());
-      double mag = outwardsMag * Math.signum(Math.sin(theta.getRadians() / 2)) / 2;
-
-      var sidewaysVector =
-          outwardsVector.rotateBy(Rotation2d.kCCW_90deg).div(outwardsVector.getNorm()).times(mag);
-
-      return outwardsVector.plus(sidewaysVector);
-    }
-  }
-
   public static class SnowmanObstacle extends Obstacle {
     final Translation2d loc;
     final double primaryMaxRange;

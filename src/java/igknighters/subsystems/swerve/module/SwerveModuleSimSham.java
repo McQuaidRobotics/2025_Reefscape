@@ -25,6 +25,7 @@ import sham.shamController.ClosedLoop;
 import sham.shamController.ShamMCX;
 import sham.shamController.unitSafeControl.UnitFeedback.PIDFeedback;
 import sham.shamController.unitSafeControl.UnitFeedforward.SimpleFeedforward;
+import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
 
 public class SwerveModuleSimSham extends SwerveModule {
 

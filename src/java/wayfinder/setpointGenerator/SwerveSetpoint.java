@@ -3,7 +3,6 @@ package wayfinder.setpointGenerator;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
-import igknighters.subsystems.swerve.module.SwerveModule.AdvancedSwerveModuleState;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.FixedSizeArray;
 import wpilibExt.Speeds.RobotSpeeds;

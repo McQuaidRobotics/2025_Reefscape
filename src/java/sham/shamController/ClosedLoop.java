@@ -269,8 +269,8 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
                     RadiansPerSecond.of(step.value().baseUnitMagnitude()),
                     RadiansPerSecondPerSecond.of(step.slew().baseUnitMagnitude()))
                 : flywheelFF.calculate(
-                  RadiansPerSecond.of(capturedLastStep.slew().baseUnitMagnitude()),
-                  RadiansPerSecond.of(step.slew().baseUnitMagnitude()));
+                    RadiansPerSecond.of(capturedLastStep.slew().baseUnitMagnitude()),
+                    RadiansPerSecond.of(step.slew().baseUnitMagnitude()));
       } else if (feedforward.getClass().equals(ElevatorFeedforward.class)) {
         var elevatorFF = (ElevatorFeedforward<OUTPUT>) feedforward;
         feedforwardOutput =
@@ -279,8 +279,8 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
                     MetersPerSecond.of(step.value().baseUnitMagnitude()),
                     MetersPerSecondPerSecond.of(step.slew().baseUnitMagnitude()))
                 : elevatorFF.calculate(
-                  MetersPerSecond.of(capturedLastStep.slew().baseUnitMagnitude()),
-                  MetersPerSecond.of(step.slew().baseUnitMagnitude()));
+                    MetersPerSecond.of(capturedLastStep.slew().baseUnitMagnitude()),
+                    MetersPerSecond.of(step.slew().baseUnitMagnitude()));
       } else if (feedforward.getClass().equals(ElevatorFeedforwardAngularAdapter.class)) {
         var elevatorFF = (ElevatorFeedforwardAngularAdapter<OUTPUT>) feedforward;
         feedforwardOutput =

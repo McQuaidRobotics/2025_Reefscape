@@ -49,7 +49,8 @@ public class Localizer implements Logged {
   private final Channel<Pose2d> poseResetsChannel = new Channel<>(new Pose2d[0]);
   private final Sender<Pose2d> poseResetsSender = poseResetsChannel.sender();
 
-  private final SwerveDriveKinematics kinematics =  new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_OFFSETS);
+  private final SwerveDriveKinematics kinematics =
+      new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_OFFSETS);
 
   public Localizer() {
     poseEstimator = new TwistyPoseEst();
