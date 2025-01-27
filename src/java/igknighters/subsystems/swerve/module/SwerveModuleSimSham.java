@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,9 +22,8 @@ import igknighters.util.logging.BootupLogger;
 import sham.ShamSwerve;
 import sham.shamController.ClosedLoop;
 import sham.shamController.ShamMCX;
-import sham.shamController.UnitSafeControl.AngularPIDFeedback;
-import sham.shamController.UnitSafeControl.AngularVelocityPIDFeedback;
-import sham.shamController.UnitSafeControl.FlywheelFeedforward;
+import sham.shamController.unitSafeControl.UnitFeedback.PIDFeedback;
+import sham.shamController.unitSafeControl.UnitFeedforward.SimpleFeedforward;
 
 public class SwerveModuleSimSham extends SwerveModule {
 
@@ -50,21 +48,15 @@ public class SwerveModuleSimSham extends SwerveModule {
 
     driveLoop =
         ClosedLoop.forVoltageAngularVelocity(
-            new AngularVelocityPIDFeedback<VoltageUnit>(
-                Volts.per(RotationsPerSecond).ofNative(kDriveMotor.kP),
-                Volts.per(RotationsPerSecondPerSecond).ofNative(kDriveMotor.kD)),
-            new FlywheelFeedforward<VoltageUnit>(
-                Volts.of(kDriveMotor.kS),
-                Volts.per(RotationsPerSecond).ofNative(kDriveMotor.kV),
-                Volts.per(RotationsPerSecondPerSecond).ofNative(0.0)));
+            PIDFeedback.forAngularVelocity(Volts, RotationsPerSecond, kDriveMotor.kP),
+            SimpleFeedforward.forVoltage(
+                Rotations, kDriveMotor.kS, kDriveMotor.kV, 0.0, sim.timing().dt()));
 
     steerLoop =
         ClosedLoop.forVoltageAngle(
-            new AngularPIDFeedback<VoltageUnit>(
-                    Volts.per(Rotations).ofNative(kSteerMotor.kP),
-                    Volts.per(RotationsPerSecond).ofNative(kSteerMotor.kD))
+            PIDFeedback.forAngular(Volts, Rotations, kSteerMotor.kP, kSteerMotor.kD)
                 .withContinuousAngularInput(),
-            new FlywheelFeedforward<VoltageUnit>(Volts.of(kSteerMotor.kS)),
+            SimpleFeedforward.forVoltage(Rotations, kSteerMotor.kS, 0.0, 0.0, sim.timing().dt()),
             true);
 
     steerMotor.configSensorToMechanismRatio(kSwerve.STEER_GEAR_RATIO);

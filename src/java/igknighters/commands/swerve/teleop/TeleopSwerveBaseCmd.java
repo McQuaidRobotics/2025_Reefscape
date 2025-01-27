@@ -11,10 +11,9 @@ import igknighters.controllers.ControllerBase;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.util.plumbing.TunableValues;
 import igknighters.util.plumbing.TunableValues.TunableDouble;
-import wpilibExt.AllianceFlipper;
-
 import java.nio.ByteBuffer;
 import java.util.function.DoubleSupplier;
+import wpilibExt.AllianceFlipper;
 
 public class TeleopSwerveBaseCmd extends Command implements StructSerializable {
   private static boolean shouldOrientForSim() {
