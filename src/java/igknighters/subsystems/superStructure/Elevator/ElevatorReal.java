@@ -50,7 +50,7 @@ public class ElevatorReal extends Elevator {
     cfg.Slot0.kG = ElevatorConstants.KG;
     cfg.Slot0.kD = ElevatorConstants.KD;
     cfg.Slot0.kS = ElevatorConstants.KS;
-    cfg.Slot0.kA = ElevatorConstants.KA;
+    cfg.Slot0.kV = ElevatorConstants.KV;
 
     cfg.Feedback.SensorToMechanismRatio = ElevatorConstants.GEAR_RATIO;
 
