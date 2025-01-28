@@ -7,9 +7,11 @@ import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Optional;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.FixedSizeArray;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
+import wayfinder.controllers.Types.ChassisConstraints;
 
 class Util {
   private static final double kEpsilon = 1E-5;
@@ -277,6 +279,8 @@ class Util {
     public double minS, dt;
     public double dx, dy, dtheta;
     public ChassisSpeeds prevSpeeds, desiredSpeeds;
+    public double inputVoltage;
+    @IgnoreStructField public Optional<ChassisConstraints> constraintsOpt;
 
     @FixedSizeArray(size = NUM_MODULES)
     public SwerveModuleState[] prevModuleStates;

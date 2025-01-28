@@ -122,9 +122,9 @@ public class SwerveCommands {
     return swerve.run(
         () -> {
           GlobalField.setObject("arrows", planner.getArrows(target.getTranslation(), 20, 10));
+          var c = constraints.get();
           swerve.drive(
-              planner.calculate(
-                  ConstValues.PERIODIC_TIME, localizer.pose(), target, constraints.get()));
+              planner.calculate(ConstValues.PERIODIC_TIME, localizer.pose(), target, c), c);
         });
   }
 
@@ -132,7 +132,7 @@ public class SwerveCommands {
       Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
     final ChassisConstraints constraints =
         new ChassisConstraints(
-            new Constraints(kSwerve.MAX_DRIVE_VELOCITY, kSwerve.MAX_DRIVE_VELOCITY),
+            new Constraints(kSwerve.MAX_DRIVE_VELOCITY, kSwerve.MAX_DRIVE_VELOCITY * 2.0),
             new Constraints(kSwerve.MAX_ANGULAR_VELOCITY, kSwerve.MAX_ANGULAR_VELOCITY * 0.5));
     final PositionalController controller =
         new PositionalController(

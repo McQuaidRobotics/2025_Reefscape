@@ -3,6 +3,7 @@ package wayfinder.repulsorField;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import wpilibExt.MutTranslation2d;
 
 public abstract class Obstacle {
   double strength;
@@ -36,6 +37,11 @@ public abstract class Obstacle {
     final double secondaryMaxRange;
     final double secondaryStrengthRatio;
 
+    final MutTranslation2d goalToLoc = new MutTranslation2d();
+    final MutTranslation2d sidewaysCircle = new MutTranslation2d();
+    final MutTranslation2d initial = new MutTranslation2d();
+    final MutTranslation2d output = new MutTranslation2d();
+
     public SnowmanObstacle(
         Translation2d loc,
         double primaryStrength,
@@ -51,28 +57,33 @@ public abstract class Obstacle {
       secondaryStrengthRatio = primaryStrength / secondaryStrength;
     }
 
-    public Translation2d getForceAtPosition(Translation2d position, Translation2d target) {
-      var targetToLoc = loc.minus(target);
-      var targetToLocAngle = targetToLoc.getAngle();
-      var sidewaysCircle = new Translation2d(secondaryDistance, targetToLoc.getAngle()).plus(loc);
-      var dist = loc.getDistance(position);
-      var sidewaysDist = sidewaysCircle.getDistance(position);
+    public MutTranslation2d getForceAtPosition(Translation2d position, Translation2d goal) {
+      output.set(Translation2d.kZero);
+      goalToLoc.set(loc);
+      goalToLoc.minusMut(goal);
+      sidewaysCircle.setPolar(secondaryDistance, goalToLoc.getRadians());
+      sidewaysCircle.plusMut(loc);
+      double dist = loc.getDistance(position);
+      double sidewaysDist = sidewaysCircle.getDistance(position);
       if (dist > primaryMaxRange && sidewaysDist > secondaryMaxRange) {
-        return Translation2d.kZero;
+        return output;
       }
-      var sidewaysMag =
+      double sidewaysMag =
           distToForceMag(sidewaysCircle.getDistance(position), primaryMaxRange)
               / secondaryStrengthRatio;
-      var outwardsMag = distToForceMag(loc.getDistance(position), secondaryMaxRange);
-      var initial = new Translation2d(outwardsMag, position.minus(loc).getAngle());
+      double outwardsMag = distToForceMag(loc.getDistance(position), secondaryMaxRange);
+      initial.setPolar(outwardsMag, position.minus(loc).getAngle().getRadians());
 
       // flip the sidewaysMag based on which side of the goal-sideways circle the robot is on
       var sidewaysTheta =
-          target.minus(position).getAngle().minus(position.minus(sidewaysCircle).getAngle());
+          goal.minus(position).getAngle().minus(position.minus(sidewaysCircle).getAngle());
 
       double sideways = sidewaysMag * Math.signum(Math.sin(sidewaysTheta.getRadians()));
-      var sidewaysAngle = targetToLocAngle.rotateBy(Rotation2d.kCCW_90deg);
-      return new Translation2d(sideways, sidewaysAngle).plus(initial);
+      goalToLoc.rotateByMut(Rotation2d.kCCW_90deg);
+      double sidewaysAngle = goalToLoc.getRadians();
+      output.setPolar(sideways, sidewaysAngle);
+      output.plusMut(initial);
+      return output;
     }
   }
 
@@ -153,18 +164,21 @@ public abstract class Obstacle {
     final double y;
     final double maxRange;
 
+    final MutTranslation2d output = new MutTranslation2d();
+
     public HorizontalObstacle(double y, double strength, double maxRange, boolean positive) {
       super(strength, positive);
       this.y = y;
       this.maxRange = maxRange;
     }
 
-    public Translation2d getForceAtPosition(Translation2d position, Translation2d target) {
+    public MutTranslation2d getForceAtPosition(Translation2d position, Translation2d goal) {
+      output.set(Translation2d.kZero);
       var dist = Math.abs(position.getY() - y);
-      if (dist > maxRange) {
-        return Translation2d.kZero;
+      if (dist < maxRange) {
+        output.set(0, distToForceMag(y - position.getY(), maxRange));
       }
-      return new Translation2d(0, distToForceMag(y - position.getY(), maxRange));
+      return output;
     }
   }
 
@@ -172,18 +186,21 @@ public abstract class Obstacle {
     final double x;
     final double maxRange;
 
+    final MutTranslation2d output = new MutTranslation2d();
+
     public VerticalObstacle(double x, double strength, double maxRange, boolean positive) {
       super(strength, positive);
       this.x = x;
       this.maxRange = maxRange;
     }
 
-    public Translation2d getForceAtPosition(Translation2d position, Translation2d target) {
+    public MutTranslation2d getForceAtPosition(Translation2d position, Translation2d goal) {
+      output.set(Translation2d.kZero);
       var dist = Math.abs(position.getX() - x);
-      if (dist > maxRange) {
-        return Translation2d.kZero;
+      if (dist < maxRange) {
+        output.set(distToForceMag(x - position.getX(), maxRange), 0);
       }
-      return new Translation2d(distToForceMag(x - position.getX(), maxRange), 0);
+      return output;
     }
   }
 }

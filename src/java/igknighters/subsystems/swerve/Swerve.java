@@ -27,6 +27,7 @@ import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SwerveOdometryThread;
 import java.util.Optional;
 import sham.ShamSwerve;
+import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
 import wayfinder.setpointGenerator.SwerveSetpoint;
 import wayfinder.setpointGenerator.SwerveSetpointGenerator;
@@ -56,7 +57,8 @@ public class Swerve implements ExclusiveSubsystem {
   private final SwerveOdometryThread odometryThread;
 
   private final SwerveVisualizer visualizer;
-  private final SwerveSetpointGenerator setpointGenerator =
+
+  private final SwerveSetpointGenerator setpointGeneratorBeta =
       new SwerveSetpointGenerator(
           new NTEpilogueBackend(NetworkTableInstance.getDefault())
               .getNested("/Robot/Swerve/setpointGenerator"),
@@ -68,7 +70,7 @@ public class Swerve implements ExclusiveSubsystem {
           60.0,
           5.3,
           kSwerve.WHEEL_DIAMETER,
-          2.2,
+          1.8,
           0.0);
 
   private final SwerveDriveKinematics kinematics =
@@ -124,7 +126,7 @@ public class Swerve implements ExclusiveSubsystem {
     odometryThread.start();
   }
 
-  public void drive(Speeds speeds) {
+  public void drive(Speeds speeds, ChassisConstraints constraints) {
     RobotSpeeds robotSpeeds = speeds.asRobotRelative(getYaw());
     log("targetSpeed", robotSpeeds);
 
@@ -136,9 +138,17 @@ public class Swerve implements ExclusiveSubsystem {
     }
 
     setpoint =
-        setpointGenerator.generateSimpleSetpoint(setpoint, robotSpeeds, ConstValues.PERIODIC_TIME);
+        setpointGeneratorBeta.generateSetpoint(
+            setpoint,
+            robotSpeeds.toWpilib(),
+            Optional.ofNullable(constraints),
+            ConstValues.PERIODIC_TIME);
 
     setModuleStates(setpoint.moduleStates());
+  }
+
+  public void drive(Speeds speeds) {
+    drive(speeds, null);
   }
 
   /**

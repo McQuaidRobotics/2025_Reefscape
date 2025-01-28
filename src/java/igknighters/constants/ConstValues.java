@@ -185,7 +185,7 @@ public final class ConstValues {
     /** User defined acceleration time in seconds */
     public static final double ACCELERATION_TIME = 0.7;
 
-    public static final double SLIP_CURRENT = 65.0;
+    public static final double SLIP_CURRENT = 120.0;
 
     public static final double MAX_DRIVE_VELOCITY =
         ((Motors.KrakenX60Foc.FREE_SPEED / TAU) / DRIVE_GEAR_RATIO)

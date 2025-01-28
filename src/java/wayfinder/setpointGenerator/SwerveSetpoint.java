@@ -14,10 +14,10 @@ public record SwerveSetpoint(
     return new SwerveSetpoint(
         RobotSpeeds.kZero,
         new AdvancedSwerveModuleState[] {
-          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0, 0),
-          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0, 0),
-          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0, 0),
-          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0, 0)
+          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0),
+          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0),
+          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0),
+          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0)
         });
   }
 

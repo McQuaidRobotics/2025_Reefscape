@@ -9,12 +9,8 @@ public class AdvancedSwerveModuleState extends SwerveModuleState {
   public double driveAcceleration;
 
   public AdvancedSwerveModuleState(
-      double speedMetersPerSecond,
-      Rotation2d angle,
-      double steerRadPerSec,
-      double driveMetersPerSec2) {
+      double speedMetersPerSecond, Rotation2d angle, double driveMetersPerSec2) {
     super(speedMetersPerSecond, angle);
-    this.steerVelocity = steerRadPerSec;
     this.driveAcceleration = driveMetersPerSec2;
   }
 
@@ -22,6 +18,6 @@ public class AdvancedSwerveModuleState extends SwerveModuleState {
   public static final Struct<SwerveModuleState> struct = SwerveModuleState.struct;
 
   public static AdvancedSwerveModuleState fromBase(SwerveModuleState base) {
-    return new AdvancedSwerveModuleState(base.speedMetersPerSecond, base.angle, 0.0, 0.0);
+    return new AdvancedSwerveModuleState(base.speedMetersPerSecond, base.angle, 0.0);
   }
 }
