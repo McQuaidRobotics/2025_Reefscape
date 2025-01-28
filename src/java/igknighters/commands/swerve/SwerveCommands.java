@@ -11,7 +11,6 @@ import igknighters.constants.ConstValues.kSwerve;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.swerve.Swerve;
 import java.util.function.Supplier;
-import monologue.GlobalField;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.TranslationController;
@@ -121,7 +120,7 @@ public class SwerveCommands {
       Supplier<ChassisConstraints> constraints) {
     return swerve.run(
         () -> {
-          GlobalField.setObject("arrows", planner.getArrows(target.getTranslation(), 20, 10));
+          // GlobalField.setObject("arrows", planner.getArrows(target.getTranslation(), 20, 10));
           var c = constraints.get();
           swerve.drive(
               planner.calculate(ConstValues.PERIODIC_TIME, localizer.pose(), target, c), c);
@@ -132,11 +131,11 @@ public class SwerveCommands {
       Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
     final ChassisConstraints constraints =
         new ChassisConstraints(
-            new Constraints(kSwerve.MAX_DRIVE_VELOCITY, kSwerve.MAX_DRIVE_VELOCITY * 2.0),
-            new Constraints(kSwerve.MAX_ANGULAR_VELOCITY, kSwerve.MAX_ANGULAR_VELOCITY * 0.5));
+            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.8, kSwerve.MAX_DRIVE_VELOCITY * 1.2),
+            new Constraints(kSwerve.MAX_ANGULAR_VELOCITY, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
     final PositionalController controller =
         new PositionalController(
-            new TranslationController(3.0, 0.1), new RotationalController(10.0, 0.2));
+            new TranslationController(3.0, 0.13), new RotationalController(10.0, 0.2));
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(controller, obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =

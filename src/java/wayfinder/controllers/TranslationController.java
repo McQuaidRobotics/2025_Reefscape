@@ -1,10 +1,8 @@
 package wayfinder.controllers;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import monologue.GlobalField;
 import wayfinder.controllers.Types.Constraints;
 import wayfinder.controllers.Types.State;
 import wpilibExt.Speeds.FieldSpeeds;
@@ -31,8 +29,9 @@ public class TranslationController {
       double deadband,
       Constraints constraints) {
 
-    GlobalField.setObject(
-        "Track", new Pose2d(measurement, Rotation2d.kZero), new Pose2d(target, Rotation2d.kZero));
+    // GlobalField.setObject(
+    //     "Track", new Pose2d(measurement, Rotation2d.kZero), new Pose2d(target,
+    // Rotation2d.kZero));
 
     final double distance = measurement.getDistance(target);
     if (distance < deadband + 0.001) {

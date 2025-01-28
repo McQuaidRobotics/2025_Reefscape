@@ -65,7 +65,7 @@ public class SimCtx {
           .withRotorInertia(KilogramSquareMeters.of(0.02));
   private final ShamSwerveModuleConfig moduleCfg =
       new ShamSwerveModuleConfig(
-          driveMotorCfg, steerMotorCfg, WheelCof.BLACK_NITRILE.cof, kSwerve.WHEEL_DIAMETER / 2.0);
+          driveMotorCfg, steerMotorCfg, WheelCof.VEX_GRIPLOCK_V2.cof, kSwerve.WHEEL_RADIUS);
   private final ShamSwerveConfig swerveConfig =
       new ShamSwerveConfig(
           kRobotIntrinsics.MASS,

@@ -25,6 +25,11 @@ public class RotationalController {
     }
 
     target = MathUtil.angleModulus(target - measurement) + measurement;
+    double wrappedSetpoint =
+        MathUtil.angleModulus(prevSetpoint.position() - measurement) + measurement;
+    if (Math.abs(wrappedSetpoint - prevSetpoint.position()) > 0.001) {
+      prevSetpoint = new State(wrappedSetpoint, prevSetpoint.velocity());
+    }
 
     State setpoint =
         DynamicTrapezoidProfile.calculate(
@@ -44,7 +49,7 @@ public class RotationalController {
     return (kP * positionError) + (kD * errorOverTime) + setpoint.velocity();
   }
 
-  public void reset(double measurement, double measurementVelo, double target) {
+  public void reset(double measurement, double measurementVelo) {
     prevError = 0.0;
     prevSetpoint = new State(measurement, measurementVelo);
   }

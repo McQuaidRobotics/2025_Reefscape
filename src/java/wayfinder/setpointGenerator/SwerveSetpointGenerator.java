@@ -154,14 +154,6 @@ public class SwerveSetpointGenerator {
     makeVectors(vars);
     logger.log("pastMakeVectors", vars, LocalVars.struct);
 
-    if (vars.allModulesShouldFlip
-        && !epsilonEquals(prevSetpoint.speeds().toWpilib(), ZERO_SPEEDS)
-        && !epsilonEquals(desiredRobotRelativeSpeeds, ZERO_SPEEDS)) {
-      // It will (likely) be faster to stop the robot, rotate the modules
-      // in place to the complement of the desired angle, and accelerate again.
-      return generateSetpoint(prevSetpoint, ZERO_SPEEDS, constraintsOpt, dt);
-    }
-
     solveSteering(vars);
     logger.log("postSolveSteering", vars, LocalVars.struct);
 
@@ -236,12 +228,6 @@ public class SwerveSetpointGenerator {
     for (int m = 0; m < NUM_MODULES; m++) {
       vars.prev[m].applyModuleState(vars.prevModuleStates[m]);
       vars.desired[m].applyModuleState(vars.desiredModuleStates[m]);
-      if (vars.allModulesShouldFlip) {
-        double requiredRots = angularDifference(vars.prev[m].radians(), vars.desired[m].radians());
-        if (!shouldFlipHeading(requiredRots)) {
-          vars.allModulesShouldFlip = false;
-        }
-      }
     }
 
     vars.dx = vars.desiredSpeeds.vxMetersPerSecond - vars.prevSpeeds.vxMetersPerSecond;
@@ -335,12 +321,13 @@ public class SwerveSetpointGenerator {
               driveSupplyCurrentLimitAmps,
               driveStatorCurrentLimitAmps);
       double reverseCurrentDraw =
-          driveMotor.getCurrent(
-              // the motor should account for the gear ratio
-              Math.abs(vars.prevModuleStates[m].speedMetersPerSecond / wheelRadiusMeters),
-              -vars.inputVoltage,
-              driveSupplyCurrentLimitAmps,
-              driveStatorCurrentLimitAmps);
+          Math.abs(
+              driveMotor.getCurrent(
+                  // the motor should account for the gear ratio
+                  Math.abs(vars.prevModuleStates[m].speedMetersPerSecond / wheelRadiusMeters),
+                  -vars.inputVoltage,
+                  driveSupplyCurrentLimitAmps,
+                  driveStatorCurrentLimitAmps));
       double forwardModuleTorque = driveMotor.getTorque(forwardCurrentDraw);
       double reverseModuleTorque = driveMotor.getTorque(reverseCurrentDraw);
 
@@ -372,7 +359,9 @@ public class SwerveSetpointGenerator {
       }
 
       // Limit torque to prevent wheel slip
-      moduleTorque = Math.min(moduleTorque, wheelFrictionForce * wheelRadiusMeters);
+      if (Math.abs(moduleTorque) > wheelFrictionForce * wheelRadiusMeters) {
+        moduleTorque = wheelFrictionForce * wheelRadiusMeters;
+      }
 
       double forceAtCarpet = moduleTorque / wheelRadiusMeters;
       // Translation2d moduleForceVec = new Translation2d(forceAtCarpet * forceSign, forceAngle);
@@ -384,9 +373,10 @@ public class SwerveSetpointGenerator {
       // Calculate the torque this module will apply to the chassis
       if (!epsilonEquals(0, moduleForceVec.getNorm())) {
         Translation2d loc = moduleLocations[m];
-        double unaryAngle = -Math.atan2(loc.getY() / loc.getNorm(), loc.getX() / loc.getNorm());
-        double theta = rotateBy(forceAngle.getRadians(), forceAtCarpet, unaryAngle);
-        chassisTorque += forceAtCarpet * moduleLocations[m].getNorm() * Math.sin(theta);
+        double unaryAngle = -angleOf(loc);
+        double theta =
+            rotateBy(angleOf(moduleForceVec), Math.cos(unaryAngle), Math.sin(unaryAngle));
+        chassisTorque += forceAtCarpet * loc.getNorm() * Math.sin(theta);
       }
     }
 

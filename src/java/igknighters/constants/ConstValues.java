@@ -58,7 +58,8 @@ public final class ConstValues {
   public static final class kRobotIntrinsics {
     public static final double MASS = 132.0 * Conv.POUNDS_TO_KILOGRAMS;
     public static final double MOMENT_OF_INERTIA = 5.3;
-    /**With bumpers*/
+
+    /** With bumpers */
     public static final double CHASSIS_WIDTH = 32.5 * Conv.INCHES_TO_METERS;
   }
 
@@ -161,7 +162,8 @@ public final class ConstValues {
 
     /* Drivetrain Constants */
     public static final double DRIVEBASE_WIDTH = 20.75 * Conv.INCHES_TO_METERS;
-    public static final double DRIVEBASE_RADIUS = Math.hypot(DRIVEBASE_WIDTH / 2.0, DRIVEBASE_WIDTH / 2.0);
+    public static final double DRIVEBASE_RADIUS =
+        Math.hypot(DRIVEBASE_WIDTH / 2.0, DRIVEBASE_WIDTH / 2.0);
 
     public static final double STEER_GEAR_RATIO = SwerveGearRatios.STEER;
     public static final double DRIVE_GEAR_RATIO = SwerveGearRatios.L2_DRIVE_KRAKEN;
@@ -169,7 +171,7 @@ public final class ConstValues {
     public static final double WHEEL_RADIUS = 2.0 * Conv.INCHES_TO_METERS;
     public static final double WHEEL_DIAMETER = WHEEL_RADIUS * 2.0;
     public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
-    public static final double WHEEL_COF = 2.0;
+    public static final double WHEEL_COF = 1.8;
 
     /**
      * Not every motor can output the max speed at all times, add a buffer to make closed loop more
@@ -177,7 +179,8 @@ public final class ConstValues {
      */
     public static final double MOTOR_CLOSED_LOOP_OUTPUT_SCALAR = 0.95;
 
-    public static final double SLIP_CURRENT = 120.0;
+    public static final double DRIVE_STATOR_CURRENT_LIMIT = 120.0;
+    public static final double DRIVE_SUPPLY_CURRENT_LIMIT = 60.0;
 
     public static final double MAX_DRIVE_VELOCITY =
         ((Motors.KrakenX60Foc.FREE_SPEED / TAU) / DRIVE_GEAR_RATIO)
@@ -192,7 +195,8 @@ public final class ConstValues {
     /* Inverts */
     public static final InvertedValue ANGLE_MOTOR_INVERT = InvertedValue.Clockwise_Positive;
     public static final InvertedValue DRIVE_MOTOR_INVERT = InvertedValue.CounterClockwise_Positive;
-    public static final SensorDirectionValue CANCODER_INVERT = SensorDirectionValue.CounterClockwise_Positive;
+    public static final SensorDirectionValue CANCODER_INVERT =
+        SensorDirectionValue.CounterClockwise_Positive;
 
     /* Neutral Modes */
     public static final NeutralModeValue ANGLE_NEUTRAL_MODE = NeutralModeValue.Coast;
@@ -203,7 +207,7 @@ public final class ConstValues {
       public static final double kI = 0.0;
       public static final double kD = 0.0;
 
-      public static final double kS = 0.0;
+      public static final double kS = 0.15;
       public static final double kV = 0.12;
     }
 
@@ -213,13 +217,6 @@ public final class ConstValues {
       public static final double kD = 0.0;
 
       public static final double kS = 0.0;
-    }
-
-    public static final class kRotationController {
-      public static final double kP = 9.0;
-      public static final double kD = 0.2;
-
-      public static final double CONSTRAINT_SCALAR = 1.0;
     }
 
     public static final boolean ORIENT_TELEOP_FOR_SIM_DEFAULT = false;

@@ -13,8 +13,8 @@ import wpilibExt.Speeds.FieldSpeeds;
 
 public class RepulsorFieldPlanner {
   private final PositionalController controller;
-  private final CircularSlewRateLimiter angluarRateLimit =
-      new CircularSlewRateLimiter(Math.PI * 15.0);
+  private final CircularSlewRateLimiter rotationRateLimiter =
+      new CircularSlewRateLimiter(Math.PI * 5.0);
   private final List<Obstacle> fixedObstacles = new ArrayList<>();
 
   public RepulsorFieldPlanner(PositionalController controller, Obstacle... obstacles) {
@@ -62,7 +62,8 @@ public class RepulsorFieldPlanner {
       Translation2d netForce = getForce(measurement.getTranslation(), target.getTranslation());
       netForce = netForce.times(straightDist / netForce.getNorm());
       Rotation2d targetDirection = netForce.getAngle();
-      Rotation2d limited = new Rotation2d(angluarRateLimit.calculate(targetDirection.getRadians()));
+      Rotation2d limited =
+          new Rotation2d(rotationRateLimiter.calculate(targetDirection.getRadians()));
       netForce = netForce.rotateBy(limited.minus(targetDirection));
       return controller.calculate(
           period,
@@ -75,6 +76,8 @@ public class RepulsorFieldPlanner {
 
   public void reset(Pose2d measurement, FieldSpeeds measurementVelo, Pose2d target) {
     controller.reset(measurement, measurementVelo, target);
+    rotationRateLimiter.reset(
+        measurement.getTranslation().minus(target.getTranslation()).getAngle().getRadians());
   }
 
   public Pose2d[] getArrows(Translation2d goal, double xCount, double yCount) {

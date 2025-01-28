@@ -1,6 +1,7 @@
 package wayfinder.setpointGenerator;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.struct.Struct;
@@ -174,6 +175,14 @@ class Util {
         Math.cos(rad) * otherCos - Math.sin(rad) * otherSin);
   }
 
+  static double rotateBy(double rad, Rotation2d other) {
+    return rotateBy(rad, other.getCos(), other.getSin());
+  }
+
+  static double angleOf(Translation2d vec) {
+    return Math.atan2(vec.getY(), vec.getX());
+  }
+
   static double angularDifference(double prevRadians, double desiredRads) {
     // this looks messy without using Rotation2d methods.
     // this is roughly equivalent to:
@@ -275,7 +284,7 @@ class Util {
     @FixedSizeArray(size = NUM_MODULES)
     public LocalVectors[] desired;
 
-    public boolean needToSteer = true, allModulesShouldFlip = true;
+    public boolean needToSteer = true;
     public double minS, dt;
     public double dx, dy, dtheta;
     public ChassisSpeeds prevSpeeds, desiredSpeeds;
@@ -302,7 +311,7 @@ class Util {
     }
 
     public LocalVars reset() {
-      needToSteer = allModulesShouldFlip = true;
+      needToSteer = true;
       Arrays.fill(steeringOverride, null);
       for (int i = 0; i < NUM_MODULES; i++) {
         prev[i].reset();

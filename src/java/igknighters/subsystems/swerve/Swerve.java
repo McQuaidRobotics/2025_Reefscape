@@ -65,12 +65,12 @@ public class Swerve implements ExclusiveSubsystem {
           kSwerve.MODULE_CHASSIS_OFFSETS,
           new DCMotorExt(DCMotor.getKrakenX60Foc(1).withReduction(kSwerve.DRIVE_GEAR_RATIO), 1),
           DCMotor.getFalcon500(1).withReduction(kSwerve.STEER_GEAR_RATIO),
-          kSwerve.SLIP_CURRENT,
-          kSwerve.SLIP_CURRENT,
+          kSwerve.DRIVE_STATOR_CURRENT_LIMIT,
+          kSwerve.DRIVE_SUPPLY_CURRENT_LIMIT,
           60.0,
           5.3,
           kSwerve.WHEEL_DIAMETER,
-          1.8,
+          kSwerve.WHEEL_COF,
           0.0);
 
   private final SwerveDriveKinematics kinematics =
@@ -143,6 +143,10 @@ public class Swerve implements ExclusiveSubsystem {
             robotSpeeds.toWpilib(),
             Optional.ofNullable(constraints),
             ConstValues.PERIODIC_TIME);
+
+    // setpoint =
+    //     setpointGeneratorBeta.generateSimpleSetpoint(
+    //         setpoint, robotSpeeds, ConstValues.PERIODIC_TIME);
 
     setModuleStates(setpoint.moduleStates());
   }

@@ -6,7 +6,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Commands;
 import igknighters.Localizer;
 import igknighters.commands.swerve.SwerveCommands;
-import igknighters.constants.FieldConstants;
+import igknighters.constants.ConstValues.kRobotIntrinsics;
+import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
 
@@ -17,17 +18,12 @@ public class DriverController extends ControllerBase {
 
     // disregard null safety for subsystems as it is checked on assignment
 
-    Pose2d face2 = FieldConstants.Reef.FAR_RIGHT_FACE;
-    Pose2d face3 = FieldConstants.Reef.CLOSE_LEFT_FACE;
-
     /// FACE BUTTONS
     this.A.onTrue(
         SwerveCommands.moveTo(
             subsystems.swerve,
             localizer,
-            new Pose2d(
-                face2.getTranslation().plus(new Translation2d(0.33, -0.33)),
-                face2.getRotation().plus(Rotation2d.kPi)),
+            Reef.Side.FAR_RIGHT.scoreCenter(kRobotIntrinsics.CHASSIS_WIDTH / 1.9),
             PathObstacles.FAR_RIGHT_REEF));
 
     this.B.onTrue(subsystems.swerve.runOnce(() -> {}));
@@ -36,15 +32,14 @@ public class DriverController extends ControllerBase {
         SwerveCommands.moveTo(
             subsystems.swerve,
             localizer,
-            new Pose2d(
-                face3.getTranslation().plus(new Translation2d(-0.33, 0.33)), face3.getRotation()),
+            Reef.Side.CLOSE_LEFT.scoreCenter(kRobotIntrinsics.CHASSIS_WIDTH / 1.9),
             PathObstacles.CLOSE_LEFT_REEF));
 
     this.Y.onTrue(
         SwerveCommands.moveTo(
             subsystems.swerve,
             localizer,
-            new Pose2d(new Translation2d(1.0, 1.0), Rotation2d.fromDegrees(-125.0)),
+            new Pose2d(new Translation2d(1.25, 1.25), Rotation2d.fromDegrees(-125.0)),
             PathObstacles.Other));
 
     /// BUMPER

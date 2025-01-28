@@ -37,11 +37,6 @@ public abstract class Obstacle {
     final double secondaryMaxRange;
     final double secondaryStrengthRatio;
 
-    final MutTranslation2d goalToLoc = new MutTranslation2d();
-    final MutTranslation2d sidewaysCircle = new MutTranslation2d();
-    final MutTranslation2d initial = new MutTranslation2d();
-    final MutTranslation2d output = new MutTranslation2d();
-
     public SnowmanObstacle(
         Translation2d loc,
         double primaryStrength,
@@ -57,33 +52,28 @@ public abstract class Obstacle {
       secondaryStrengthRatio = primaryStrength / secondaryStrength;
     }
 
-    public MutTranslation2d getForceAtPosition(Translation2d position, Translation2d goal) {
-      output.set(Translation2d.kZero);
-      goalToLoc.set(loc);
-      goalToLoc.minusMut(goal);
-      sidewaysCircle.setPolar(secondaryDistance, goalToLoc.getRadians());
-      sidewaysCircle.plusMut(loc);
-      double dist = loc.getDistance(position);
-      double sidewaysDist = sidewaysCircle.getDistance(position);
+    public Translation2d getForceAtPosition(Translation2d position, Translation2d target) {
+      var targetToLoc = loc.minus(target);
+      var targetToLocAngle = targetToLoc.getAngle();
+      var sidewaysCircle = new Translation2d(secondaryDistance, targetToLoc.getAngle()).plus(loc);
+      var dist = loc.getDistance(position);
+      var sidewaysDist = sidewaysCircle.getDistance(position);
       if (dist > primaryMaxRange && sidewaysDist > secondaryMaxRange) {
-        return output;
+        return Translation2d.kZero;
       }
-      double sidewaysMag =
+      var sidewaysMag =
           distToForceMag(sidewaysCircle.getDistance(position), primaryMaxRange)
               / secondaryStrengthRatio;
-      double outwardsMag = distToForceMag(loc.getDistance(position), secondaryMaxRange);
-      initial.setPolar(outwardsMag, position.minus(loc).getAngle().getRadians());
+      var outwardsMag = distToForceMag(loc.getDistance(position), secondaryMaxRange);
+      var initial = new Translation2d(outwardsMag, position.minus(loc).getAngle());
 
       // flip the sidewaysMag based on which side of the goal-sideways circle the robot is on
       var sidewaysTheta =
-          goal.minus(position).getAngle().minus(position.minus(sidewaysCircle).getAngle());
+          target.minus(position).getAngle().minus(position.minus(sidewaysCircle).getAngle());
 
       double sideways = sidewaysMag * Math.signum(Math.sin(sidewaysTheta.getRadians()));
-      goalToLoc.rotateByMut(Rotation2d.kCCW_90deg);
-      double sidewaysAngle = goalToLoc.getRadians();
-      output.setPolar(sideways, sidewaysAngle);
-      output.plusMut(initial);
-      return output;
+      var sidewaysAngle = targetToLocAngle.rotateBy(Rotation2d.kCCW_90deg);
+      return new Translation2d(sideways, sidewaysAngle).plus(initial);
     }
   }
 

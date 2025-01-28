@@ -43,9 +43,6 @@ public class PositionalController {
   public void reset(Pose2d measurement, FieldSpeeds measurementVelo, Pose2d target) {
     translationController.reset(
         measurement.getTranslation(), measurementVelo, target.getTranslation());
-    rotationalController.reset(
-        measurement.getRotation().getRadians(),
-        measurementVelo.omega(),
-        target.getRotation().getRadians());
+    rotationalController.reset(measurement.getRotation().getRadians(), measurementVelo.omega());
   }
 }

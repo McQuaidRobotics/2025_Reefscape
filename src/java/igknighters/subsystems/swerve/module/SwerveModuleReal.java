@@ -111,9 +111,12 @@ public class SwerveModuleReal extends SwerveModule {
     cfg.Slot0.kS = kDriveMotor.kS;
 
     cfg.CurrentLimits.StatorCurrentLimitEnable = true;
-    cfg.CurrentLimits.StatorCurrentLimit = kSwerve.SLIP_CURRENT;
-    cfg.TorqueCurrent.PeakForwardTorqueCurrent = kSwerve.SLIP_CURRENT;
-    cfg.TorqueCurrent.PeakReverseTorqueCurrent = -kSwerve.SLIP_CURRENT;
+    cfg.CurrentLimits.StatorCurrentLimit = kSwerve.DRIVE_STATOR_CURRENT_LIMIT;
+    cfg.CurrentLimits.SupplyCurrentLimitEnable = true;
+    cfg.CurrentLimits.SupplyCurrentLimit = kSwerve.DRIVE_SUPPLY_CURRENT_LIMIT;
+    cfg.CurrentLimits.SupplyCurrentLowerLimit = 0.3;
+    cfg.TorqueCurrent.PeakForwardTorqueCurrent = kSwerve.DRIVE_STATOR_CURRENT_LIMIT;
+    cfg.TorqueCurrent.PeakReverseTorqueCurrent = -kSwerve.DRIVE_STATOR_CURRENT_LIMIT;
 
     return cfg;
   }
