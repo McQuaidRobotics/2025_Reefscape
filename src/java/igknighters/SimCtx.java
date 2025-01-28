@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import igknighters.constants.ConstValues;
+import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.ConstValues.kSwerve;
 import igknighters.constants.ConstValues.kSwerve.kDriveMotor;
 import igknighters.constants.ConstValues.kSwerve.kSteerMotor;
@@ -67,10 +68,10 @@ public class SimCtx {
           driveMotorCfg, steerMotorCfg, WheelCof.BLACK_NITRILE.cof, kSwerve.WHEEL_DIAMETER / 2.0);
   private final ShamSwerveConfig swerveConfig =
       new ShamSwerveConfig(
-          60.0,
-          6.0,
-          Units.inchesToMeters(30.5),
-          Units.inchesToMeters(30.5),
+          kRobotIntrinsics.MASS,
+          kRobotIntrinsics.MOMENT_OF_INERTIA,
+          kRobotIntrinsics.CHASSIS_WIDTH,
+          kRobotIntrinsics.CHASSIS_WIDTH,
           kSwerve.MODULE_CHASSIS_OFFSETS,
           moduleCfg,
           ShamGyroConfig.ofPigeon2());
