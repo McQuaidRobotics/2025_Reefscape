@@ -11,7 +11,7 @@ public abstract class Camera extends Component {
    * A configuration for a camera. This allows to statically define cameras without instantiating
    * them.
    */
-  public record CameraConfig(String cameraName, Transform3d cameraPose) {}
+  public record CameraConfig(String cameraName, Transform3d cameraTransform) {}
 
   /**
    * Uses the cameras PoseEstimation pipeline to estimate the pose of the robot.

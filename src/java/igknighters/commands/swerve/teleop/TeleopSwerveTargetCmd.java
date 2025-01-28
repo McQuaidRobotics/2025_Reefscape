@@ -10,8 +10,8 @@ import igknighters.constants.ConstValues.kSwerve;
 import igknighters.controllers.DriverController;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.control.RotationalController;
-import igknighters.util.AllianceFlip;
 import java.util.function.Supplier;
+import wpilibExt.AllianceFlipper;
 import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
 
@@ -60,7 +60,7 @@ public class TeleopSwerveTargetCmd extends TeleopSwerveBaseCmd {
   public void execute() {
     Translation2d currentTranslation = translationSupplier.get();
     Translation2d targetTranslation =
-        AllianceFlip.isBlue() ? target : AllianceFlip.flipTranslation(target);
+        AllianceFlipper.isBlue() ? target : AllianceFlipper.flip(target);
 
     Translation2d vt =
         orientForUser(getTranslation()).times(kSwerve.MAX_DRIVE_VELOCITY * speedMult);

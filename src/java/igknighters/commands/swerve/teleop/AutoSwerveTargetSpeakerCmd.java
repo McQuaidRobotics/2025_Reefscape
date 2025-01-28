@@ -9,8 +9,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import igknighters.commands.swerve.SwerveCommands;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.control.RotationalController;
-import igknighters.util.AllianceFlip;
 import java.util.function.Supplier;
+import wpilibExt.AllianceFlipper;
 import wpilibExt.Speeds;
 import wpilibExt.Speeds.RobotSpeeds;
 
@@ -38,7 +38,7 @@ public class AutoSwerveTargetSpeakerCmd extends Command {
   public void execute() {
     Translation2d speaker = Translation2d.kZero;
     Translation2d targetTranslation =
-        AllianceFlip.isBlue() ? speaker : AllianceFlip.flipTranslation(speaker);
+        AllianceFlipper.isBlue() ? speaker : AllianceFlipper.flip(speaker);
 
     Rotation2d targetAngle =
         SwerveCommands.rotationRelativeToPose(

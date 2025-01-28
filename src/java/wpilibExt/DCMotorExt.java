@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Volt;
 import static edu.wpi.first.units.Units.Volts;
 import static edu.wpi.first.units.Units.Watts;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.proto.DCMotorProto;
 import edu.wpi.first.math.system.plant.struct.DCMotorStruct;
@@ -182,20 +183,22 @@ public class DCMotorExt extends DCMotor {
    * Calculates the percent output of the motor at a given speed.
    *
    * @param speed The current angular velocity of the motor.
-   * @return The percent output of the motor.
+   * @param voltageInput The voltage applied to the motor.
+   * @return The percentage of the motor's maximum speed at the given input voltage.
    */
-  public double getSpeedPercent(AngularVelocity speed) {
-    return speed.in(RadiansPerSecond) / freeSpeedRadPerSec;
+  public double getSpeedPercent(AngularVelocity speed, Voltage voltageInput) {
+    return speed.in(RadiansPerSecond) / (this.kV().baseUnitMagnitude() * voltageInput.in(Volts));
   }
 
   /**
    * Calculates the free current of the motor at a given speed.
    *
    * @param speed The current angular velocity of the motor.
+   * @param voltageInput The voltage applied to the motor.
    * @return The free current of the motor.
    */
-  public Current getFreeCurrent(AngularVelocity speed) {
-    return Amps.of(freeCurrentAmps * getSpeedPercent(speed));
+  public Current getFreeCurrent(AngularVelocity speed, Voltage voltageInput) {
+    return Amps.of(freeCurrentAmps * getSpeedPercent(speed, voltageInput));
   }
 
   /**
@@ -224,30 +227,20 @@ public class DCMotorExt extends DCMotor {
       AngularVelocity speed, Voltage voltageInput, Current supplyLimit, Current statorLimit) {
     // Theres a lot of unit coercion happening here that the unit lib doesn't natively support.
     // Lower the math to type unsafe double math.
-    double vIn = voltageInput.in(Volts);
-    double vOut = voltageInput.times(getSpeedPercent(speed)).in(Volts);
-    double maxP = getMaxPower(voltageInput, supplyLimit).in(Watts);
-    double freeCurrent = getFreeCurrent(speed).in(Amps);
+    double vIn = Math.abs(voltageInput.in(Volts));
+    double vVelo = Math.abs(voltageInput.times(getSpeedPercent(speed, voltageInput)).in(Volts));
+    double maxP = Math.abs(getMaxPower(voltageInput, supplyLimit).in(Watts));
+    double freeCurrent = getFreeCurrent(speed, voltageInput).in(Amps);
 
-    double xSqr = (vOut * vOut) - (4.0 * rOhms * (-maxP + (vIn * freeCurrent)));
+    double xSqr = (vVelo * vVelo) - (4.0 * rOhms * (-maxP + (vIn * freeCurrent)));
 
     if (xSqr < 0) {
       return MeasureMath.abs(statorLimit);
     }
 
-    double y = Math.abs(-vOut + Math.sqrt(xSqr) / (2.0 * rOhms));
+    double y = Math.abs(-vVelo + Math.sqrt(xSqr)) / (2.0 * rOhms);
 
-    return Amps.of(y);
-  }
-
-  /**
-   * Calculates the stall current of the motor at a given speed.
-   *
-   * @param speed The current angular velocity of the motor.
-   * @return The stall current of the motor.
-   */
-  public Current getStallCurrent(AngularVelocity speed) {
-    return Amps.of((1.0 - getSpeedPercent(speed)) * stallCurrentAmps);
+    return MeasureMath.minAbs(Amps.of(y), statorLimit);
   }
 
   /**
@@ -262,13 +255,10 @@ public class DCMotorExt extends DCMotor {
    */
   public Current getCurrent(
       AngularVelocity speed, Voltage voltageInput, Current supplyLimit, Current statorLimit) {
-    Current maxStator =
-        getMaxStator(speed, voltageInput, supplyLimit, statorLimit).minus(getFreeCurrent(speed));
-    Current stall = getStallCurrent(speed);
-
-    Current stallOrLimit = MeasureMath.min(stall, statorLimit);
-    Current stallOrLimitAboveZero = MeasureMath.max(stallOrLimit, Amps.of(0.0));
-    return MeasureMath.min(stallOrLimitAboveZero, maxStator);
+    Current normalStator = getCurrent(speed, voltageInput);
+    Current limitedStator = getMaxStator(speed, voltageInput, supplyLimit, statorLimit);
+    limitedStator = limitedStator.times(MeasureMath.signum(normalStator));
+    return MeasureMath.minAbs(normalStator, limitedStator);
   }
 
   /**
@@ -281,7 +271,11 @@ public class DCMotorExt extends DCMotor {
    */
   public Current getSupplyCurrent(
       AngularVelocity speed, Voltage voltageInput, Current statorCurrent) {
-    Power statorPower = voltageInput.times(statorCurrent).times(getSpeedPercent(speed));
+    if (MathUtil.isNear(0.0, voltageInput.in(Volts), 0.0001)) {
+      return Amps.of(0.0);
+    }
+    Power statorPower =
+        voltageInput.times(getSpeedPercent(speed, voltageInput)).times(statorCurrent);
     Power losses = getLosses(speed, voltageInput, statorCurrent);
     return statorPower.plus(losses).div(voltageInput);
   }
@@ -319,7 +313,7 @@ public class DCMotorExt extends DCMotor {
    * @return The losses of the motor.
    */
   public Power getLosses(AngularVelocity speed, Voltage voltageInput, Current statorCurrent) {
-    Power passiveLoss = getFreeCurrent(speed).times(voltageInput);
+    Power passiveLoss = getFreeCurrent(speed, voltageInput).times(voltageInput);
     Power resistiveLoss = Watts.of(rOhms * Math.pow(statorCurrent.in(Amps), 2.0));
     return passiveLoss.plus(resistiveLoss);
   }

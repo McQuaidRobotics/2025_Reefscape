@@ -162,6 +162,8 @@ public class Monologue extends GlobalLogged {
       return;
     }
 
+    GlobalField.publish();
+
     NetworkTableInstance.getDefault()
         .startEntryDataLog(DataLogManager.getLog(), "", config.datalogPrefix);
 

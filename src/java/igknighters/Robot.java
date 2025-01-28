@@ -5,7 +5,6 @@ import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
@@ -50,7 +49,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
   @Log(key = "Localizer")
   public final Localizer localizer = new Localizer();
 
-  public final SimCtx simCtx = new SimCtx();
+  public final SimCtx simCtx = new SimCtx(localizer, isSimulation());
 
   private final DriverController driverController;
 
@@ -73,8 +72,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     }
 
     setupLogging();
-
-    localizer.publishField();
 
     subsystems =
         new Subsystems(new Swerve(localizer, simCtx), new Vision(localizer, simCtx), new Led());
@@ -117,13 +114,12 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
         "Characterize Swerve", Characterizers.characterizeSwerve(subsystems.swerve));
 
     System.gc();
-
-    Monologue.log("rajhhhhj", DCMotor.getKrakenX60Foc(1).getCurrent(0.0, 0.25));
   }
 
   @Override
   public void robotPeriodic() {
     loopCount.incrementAndGet();
+    Tracer.traceFunc("SimCtx", simCtx::update);
     Tracer.traceFunc("CANSignalRefresh", CANSignalManager::refreshSignals);
     Tracer.traceFunc("Localizer", localizer::update);
     Tracer.traceFunc("CommandScheduler", scheduler::run);
