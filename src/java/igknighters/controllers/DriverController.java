@@ -19,7 +19,7 @@ public class DriverController extends ControllerBase {
     /// FACE BUTTONS
     this.A.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.IntakeHp));
 
-    this.B.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.Stow));
+    this.B.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.ScoreL3));
 
     this.X.onTrue(Commands.none());
 
