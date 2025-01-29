@@ -3,6 +3,7 @@ package igknighters.commands;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.jni.ArmFeedforwardJNI;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -46,6 +47,33 @@ public class Experiments {
               Monologue.log(
                   "/Tunables/dcmotorTest/outputSupplyCurrent",
                   motor.getSupplyCurrent(rpm, inputVoltage, Amps.of(stator)).in(Amps));
+            })
+        .ignoringDisable(true);
+  }
+
+  public static Command armFFTestCmd() {
+    final TunableDouble ks = TunableValues.getDouble("armff/ks", 0.0);
+    final TunableDouble kv = TunableValues.getDouble("armff/kv", 0.0);
+    final TunableDouble ka = TunableValues.getDouble("armff/ka", 0.0);
+    final TunableDouble kg = TunableValues.getDouble("armff/kg", 0.0);
+    final TunableDouble currentAngle = TunableValues.getDouble("armff/currentAngle", 0.0);
+    final TunableDouble currentVelocity = TunableValues.getDouble("armff/currentVelocity", 0.0);
+    final TunableDouble nextVelocity = TunableValues.getDouble("armff/nextVelocity", 0.0);
+    final TunableDouble dt = TunableValues.getDouble("armff/dt", 0.02);
+
+    return Commands.run(
+            () -> {
+              Monologue.log(
+                  "/Tunables/armff/output",
+                  ArmFeedforwardJNI.calculate(
+                      ks.value(),
+                      kv.value(),
+                      ka.value(),
+                      kg.value(),
+                      currentAngle.value(),
+                      currentVelocity.value(),
+                      nextVelocity.value(),
+                      dt.value()));
             })
         .ignoringDisable(true);
   }

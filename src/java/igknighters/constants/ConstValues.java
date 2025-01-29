@@ -29,15 +29,15 @@ public final class ConstValues {
   }
 
   @SuppressWarnings("unused")
-  private static final class Motors {
-    private static final class Falcon500 {
+  public static final class Motors {
+    public static final class Falcon500 {
       public static final double FREE_SPEED = 668.1;
       public static final double FREE_CURRENT = 1.5;
       public static final double STALL_TORQUE = 4.69;
       public static final double STALL_CURRENT = 257.0;
     }
 
-    private static final class Falcon500Foc {
+    public static final class Falcon500Foc {
       public static final double FREE_SPEED = 636.7;
       public static final double FREE_CURRENT = 1.5;
       public static final double STALL_TORQUE = 5.84;

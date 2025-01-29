@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volt;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -18,13 +20,14 @@ import sham.ShamMechanism.MechanismDynamics;
 import sham.shamController.ClosedLoop;
 import sham.shamController.ShamMCX;
 import sham.shamController.unitSafeControl.UnitFeedback.PIDFeedback;
-import sham.shamController.unitSafeControl.UnitFeedforward.ArmFeedforward;
+import sham.shamController.unitSafeControl.UnitFeedforward.SimpleFeedforward;
+import sham.shamController.unitSafeControl.UnitTrapezoidProfile;
 import sham.utils.GearRatio;
 import wpilibExt.DCMotorExt;
 
 public class WristSim extends Wrist {
   private final ShamMCX shamMCX = new ShamMCX("WristMotor");
-  private final ShamMechanism WristMechanism;
+  private final ShamMechanism wristMechanism;
 
   private final ClosedLoop<CurrentUnit, AngleUnit, AngleUnit> elevatorLoop;
 
@@ -32,15 +35,16 @@ public class WristSim extends Wrist {
     elevatorLoop =
         ClosedLoop.forCurrentAngle(
             PIDFeedback.forAngular(Amps, Radians, WristConstants.KP, WristConstants.KD),
-            ArmFeedforward.forCurrent(
+            SimpleFeedforward.forCurrent(
                 Radians,
                 WristConstants.KS,
-                WristConstants.KG,
                 WristConstants.KV,
                 WristConstants.KA,
                 simCtx.robot().timing().dt()),
-            true);
-    WristMechanism =
+            UnitTrapezoidProfile.forAngle(
+                RadiansPerSecond.of(WristConstants.MAX_VELOCITY),
+                RadiansPerSecondPerSecond.of(WristConstants.MAX_ACCELERATION)));
+    wristMechanism =
         new ShamMechanism(
             "WristMechanism",
             new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1),
@@ -53,7 +57,7 @@ public class WristSim extends Wrist {
             HardLimits.of(Radian.of(WristConstants.MIN_ANGLE), Radian.of(WristConstants.MAX_ANGLE)),
             0,
             simCtx.robot().timing());
-    simCtx.robot().addMechanism(WristMechanism);
+    simCtx.robot().addMechanism(wristMechanism);
     shamMCX.configSensorToMechanismRatio(WristConstants.GEAR_RATIO);
   }
 

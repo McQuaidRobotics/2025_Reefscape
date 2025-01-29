@@ -21,7 +21,6 @@ import igknighters.constants.ConstValues;
 import igknighters.constants.FieldConstants;
 import igknighters.controllers.DriverController;
 import igknighters.controllers.OperatorController;
-import igknighters.subsystems.Intake.Intake;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.led.Led;
 import igknighters.subsystems.superStructure.SuperStructure;
@@ -31,7 +30,6 @@ import igknighters.util.UnitTestableRobot;
 import igknighters.util.can.CANSignalManager;
 import igknighters.util.logging.WatchdogSilencer;
 import java.io.File;
-import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import monologue.Annotations.FlattenedLogged;
@@ -80,8 +78,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             new Swerve(localizer, simCtx),
             new Vision(localizer, simCtx),
             new Led(),
-            new SuperStructure(simCtx),
-            new Intake(simCtx));
+            new SuperStructure(simCtx));
 
     localizer.reset(FieldConstants.POSE2D_CENTER);
 
@@ -230,13 +227,9 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
         break;
     }
 
-    HashMap<String, Integer> commandCounts = new HashMap<>();
     BiConsumer<Command, Boolean> logCommandFunction =
         (Command command, Boolean active) -> {
-          String name = command.getName();
-          int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
-          commandCounts.put(name, count);
-          Monologue.log("Commands/" + name, count > 0);
+          Monologue.log("Commands/" + command.getName(), active);
         };
     scheduler.onCommandInitialize(
         (Command command) -> {
