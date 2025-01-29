@@ -2,8 +2,14 @@ package igknighters.subsystems.superStructure.Wrist;
 
 import edu.wpi.first.math.MathUtil;
 import igknighters.subsystems.Component;
+import monologue.Annotations.Log;
 
 public abstract class Wrist extends Component {
+  @Log protected double angleDegrees;
+  @Log protected double amps;
+  @Log protected boolean isHomed;
+  @Log protected double radiansPerSecond;
+  @Log protected double targetingDegrees;
 
   public abstract void goToPosition(double angleDegrees);
 
