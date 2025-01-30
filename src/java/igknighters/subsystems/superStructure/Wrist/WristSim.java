@@ -49,7 +49,7 @@ public class WristSim extends Wrist {
             "WristMechanism",
             new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1),
             shamMCX,
-            KilogramSquareMeters.of(.4),
+            KilogramSquareMeters.of(.3),
             GearRatio.reduction(WristConstants.GEAR_RATIO),
             Friction.of(DCMotor.getKrakenX60Foc(1), Volt.of(0.5)),
             // MechanismDynamics.forArm(Pound.of(9.0), Inches.of(6)),
