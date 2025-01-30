@@ -31,6 +31,7 @@ import sham.shamController.unitSafeControl.UnitFeedforward.ElevatorFeedforwardAn
 import sham.shamController.unitSafeControl.UnitFeedforward.SimpleFeedforward;
 import sham.shamController.unitSafeControl.UnitTrapezoidProfile;
 import sham.shamController.unitSafeControl.UnitTrapezoidProfile.State;
+import wpilibExt.MeasureMath;
 
 public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION extends Unit> {
   private final PIDFeedback<OUTPUT, INPUT> feedback;
@@ -306,6 +307,7 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
       } else {
         throw new UnsupportedOperationException("Feedforward type not supported");
       }
+      feedforwardOutput = MeasureMath.zeroIfNAN(feedforwardOutput);
       logger.log("feedforwardOutput", feedforwardOutput);
       var fbResult = feedback.calculate(state.value(), step.value());
       Measure<OUTPUT> feedbackOutput = fbResult.getFirst();
@@ -430,6 +432,7 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit, INPUT_DIMENSION
       } else {
         throw new UnsupportedOperationException("Feedforward type not supported");
       }
+      feedforwardOutput = MeasureMath.zeroIfNAN(feedforwardOutput);
       logger.log("feedforwardOutput", feedforwardOutput);
       logger.log("feedbackOutput", feedbackOutput);
       return feedbackOutput.plus(feedforwardOutput);
