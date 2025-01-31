@@ -111,9 +111,9 @@ public class TwistyPoseEst {
     return poseAtTimestampPrimitive(timestamp).toPose2d();
   }
 
-  private double rotationAtTimestamp(double timestamp) {
+  private Rotation2d rotationAtTimestamp(double timestamp) {
     var pp = poseAtTimestampPrimitive(timestamp);
-    return Math.atan2(pp.sin, pp.cos);
+    return new Rotation2d(Math.atan2(pp.sin, pp.cos));
   }
 
   public void prune(double maxAge) {
@@ -148,13 +148,13 @@ public class TwistyPoseEst {
     }
     Pose2d lastPose = poseAtTimestamp(timestamp);
     if (lastPose.getTranslation().getDistance(pose.getTranslation()) < 0.01) {
-      forcePrune(timestamp, new Pose2d(pose.getTranslation(), lastPose.getRotation()));
+      forcePrune(timestamp, pose);
       return;
     }
     Twist2d twist = lastPose.log(pose);
     twist.dx *= weight;
     twist.dy *= weight;
-    twist.dtheta = 0.0;
+    twist.dtheta *= weight;
     forcePrune(timestamp, lastPose.exp(twist));
   }
 
@@ -175,9 +175,7 @@ public class TwistyPoseEst {
         new TimestampedTwist2d(
             twist.dx * weight,
             twist.dy * weight,
-            gyroAngle
-                .minus(Rotation2d.fromRadians(rotationAtTimestamp(Timer.getFPGATimestamp())))
-                .getRadians(),
+            gyroAngle.minus(rotationAtTimestamp(Timer.getFPGATimestamp())).getRadians(),
             timestamp));
     prevWheelPositions = wheelPositions;
   }

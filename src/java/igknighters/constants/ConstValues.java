@@ -3,8 +3,8 @@ package igknighters.constants;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import igknighters.constants.RobotConfig.RobotID;
@@ -95,36 +95,40 @@ public final class ConstValues {
           new CameraConfig[] {
             new CameraConfig(
                 "photon_module_1",
-                new Transform3d(
+                new Pose3d(
                     new Translation3d(
-                        -9 * Conv.INCHES_TO_METERS,
-                        -8.6 * Conv.INCHES_TO_METERS,
-                        8.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(0.0, -10.0 * Conv.DEGREES_TO_RADIANS, Math.PI))),
-            new CameraConfig(
-                "photon_module_2",
-                new Transform3d(
-                    new Translation3d(
-                        -9 * Conv.INCHES_TO_METERS,
+                        3 * Conv.INCHES_TO_METERS,
                         8.6 * Conv.INCHES_TO_METERS,
                         8.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(0.0, -10.0 * Conv.DEGREES_TO_RADIANS, Math.PI))),
+                    new Rotation3d(
+                        0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
             new CameraConfig(
-                "photon_elevator_1",
-                new Transform3d(
+                "photon_module_2",
+                new Pose3d(
                     new Translation3d(
-                        3.0 * Conv.INCHES_TO_METERS,
+                        3 * Conv.INCHES_TO_METERS,
+                        -8.6 * Conv.INCHES_TO_METERS,
+                        8.0 * Conv.INCHES_TO_METERS),
+                    new Rotation3d(
+                        0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
+            new CameraConfig(
+                "photon_climber_1",
+                new Pose3d(
+                    new Translation3d(
+                        -11.5 * Conv.INCHES_TO_METERS,
                         8.0 * Conv.INCHES_TO_METERS,
-                        38.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(0.0, 0.0, Math.PI / 6.0))),
+                        12.0 * Conv.INCHES_TO_METERS),
+                    new Rotation3d(
+                        0.0, -12.0 * Conv.DEGREES_TO_RADIANS, 135.0 * Conv.DEGREES_TO_RADIANS))),
             new CameraConfig(
-                "photon_elevator_2",
-                new Transform3d(
+                "photon_climber_2",
+                new Pose3d(
                     new Translation3d(
-                        3.0 * Conv.INCHES_TO_METERS,
+                        -11.5 * Conv.INCHES_TO_METERS,
                         -8.0 * Conv.INCHES_TO_METERS,
-                        38.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(0.0, 0.0, -Math.PI / 6.0)))
+                        12.0 * Conv.INCHES_TO_METERS),
+                    new Rotation3d(
+                        0.0, -12.0 * Conv.DEGREES_TO_RADIANS, -135.0 * Conv.DEGREES_TO_RADIANS))),
           }),
       BURN(new CameraConfig[] {});
 

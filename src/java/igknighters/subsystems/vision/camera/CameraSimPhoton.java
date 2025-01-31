@@ -1,25 +1,27 @@
 package igknighters.subsystems.vision.camera;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import igknighters.SimCtx;
+import java.util.function.Function;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 
 @SuppressWarnings("unused")
 public class CameraSimPhoton extends CameraRealPhoton {
-  public CameraSimPhoton(String cameraName, Transform3d cameraTransform, SimCtx simCtx) {
-    super(cameraName, cameraTransform);
+  private final SimCtx simCtx;
+
+  public CameraSimPhoton(
+      CameraConfig config, SimCtx simCtx, Function<Double, Rotation2d> gyroYawSupplier) {
+    super(config, gyroYawSupplier);
+    this.simCtx = simCtx;
 
     final SimCameraProperties props = new SimCameraProperties();
-    props.setCalibError(0.00, 0.00);
-    // props.setCalibError(0.05, 0.02);
+    props.setCalibError(0.05, 0.002);
     props.setFPS(43.0);
-    props.setCalibration(1280, 800, Rotation2d.fromDegrees(72.0));
+    props.setCalibration(1280, 800, Rotation2d.fromDegrees(78.0));
     props.setAvgLatencyMs(20.0);
     props.setLatencyStdDevMs(2.0);
-    props.setExposureTimeMs(0);
-    final PhotonCameraSim sim = new PhotonCameraSim(camera, props, 0.08, 6.5);
-    simCtx.aprilTagSim().addCamera(sim, cameraTransform);
+    final PhotonCameraSim sim = new PhotonCameraSim(camera, props, 0.12, 6.5);
+    simCtx.aprilTagSim().addCamera(sim, config.cameraTransform());
   }
 }

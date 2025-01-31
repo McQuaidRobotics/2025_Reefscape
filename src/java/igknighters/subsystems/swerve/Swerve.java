@@ -25,6 +25,7 @@ import igknighters.subsystems.swerve.module.SwerveModuleSimSham;
 import igknighters.subsystems.swerve.odometryThread.RealSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SwerveOdometryThread;
+import igknighters.util.plumbing.TunableValues;
 import java.util.Optional;
 import sham.ShamSwerve;
 import wayfinder.controllers.Types.ChassisConstraints;
@@ -137,16 +138,18 @@ public class Swerve implements ExclusiveSubsystem {
       return;
     }
 
-    setpoint =
-        setpointGeneratorBeta.generateSetpoint(
-            setpoint,
-            robotSpeeds.toWpilib(),
-            Optional.ofNullable(constraints),
-            ConstValues.PERIODIC_TIME);
-
-    // setpoint =
-    //     setpointGeneratorBeta.generateSimpleSetpoint(
-    //         setpoint, robotSpeeds, ConstValues.PERIODIC_TIME);
+    if (TunableValues.getBoolean("setpointGenerator", true).value()) {
+      setpoint =
+          setpointGeneratorBeta.generateSetpoint(
+              setpoint,
+              robotSpeeds.toWpilib(),
+              Optional.ofNullable(constraints),
+              ConstValues.PERIODIC_TIME);
+    } else {
+      setpoint =
+          setpointGeneratorBeta.generateSimpleSetpoint(
+              setpoint, robotSpeeds, ConstValues.PERIODIC_TIME);
+    }
 
     setModuleStates(setpoint.moduleStates());
   }

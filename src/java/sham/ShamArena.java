@@ -20,11 +20,15 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import monologue.ProceduralStructGenerator;
+import org.dyn4j.collision.Filter;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
+import org.dyn4j.geometry.Ray;
+import org.dyn4j.geometry.Vector2;
+import org.dyn4j.world.DetectFilter;
 import org.dyn4j.world.PhysicsWorld;
 import org.dyn4j.world.World;
 import sham.ShamGamePiece.GamePieceVariant;
@@ -52,6 +56,7 @@ public abstract class ShamArena {
   protected final EpilogueBackend logger = RuntimeLog.loggerFor("Arena");
   protected final ReentrantLock worldLock = new ReentrantLock();
   protected final World<Body> physicsWorld = new World<>();
+  protected final FieldMap fieldMap;
   protected final Set<ShamGamePiece> gamePieces = ConcurrentHashMap.newKeySet();
   protected final Set<ShamRobot<?>> robots = ConcurrentHashMap.newKeySet();
   public final ShamEnvTiming timing;
@@ -67,19 +72,20 @@ public abstract class ShamArena {
    * <p>It also sets up the collections for drivetrain simulations, game pieces, projectiles, and
    * intake simulations.
    *
-   * @param obstaclesMap the season-specific field map containing the layout of obstacles for the
+   * @param fieldMap the season-specific field map containing the layout of obstacles for the
    *     simulation
    * @param period the duration of each simulation period in seconds
    * @param ticksPerPeriod the number of sub-ticks to execute in each simulation period
    */
-  protected ShamArena(FieldMap obstaclesMap, double period, int ticksPerPeriod) {
+  protected ShamArena(FieldMap fieldMap, double period, int ticksPerPeriod) {
     this.timing = new ShamEnvTiming(period, ticksPerPeriod);
     this.physicsWorld.setGravity(PhysicsWorld.ZERO_GRAVITY);
-    for (FrcBody obstacle : obstaclesMap.obstacles) {
+    for (FrcBody obstacle : fieldMap.obstacles) {
       this.physicsWorld.addBody(obstacle);
     }
+    this.fieldMap = fieldMap;
     FrcBodySnapshot[] obstacleSnapshot =
-        obstaclesMap.obstacles.stream().map(FrcBody::snapshot).toArray(FrcBodySnapshot[]::new);
+        fieldMap.obstacles.stream().map(FrcBody::snapshot).toArray(FrcBodySnapshot[]::new);
     logger.log("Obstacles", obstacleSnapshot, FrcBodySnapshot.struct);
   }
 
@@ -206,6 +212,26 @@ public abstract class ShamArena {
    */
   protected void competitionPeriodic() {}
 
+  public boolean lineOfSight(Translation2d from, Translation2d to) {
+    double distance = from.getDistance(to) * 0.96;
+    Vector2 fromDyn = GeometryConvertor.toDyn4jVector2(from);
+
+    DetectFilter<Body, BodyFixture> filter =
+        new DetectFilter<>(
+            false,
+            false,
+            new Filter() {
+              public boolean isAllowed(Filter filter) {
+                return filter == Filter.DEFAULT_FILTER;
+              }
+            });
+    worldLock.lock();
+    Ray ray = new Ray(fromDyn, to.minus(from).getAngle().getRadians());
+    var results = physicsWorld.raycast(ray, distance, filter);
+    worldLock.unlock();
+    return results.isEmpty();
+  }
+
   /**
    *
    *
@@ -217,7 +243,9 @@ public abstract class ShamArena {
    * subclass of this class to store the field map for that specific season's game.
    */
   public static class FieldMap {
-    private final List<FrcBody> obstacles = new ArrayList<>();
+    public static class FieldObstacle extends FrcBody {}
+
+    private final List<FieldObstacle> obstacles = new ArrayList<>();
 
     protected void addBorderLine(Translation2d startingPoint, Translation2d endingPoint) {
       addCustomObstacle(
@@ -233,15 +261,15 @@ public abstract class ShamArena {
     }
 
     protected void addCustomObstacle(Convex shape, Pose2d absolutePositionOnField) {
-      final FrcBody obstacle = createObstacle(shape);
+      final FieldObstacle obstacle = createObstacle(shape);
 
       obstacle.getTransform().set(GeometryConvertor.toDyn4jTransform(absolutePositionOnField));
 
       obstacles.add(obstacle);
     }
 
-    private static FrcBody createObstacle(Convex shape) {
-      final FrcBody obstacle = new FrcBody();
+    private static FieldObstacle createObstacle(Convex shape) {
+      final FieldObstacle obstacle = new FieldObstacle();
       obstacle.setMass(MassType.INFINITE);
       final BodyFixture fixture = obstacle.addFixture(shape);
       fixture.setFriction(0.6);

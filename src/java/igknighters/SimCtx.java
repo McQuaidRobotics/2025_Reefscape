@@ -4,9 +4,12 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import igknighters.constants.AprilTags;
 import igknighters.constants.ConstValues;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.ConstValues.kSwerve;
@@ -14,6 +17,8 @@ import igknighters.constants.ConstValues.kSwerve.kDriveMotor;
 import igknighters.constants.ConstValues.kSwerve.kSteerMotor;
 import igknighters.constants.FieldConstants;
 import igknighters.util.plumbing.Channel.Receiver;
+import java.util.ArrayList;
+import java.util.List;
 import monologue.GlobalField;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.VisionSystemSim;
@@ -123,7 +128,25 @@ public class SimCtx {
       arena.simulationPeriodic();
       final Pose2d robotPose = simRobot.getDriveTrain().getChassisWorldPose();
       GlobalField.setObject("SimRobot", robotPose);
+
+      aprilTagSim.clearAprilTags();
+      List<AprilTag> visibleTags = new ArrayList<>();
+      for (AprilTag tag : AprilTags.TAGS) {
+        boolean los =
+            arena()
+                .lineOfSight(
+                    robot().getDriveTrain().getChassisWorldPose().getTranslation(),
+                    tag.pose.getTranslation().toTranslation2d());
+        if (los) {
+          visibleTags.add(tag);
+        }
+      }
+      AprilTagFieldLayout layout =
+          new AprilTagFieldLayout(
+              visibleTags, FieldConstants.FIELD_LENGTH, FieldConstants.FIELD_WIDTH);
+      aprilTagSim.addAprilTags(layout);
       aprilTagSim.update(robotPose);
+
       objectDetectionSim.update(robotPose);
       objectDetectionSim.clearVisionTargets();
       final var objectTargets =

@@ -5,10 +5,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.SimCtx;
@@ -23,11 +23,14 @@ import igknighters.subsystems.vision.camera.CameraDisabled;
 import igknighters.subsystems.vision.camera.CameraRealPhoton;
 import igknighters.subsystems.vision.camera.CameraSimPhoton;
 import igknighters.util.plumbing.Channel.Sender;
+import igknighters.util.plumbing.TunableValues;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import monologue.Annotations.IgnoreLogged;
+import monologue.GlobalField;
 import monologue.ProceduralStructGenerator;
+import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Tracer;
 
 public class Vision implements SharedSubsystem {
@@ -47,12 +50,11 @@ public class Vision implements SharedSubsystem {
       boolean infeasiblePitchValue,
       boolean infeasibleRollValue,
       boolean sketchyTags,
-      boolean noTags,
       boolean singleTag)
       implements StructSerializable {
 
     private static final VisionUpdateFlaws kEmpty =
-        new VisionUpdateFlaws(false, false, false, false, false, false, false, false, false);
+        new VisionUpdateFlaws(false, false, false, false, false, false, false, false);
 
     public static VisionUpdateFlaws empty() {
       return kEmpty;
@@ -80,7 +82,6 @@ public class Vision implements SharedSubsystem {
       boolean infeasiblePitchValue = pose.getRotation().getY() > kVision.MAX_ANGLE_DELTA;
       boolean infeasibleRollValue = pose.getRotation().getX() > kVision.MAX_ANGLE_DELTA;
       boolean outOfRange = avgDistance > 5.5;
-      boolean noTags = tagsList.size() == 0;
       boolean singleTag = tagsList.size() == 1;
       boolean sketchyTags = tagsList.stream().anyMatch(sketchyTagsList::contains);
       return new VisionUpdateFlaws(
@@ -91,7 +92,6 @@ public class Vision implements SharedSubsystem {
           infeasiblePitchValue,
           infeasibleRollValue,
           sketchyTags,
-          noTags,
           singleTag);
     }
 
@@ -99,11 +99,11 @@ public class Vision implements SharedSubsystem {
         ProceduralStructGenerator.genRecord(VisionUpdateFlaws.class);
   }
 
-  public record VisionUpdate(Pose3d pose, double timestamp, VisionUpdateFlaws faults)
+  public record VisionUpdate(Pose2d pose, double timestamp, VisionUpdateFlaws faults)
       implements StructSerializable {
 
     private static final VisionUpdate kEmpty =
-        new VisionUpdate(Pose3d.kZero, 0.0, VisionUpdateFlaws.empty());
+        new VisionUpdate(Pose2d.kZero, 0.0, VisionUpdateFlaws.empty());
 
     public static VisionUpdate empty() {
       return kEmpty;
@@ -120,13 +120,16 @@ public class Vision implements SharedSubsystem {
         ProceduralStructGenerator.genRecord(VisionSample.class);
   }
 
+  private Rotation2d rotationAtTimestamp(double timestamp) {
+    return localizer.pose(Timer.getFPGATimestamp() - timestamp).getRotation();
+  }
+
   private Camera makeCamera(CameraConfig config, SimCtx simCtx) {
     try {
       if (Robot.isSimulation()) {
-        return new CameraSimPhoton(config.cameraName(), config.cameraTransform(), simCtx);
-        // return new CameraDisabled(config.cameraName(), config.cameraTransform());
+        return new CameraSimPhoton(config, simCtx, this::rotationAtTimestamp);
       } else {
-        return new CameraRealPhoton(config.cameraName(), config.cameraTransform());
+        return new CameraRealPhoton(config, this::rotationAtTimestamp);
       }
     } catch (Exception e) {
       // if the camera fails to initialize, return a disabled camera to not crash the code
@@ -150,35 +153,30 @@ public class Vision implements SharedSubsystem {
     final VisionUpdateFlaws faults = update.faults();
 
     // These are "fatal" faults that should always invalidate the update
-    if (faults.noTags
-        || (faults.sketchyTags && faults.singleTag)
-        || faults.outOfBounds
-        || faults.extremeJitter) {
+    if ((faults.sketchyTags && faults.singleTag) || faults.outOfBounds || faults.extremeJitter) {
       return Optional.empty();
     }
 
-    double trust = kVision.ROOT_TRUST;
+    double trust = kVision.ROOT_TRUST * TunableValues.getDouble("visionTrustScaler", 1.0).value();
 
     // If the average distance of the tags is too far away reduce the trust
     if (faults.outOfRange()) {
       trust /= 2.0;
     }
 
-    // If any tags seen are sketchy reduce the trust
-    // If the only tag seen is sketchy massively reduce the trust
-    if (faults.singleTag || faults.sketchyTags) {
+    // If there is a sketchy tag reduce the trust
+    if (faults.sketchyTags) {
       trust /= 2.0;
     }
 
     // Completely arbitrary values for the velocity thresholds.
     // When the robot is moving fast there can be paralaxing and motion blur
     // that can cause the vision system to be less accurate, reduce the trust due to this
-    ChassisSpeeds velo = localizer.speeds();
-    if (new Translation2d(velo.vxMetersPerSecond, velo.vyMetersPerSecond).getNorm()
-        > kSwerve.MAX_DRIVE_VELOCITY / 2.0) {
+    FieldSpeeds velo = localizer.speeds();
+    if (Math.hypot(velo.vx(), velo.vy()) > kSwerve.MAX_DRIVE_VELOCITY / 2.0) {
       trust /= 2.0;
     }
-    if (velo.omegaRadiansPerSecond > kSwerve.MAX_ANGULAR_VELOCITY / 3.0) {
+    if (velo.omega() > kSwerve.MAX_ANGULAR_VELOCITY / 3.0) {
       trust /= 2.0;
     }
 
@@ -186,7 +184,7 @@ public class Vision implements SharedSubsystem {
     Rotation2d rotation = localizer.pose().getRotation();
     if (Math.abs(
             MathUtil.angleModulus(rotation.getRadians())
-                - MathUtil.angleModulus(update.pose().getRotation().toRotation2d().getRadians()))
+                - MathUtil.angleModulus(update.pose().getRotation().getRadians()))
         > Math.toRadians(5.0)) {
       trust /= 2.0;
     }
@@ -195,7 +193,7 @@ public class Vision implements SharedSubsystem {
       trust /= 2.0;
     }
 
-    return Optional.of(new VisionSample(update.pose().toPose2d(), update.timestamp(), trust));
+    return Optional.of(new VisionSample(update.pose(), update.timestamp(), trust));
   }
 
   @Override
@@ -221,13 +219,18 @@ public class Vision implements SharedSubsystem {
       Tracer.endTrace();
     }
 
-    log(
-        "seenTags",
+    Pose3d[] tagLoc3d =
         seenTags.stream()
             .map(i -> FieldConstants.APRIL_TAG_FIELD.getTagPose(i))
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .toArray(Pose3d[]::new));
+            .toArray(Pose3d[]::new);
+    Pose2d[] tagLoc2d = new Pose2d[tagLoc3d.length];
+    for (int i = 0; i < tagLoc3d.length; i++) {
+      tagLoc2d[i] = tagLoc3d[i].toPose2d();
+    }
+    log("seenTags", tagLoc3d);
+    GlobalField.setObject("SeenTags", tagLoc2d);
     seenTags.clear();
 
     Tracer.endTrace();
