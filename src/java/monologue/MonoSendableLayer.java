@@ -1,5 +1,6 @@
 package monologue;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.util.function.FloatConsumer;
@@ -43,28 +44,58 @@ public class MonoSendableLayer {
   }
 
   static class SendableContainer {
+    final ArrayList<Pair<Boolean, Runnable>> queue = new ArrayList<>();
     final ArrayList<Runnable> updates = new ArrayList<>();
     final ArrayList<Runnable> constants = new ArrayList<>();
     final LogSink sink;
+    boolean useQueue = false;
 
     SendableContainer(LogSink sink) {
       this.sink = sink;
     }
 
+    private void emptyQueue() {
+      if (queue.isEmpty()) {
+        return;
+      }
+      for (Pair<Boolean, Runnable> pair : queue) {
+        if (pair.getFirst()) {
+          updates.add(pair.getSecond());
+        } else {
+          constants.add(pair.getSecond());
+        }
+      }
+      queue.clear();
+    }
+
     void addUpdatable(Runnable r) {
-      updates.add(r);
+      if (useQueue) {
+        queue.add(new Pair<>(true, r));
+      } else {
+        updates.add(r);
+      }
     }
 
     void addConstant(Runnable r) {
-      constants.add(r);
+      if (useQueue) {
+        queue.add(new Pair<>(false, r));
+      } else {
+        constants.add(r);
+      }
     }
 
     void update() {
+      useQueue = true;
+      emptyQueue();
       updates.forEach(Runnable::run);
+      useQueue = false;
     }
 
     void postConstants() {
+      useQueue = true;
+      emptyQueue();
       constants.forEach(Runnable::run);
+      useQueue = false;
     }
   }
 
@@ -93,7 +124,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(type);
             }
-            ;
           });
     }
 
@@ -135,7 +165,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.logBoolean(getter.getAsBoolean());
             }
-            ;
           });
     }
 
@@ -151,7 +180,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(getter.get());
             }
-            ;
           });
     }
 
@@ -164,7 +192,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.logBoolean(value);
             }
-            ;
           });
     }
 
@@ -178,7 +205,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(value);
             }
-            ;
           });
     }
 
@@ -192,7 +218,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.logLong(getter.getAsLong());
             }
-            ;
           });
     }
 
@@ -208,7 +233,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(getter.get());
             }
-            ;
           });
     }
 
@@ -221,7 +245,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.logLong(value);
             }
-            ;
           });
     }
 
@@ -235,7 +258,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(value);
             }
-            ;
           });
     }
 
@@ -249,7 +271,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.logDouble(getter.getAsDouble());
             }
-            ;
           });
     }
 
@@ -265,7 +286,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(getter.get());
             }
-            ;
           });
     }
 
@@ -278,7 +298,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.logDouble(value);
             }
-            ;
           });
     }
 
@@ -292,7 +311,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(value);
             }
-            ;
           });
     }
 
@@ -306,7 +324,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.logDouble(getter.getAsFloat());
             }
-            ;
           });
     }
 
@@ -322,7 +339,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(getter.get());
             }
-            ;
           });
     }
 
@@ -335,7 +351,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.logDouble(value);
             }
-            ;
           });
     }
 
@@ -349,7 +364,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(value);
             }
-            ;
           });
     }
 
@@ -364,7 +378,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(getter.get());
             }
-            ;
           });
     }
 
@@ -380,7 +393,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(getter.get());
             }
-            ;
           });
     }
 
@@ -394,7 +406,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(value);
             }
-            ;
           });
     }
 
@@ -408,7 +419,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(value);
             }
-            ;
           });
     }
 
@@ -424,7 +434,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(getter.get());
             }
-            ;
           });
     }
 
@@ -438,7 +447,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log(value);
             }
-            ;
           });
     }
   }
@@ -525,7 +533,6 @@ public class MonoSendableLayer {
                 entry.log(arr);
               }
             }
-            ;
           });
 
       sendable.addConstant(
@@ -536,7 +543,6 @@ public class MonoSendableLayer {
             public void run() {
               entry.log("Field2d");
             }
-            ;
           });
 
       addSendableContainer(sendable);
@@ -563,7 +569,16 @@ public class MonoSendableLayer {
               lengthEntry.logDouble(length);
               weightEntry.logDouble(weight);
             }
-            ;
+          });
+
+      sendable.addConstant(
+          new Runnable() {
+            MonologueEntry<String> typeEntry =
+                MonologueEntry.create(path + "/.type", String.class, sink);
+
+            public void run() {
+              typeEntry.log("line");
+            }
           });
     }
 
@@ -581,7 +596,6 @@ public class MonoSendableLayer {
               xEntry.logDouble(x);
               yEntry.logDouble(y);
             }
-            ;
           });
     }
 
@@ -596,15 +610,9 @@ public class MonoSendableLayer {
         addMechanism2dRoot(path, (MechanismRoot2d) object, sendable, sink);
       }
 
-      sendable.addUpdatable(
-          new Runnable() {
-            public void run() {
-              for (Map.Entry<String, MechanismObject2d> entry : objects.entrySet()) {
-                addMechanism2dObject(path + "/" + entry.getKey(), entry.getValue(), sendable, sink);
-              }
-            }
-            ;
-          });
+      for (Map.Entry<String, MechanismObject2d> entry : objects.entrySet()) {
+        addMechanism2dObject(path + "/" + entry.getKey(), entry.getValue(), sendable, sink);
+      }
     }
 
     public static void addMechanism2d(String path, Mechanism2d mech, LogSink sink) {
@@ -617,13 +625,12 @@ public class MonoSendableLayer {
             MonologueEntry<double[]> dimsEntry =
                 MonologueEntry.create(path + "/dims", double[].class, sink);
             MonologueEntry<String> colorEntry =
-                MonologueEntry.create(path + "/color", String.class, sink);
+                MonologueEntry.create(path + "/backgroundColor", String.class, sink);
 
             public void run() {
               dimsEntry.log((double[]) mechanism2dDims.get(mech));
               colorEntry.log((String) mechanism2dColor.get(mech));
             }
-            ;
           });
 
       for (Map.Entry<String, MechanismRoot2d> entry : roots.entrySet()) {
@@ -632,13 +639,18 @@ public class MonoSendableLayer {
 
       sendable.addConstant(
           new Runnable() {
-            MonologueEntry<String> entry =
+            MonologueEntry<String> typeEntry =
                 MonologueEntry.create(path + "/.type", String.class, sink);
+            MonologueEntry<Boolean> controllableEntry =
+                MonologueEntry.create(path + "/.controllable", Boolean.class, sink);
+            MonologueEntry<String> nameEntry =
+                MonologueEntry.create(path + "/.name", String.class, sink);
 
             public void run() {
-              entry.log("Mechanism2d");
+              typeEntry.log("Mechanism2d");
+              controllableEntry.log(true);
+              nameEntry.log(path);
             }
-            ;
           });
 
       addSendableContainer(sendable);

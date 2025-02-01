@@ -11,10 +11,12 @@ import igknighters.subsystems.superStructure.Wrist.WristReal;
 import igknighters.subsystems.superStructure.Wrist.WristSim;
 
 public class SuperStructure implements ExclusiveSubsystem {
+  private final SuperStructureVisualizer visualizer;
   private final Wrist wrist;
   private final Elevator elevator;
 
   public SuperStructure(SimCtx simCtx) {
+    visualizer = new SuperStructureVisualizer();
     if (Robot.isReal()) {
       wrist = new WristReal();
       elevator = new ElevatorReal();
@@ -27,6 +29,7 @@ public class SuperStructure implements ExclusiveSubsystem {
   public void goTo(double elevatorMeters, double wristRads) {
     elevator.gotoPosition(elevatorMeters);
     wrist.goToPosition(wristRads);
+    // visualizer.updateSetpoint(elevatorMeters, wristRads);
   }
 
   public boolean isAt(
@@ -39,5 +42,6 @@ public class SuperStructure implements ExclusiveSubsystem {
   public void periodic() {
     elevator.periodic();
     wrist.periodic();
+    visualizer.updatePosition(elevator.position(), wrist.position());
   }
 }

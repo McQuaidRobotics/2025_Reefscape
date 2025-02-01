@@ -12,13 +12,21 @@ public class ElevatorConstants {
   public static final double PULLEY_RADIUS = Conv.INCHES_TO_METERS * 1.106;
   public static final double PULLEY_CIRCUMFERENCE = 2.0 * Math.PI * PULLEY_RADIUS;
 
-  public record Stage(double height, double mass) {}
+  public record Stage(double tubeLength, double mass) {
+    public static final double OVERLAP = 5.0 * Conv.INCHES_TO_METERS;
+    public static final double FIRST_STAGE_HEIGHT = 32.0 * Conv.INCHES_TO_METERS;
+    public static final double TUBE_HEIGHT = 1.0 * Conv.INCHES_TO_METERS;
+
+    public double rangeOfMotion() {
+      return tubeLength - OVERLAP - TUBE_HEIGHT;
+    }
+  }
 
   public static final Stage[] STAGES = {
-    new Stage(Conv.INCHES_TO_METERS * 20.0, 2.125),
-    new Stage(Conv.INCHES_TO_METERS * 24.0, 2.125),
-    new Stage(Conv.INCHES_TO_METERS * 36.0, 2.125),
-    new Stage(Conv.INCHES_TO_METERS * 48.0, 4.5)
+    new Stage(Stage.FIRST_STAGE_HEIGHT, 2.125),
+    new Stage(Stage.FIRST_STAGE_HEIGHT - Stage.TUBE_HEIGHT, 2.125),
+    new Stage(Stage.FIRST_STAGE_HEIGHT - Stage.TUBE_HEIGHT * 3.0, 2.125),
+    new Stage(Conv.INCHES_TO_METERS * 8.0, 4.5)
   };
 
   public static final double MOI =
