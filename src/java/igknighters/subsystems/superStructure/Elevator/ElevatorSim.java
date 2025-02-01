@@ -2,14 +2,11 @@ package igknighters.subsystems.superStructure.Elevator;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
@@ -32,7 +29,7 @@ import wpilibExt.DCMotorExt;
 public class ElevatorSim extends Elevator {
   private final ShamMCX shamMCX = new ShamMCX("ElevatorMotor");
   private final ShamMechanism shamMechanism;
-  private final ClosedLoop<VoltageUnit, AngleUnit, AngleUnit> elevatorLoop;
+  private final ClosedLoop<VoltageUnit, AngleUnit> voltageLoop;
 
   public ElevatorSim(SimCtx simCtx) {
     shamMechanism =
@@ -40,79 +37,67 @@ public class ElevatorSim extends Elevator {
             "ElevatorMechanism",
             new DCMotorExt(DCMotor.getKrakenX60Foc(2), 2),
             shamMCX,
-            KilogramSquareMeters.of(.2),
+            KilogramSquareMeters.of(ElevatorConstants.MOI),
             GearRatio.reduction(ElevatorConstants.GEAR_RATIO),
-            Friction.of(DCMotor.getKrakenX60Foc(2), Volts.of(0.2)),
-            MechanismDynamics.forElevator(
-                Pounds.of(25.0), Meters.of(ElevatorConstants.WHEEL_RADIUS * 2.0)),
+            Friction.of(DCMotor.getKrakenX60Foc(2), Volts.of(ElevatorConstants.KS)),
+            // MechanismDynamics.forElevator(
+            //     Pounds.of(22.0), Meters.of(ElevatorConstants.PULLEY_RADIUS * 2.0)),
+            MechanismDynamics.zero(),
             HardLimits.of(
-                Rotations.of(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE),
-                Rotations.of(ElevatorConstants.MAX_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE)),
+                Radians.of(ElevatorConstants.REVERSE_LIMIT),
+                Radians.of(ElevatorConstants.FORWARD_LIMIT)),
             0.0,
             simCtx.robot().timing());
     shamMechanism.setState(
         new ShamMechanism.MechanismState(
-            Radians.of(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.WHEEL_RADIUS),
+            Radians.of(ElevatorConstants.REVERSE_LIMIT),
             RadiansPerSecond.zero(),
             RadiansPerSecondPerSecond.zero()));
     simCtx.robot().addMechanism(shamMechanism);
 
-    elevatorLoop =
+    voltageLoop =
         ClosedLoop.forVoltageAngle(
             PIDFeedback.forAngular(Volts, Rotations, ElevatorConstants.KP, ElevatorConstants.KD),
-            ElevatorFeedforward.forAngularVoltage(
-                Rotations,
+            ElevatorFeedforward.forVoltage(
+                Radians,
                 ElevatorConstants.KS,
                 ElevatorConstants.KG,
                 ElevatorConstants.KV,
-                0.0,
+                ElevatorConstants.KA,
                 simCtx.timing().dt()),
             UnitTrapezoidProfile.forAngle(
-                RotationsPerSecond.of(
-                    ElevatorConstants.MAX_VELOCITY / ElevatorConstants.WHEEL_CIRCUMFERENCE),
-                RotationsPerSecondPerSecond.of(
-                    ElevatorConstants.MAX_ACCELERATION / ElevatorConstants.WHEEL_CIRCUMFERENCE)));
+                RadiansPerSecond.of(ElevatorConstants.MAX_VELOCITY),
+                RadiansPerSecondPerSecond.of(ElevatorConstants.MAX_ACCELERATION)));
     shamMCX.configSensorToMechanismRatio(ElevatorConstants.GEAR_RATIO);
+    shamMCX.setBrakeMode(false);
   }
 
   @Override
-  public void gotoPosition(double heightMeters) {
-    super.whereItsTryingToGetToInMeters = heightMeters;
-
+  public void gotoPosition(double targetPosition) {
+    super.targetMeters = targetPosition;
     shamMCX.controlVoltage(
-        elevatorLoop, Rotations.of(heightMeters / ElevatorConstants.WHEEL_CIRCUMFERENCE));
+        voltageLoop, Rotations.of(targetPosition / ElevatorConstants.PULLEY_CIRCUMFERENCE));
   }
 
   @Override
-  public boolean isAtPosition(double heightMeters, double toleranceMeters) {
-    super.whatIsAtIsCheckingAgainst = heightMeters;
-    super.whereMotorThinksItIsInMeters =
-        shamMCX.position().in(Rotations) * ElevatorConstants.WHEEL_CIRCUMFERENCE;
-
-    return MathUtil.isNear(
-        heightMeters,
-        shamMCX.position().in(Rotations) * ElevatorConstants.WHEEL_CIRCUMFERENCE,
-        toleranceMeters);
+  public void setNeutralMode(boolean coast) {
+    shamMCX.setBrakeMode(!coast);
   }
 
   @Override
-  public void setNeutralMode(boolean shouldBeCoast) {
-    shamMCX.setBrakeMode(!shouldBeCoast);
-  }
-
-  @Override
-  public boolean home() {
-    return true;
+  public void voltageOut(double voltage) {
+    super.targetMeters = Double.NaN;
+    shamMCX.controlVoltage(Volts.of(voltage));
   }
 
   @Override
   public void periodic() {
-    super.meters = shamMCX.position().in(Rotations) * ElevatorConstants.WHEEL_CIRCUMFERENCE;
+    super.meters = shamMCX.position().in(Rotations) * ElevatorConstants.PULLEY_CIRCUMFERENCE;
     super.amps = shamMCX.statorCurrent().in(Amps);
     super.volts = shamMCX.voltage().in(Volts);
     super.isHomed = true;
-    super.isLimitTrip = MathUtil.isNear(0.0, super.meters, 0.01);
+    super.isLimitTripped = MathUtil.isNear(0.0, super.meters, 0.015);
     super.metersPerSecond =
-        shamMCX.velocity().in(RadiansPerSecond) * ElevatorConstants.WHEEL_CIRCUMFERENCE;
+        shamMCX.velocity().in(RotationsPerSecond) * ElevatorConstants.PULLEY_CIRCUMFERENCE;
   }
 }

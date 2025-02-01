@@ -19,7 +19,7 @@ public class SuperStructureCommands {
                 superStructure.isAt(
                     elevatorMeters,
                     wristRads,
-                    ElevatorConstants.TOLERANCE * toleranceScalar,
-                    WristConstants.TOLERANCE * toleranceScalar));
+                    ElevatorConstants.DEFAULT_TOLERANCE * toleranceScalar,
+                    WristConstants.DEFAULT_TOLERANCE * toleranceScalar));
   }
 }

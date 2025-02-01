@@ -2,23 +2,30 @@ package igknighters.subsystems.superStructure.Wrist;
 
 import igknighters.constants.ConstValues;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.constants.ConstValues.Motors.KrakenX60Foc;
 
 public class WristConstants {
-  public static final int ID = 5;
+  public static final String CANBUS = "Superstructure";
+  public static final int MOTOR_ID = 5;
+  public static final int CANCODER_ID = 42;
+
+  public static final double GEAR_RATIO = (5.0 / 1.0) * (5.0 / 1.0) * (60.0 / 30.0);
+
   public static final double KP = 0.0;
   public static final double KD = 0.0;
   public static final double KG = 0.0;
-  public static final double KS = 0.75;
-  public static final double KV = 0.79;
-  public static final double KA = 0.07;
-  public static final double GEAR_RATIO = 40.0;
+  public static final double KS = 0.15;
+  public static final double KV = (12.0 / (KrakenX60Foc.FREE_SPEED)) * GEAR_RATIO;
+  public static final double KA = 0.00;
+
   public static final double MAX_VELOCITY = ConstValues.Motors.KrakenX60Foc.FREE_SPEED / GEAR_RATIO;
   public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.5;
-  public static final double MAX_ANGLE = 87.0 * Conv.DEGREES_TO_RADIANS;
-  public static final double MIN_ANGLE = -87.0 * Conv.DEGREES_TO_RADIANS;
-  public static final int CANCODER_ID = 42;
+
+  public static final double FORWARD_LIMIT = 87.0 * Conv.DEGREES_TO_RADIANS;
+  public static final double REVERSE_LIMIT = -87.0 * Conv.DEGREES_TO_RADIANS;
+  public static final double DEFAULT_TOLERANCE = 1.0 * Conv.DEGREES_TO_RADIANS;
   public static final double ANGLE_OFFSET = 0.0;
-  public static final double TOLERANCE = 1.0 * Conv.DEGREES_TO_RADIANS;
 
   public static final double STATOR_CURRENT_LIMIT = 50.0;
+  public static final double SUPPLY_CURRENT_LIMIT = 50.0;
 }

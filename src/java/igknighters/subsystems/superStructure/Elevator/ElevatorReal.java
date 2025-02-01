@@ -9,9 +9,8 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
-import edu.wpi.first.math.MathUtil;
+import igknighters.constants.ConstValues.Conv;
 import igknighters.util.can.CANSignalManager;
-import monologue.Monologue;
 
 public class ElevatorReal extends Elevator {
   private final TalonFX elevatorFollower;
@@ -36,7 +35,7 @@ public class ElevatorReal extends Elevator {
     current = elevatorLeader.getTorqueCurrent();
 
     reverseLimit = elevatorLeader.getReverseLimit();
-    reverseLimit.setUpdateFrequency(400);
+    reverseLimit.setUpdateFrequency(1000); // hehe
 
     CANSignalManager.registerSignals(
         ElevatorConstants.CANBUS, position, velocity, voltage, current);
@@ -46,43 +45,36 @@ public class ElevatorReal extends Elevator {
 
     var cfg = new TalonFXConfiguration();
 
-    cfg.Slot0.kP = ElevatorConstants.KP;
-    cfg.Slot0.kG = ElevatorConstants.KG;
-    cfg.Slot0.kD = ElevatorConstants.KD;
+    cfg.Slot0.kP = ElevatorConstants.KP * Conv.RADIANS_TO_ROTATIONS;
+    cfg.Slot0.kD = ElevatorConstants.KD * Conv.RADIANS_TO_ROTATIONS;
     cfg.Slot0.kS = ElevatorConstants.KS;
-    cfg.Slot0.kV = ElevatorConstants.KV;
+    cfg.Slot0.kG = ElevatorConstants.KG;
+    cfg.Slot0.kV = ElevatorConstants.KV * Conv.RADIANS_TO_ROTATIONS;
 
     cfg.Feedback.SensorToMechanismRatio = ElevatorConstants.GEAR_RATIO;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ElevatorConstants.MAX_HEIGHT;
+    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        ElevatorConstants.FORWARD_LIMIT / ElevatorConstants.PULLEY_CIRCUMFERENCE;
 
     cfg.HardwareLimitSwitch.ReverseLimitEnable = true;
 
-    cfg.MotionMagic.MotionMagicCruiseVelocity =
-        ElevatorConstants.MAX_VELOCITY / ElevatorConstants.WHEEL_CIRCUMFERENCE;
-    cfg.MotionMagic.MotionMagicAcceleration =
-        ElevatorConstants.MAX_ACCELERATION / ElevatorConstants.WHEEL_CIRCUMFERENCE;
+    cfg.MotionMagic.MotionMagicCruiseVelocity = ElevatorConstants.MAX_VELOCITY;
+    cfg.MotionMagic.MotionMagicAcceleration = ElevatorConstants.MAX_ACCELERATION;
 
     return cfg;
   }
 
   @Override
-  public void gotoPosition(double heightMeters) {
-    Monologue.log("elevatorTargeting", heightMeters / ElevatorConstants.WHEEL_RADIUS);
+  public void gotoPosition(double targetPosition) {
+    super.targetMeters = targetPosition;
     elevatorLeader.setControl(
-        controlReq.withPosition(heightMeters / ElevatorConstants.WHEEL_RADIUS));
+        controlReq.withPosition(targetPosition / ElevatorConstants.PULLEY_RADIUS));
   }
 
   @Override
-  public boolean isAtPosition(double heightMeters, double toleranceMeters) {
-    return MathUtil.isNear(
-        heightMeters, elevatorLeader.getPosition().getValueAsDouble(), toleranceMeters);
-  }
-
-  @Override
-  public void setNeutralMode(boolean shouldBeCoast) {
-    if (shouldBeCoast) {
+  public void setNeutralMode(boolean coast) {
+    if (coast) {
       elevatorLeader.setNeutralMode(NeutralModeValue.Coast);
       elevatorFollower.setNeutralMode(NeutralModeValue.Coast);
     } else {
@@ -93,27 +85,24 @@ public class ElevatorReal extends Elevator {
 
   @Override
   public boolean home() {
-    if (!super.isHomed) {
-      elevatorLeader.setControl(voltageOut.withOutput(0.5));
-      if (super.isLimitTrip) {
-        elevatorLeader.setControl(voltageOut.withOutput(0.0));
-        elevatorFollower.setPosition(
-            ElevatorConstants.MIN_HEIGHT / ElevatorConstants.WHEEL_CIRCUMFERENCE);
-        super.isHomed = true;
-      }
-      return super.isHomed;
-    } else {
-      elevatorLeader.setControl(voltageOut.withOutput(0.0));
-      return true;
+    if (!isHomed && super.home()) {
+      elevatorLeader.setPosition(ElevatorConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS);
     }
+    return isHomed;
+  }
+
+  @Override
+  public void voltageOut(double voltage) {
+    super.targetMeters = Double.NaN;
+    elevatorLeader.setControl(voltageOut.withOutput(voltage));
   }
 
   @Override
   public void periodic() {
-    super.meters = position.getValueAsDouble() * ElevatorConstants.WHEEL_CIRCUMFERENCE;
-    super.metersPerSecond = velocity.getValueAsDouble() * ElevatorConstants.WHEEL_CIRCUMFERENCE;
+    super.meters = position.getValueAsDouble() * ElevatorConstants.PULLEY_CIRCUMFERENCE;
+    super.metersPerSecond = velocity.getValueAsDouble() * ElevatorConstants.PULLEY_CIRCUMFERENCE;
     super.volts = voltage.getValueAsDouble();
     super.amps = current.getValueAsDouble();
-    super.isLimitTrip = reverseLimit.getValue() == ReverseLimitValue.ClosedToGround;
+    super.isLimitTripped = reverseLimit.getValue() == ReverseLimitValue.ClosedToGround;
   }
 }

@@ -1,65 +1,81 @@
 package igknighters.subsystems.superStructure.Wrist;
 
+import static edu.wpi.first.units.Units.Radians;
+
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DynamicMotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
 
 public class WristReal extends Wrist {
 
-  private final TalonFX wrist = new TalonFX(WristConstants.ID);
-  private final CANcoder wristCaNcoder = new CANcoder(WristConstants.CANCODER_ID);
+  private final TalonFX wrist = new TalonFX(WristConstants.MOTOR_ID);
+  private final CANcoder encoder = new CANcoder(WristConstants.CANCODER_ID);
 
-  private final DynamicMotionMagicTorqueCurrentFOC controlReq =
-      new DynamicMotionMagicTorqueCurrentFOC(0.0, 0.0, 0.0, 0.0).withUpdateFreqHz(0.0);
+  private final BaseStatusSignal position, velocity, amps, voltage;
+
+  private final MotionMagicTorqueCurrentFOC controlReq =
+      new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
+  private final VoltageOut voltageOut =
+      new VoltageOut(0.0).withUpdateFreqHz(0.0).withEnableFOC(true);
+
+  public WristReal() {
+    wrist.getConfigurator().apply(wristConfiguration());
+    encoder.getConfigurator().apply(wristCaNcoderConfiguration());
+
+    position = wrist.getPosition();
+    velocity = wrist.getVelocity();
+    amps = wrist.getStatorCurrent();
+    voltage = wrist.getMotorVoltage();
+
+    this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
+  }
 
   private final TalonFXConfiguration wristConfiguration() {
     var cfg = new TalonFXConfiguration();
 
     cfg.Slot0.kP = WristConstants.KP;
     cfg.Slot0.kD = WristConstants.KD;
-    cfg.Slot0.kG = WristConstants.KG;
     cfg.Slot0.kS = WristConstants.KS;
+    cfg.Slot0.kG = WristConstants.KG;
+    cfg.Slot0.kV = WristConstants.KV;
+    cfg.Slot0.kA = WristConstants.KA;
     cfg.Feedback.RotorToSensorRatio = WristConstants.GEAR_RATIO;
     cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
     cfg.Feedback.FeedbackRemoteSensorID = WristConstants.CANCODER_ID;
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.MAX_ANGLE;
+    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.FORWARD_LIMIT;
     cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.MIN_ANGLE;
+    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.REVERSE_LIMIT;
+    cfg.MotionMagic.MotionMagicCruiseVelocity = ElevatorConstants.MAX_VELOCITY;
+    cfg.MotionMagic.MotionMagicAcceleration = ElevatorConstants.MAX_ACCELERATION;
     return cfg;
   }
 
   private final CANcoderConfiguration wristCaNcoderConfiguration() {
     var cfg = new CANcoderConfiguration();
     cfg.MagnetSensor.MagnetOffset = WristConstants.ANGLE_OFFSET;
+    cfg.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
     return cfg;
   }
 
-  public WristReal() {
-    wrist.getConfigurator().apply(wristConfiguration());
-    wristCaNcoder.getConfigurator().apply(wristCaNcoderConfiguration());
+  @Override
+  public void goToPosition(double targetPosition) {
+    super.targetRadians = targetPosition;
+    wrist.setControl(controlReq.withPosition(Conv.RADIANS_TO_ROTATIONS * targetPosition));
   }
 
   @Override
-  public void goToPosition(double posistionDegrees) {
-    wrist.setControl(controlReq.withPosition(Conv.DEGREES_TO_RADIANS * posistionDegrees));
-  }
-
-  @Override
-  public boolean isAtPosition(double positionDegrees, double toleranceDegrees) {
-    return MathUtil.isNear(
-        positionDegrees, wristCaNcoder.getPosition().getValueAsDouble(), toleranceDegrees);
-  }
-
-  @Override
-  public void setNeutralMode(boolean shouldBeCoast) {
-    if (shouldBeCoast) {
+  public void setNeutralMode(boolean coast) {
+    if (coast) {
       wrist.setNeutralMode(NeutralModeValue.Coast);
     } else {
       wrist.setNeutralMode(NeutralModeValue.Brake);
@@ -67,7 +83,19 @@ public class WristReal extends Wrist {
   }
 
   @Override
-  public double positionRadians() {
-    return (wristCaNcoder.getPosition().getValueAsDouble() * Math.PI * 2.0);
+  public void voltageOut(double voltage) {
+    super.targetRadians = Double.NaN;
+    wrist.setControl(voltageOut.withOutput(voltage));
+  }
+
+  @Override
+  public void periodic() {
+    if (DriverStation.isDisabled()) {
+      voltageOut(0.0);
+    }
+    super.amps = amps.getValueAsDouble();
+    super.volts = voltage.getValueAsDouble();
+    super.radians = position.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
+    super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
   }
 }

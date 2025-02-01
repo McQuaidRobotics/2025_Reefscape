@@ -2,11 +2,9 @@ package igknighters.subsystems.superStructure.Elevator;
 
 public class ElevatorDisabled extends Elevator {
   @Override
-  public void gotoPosition(double height) {}
-
-  @Override
-  public boolean isAtPosition(double position, double tolerance) {
-    return false;
+  public void gotoPosition(double targetPosition) {
+    super.targetMeters = targetPosition;
+    super.meters = targetPosition;
   }
 
   @Override
@@ -15,5 +13,11 @@ public class ElevatorDisabled extends Elevator {
   }
 
   @Override
-  public void setNeutralMode(boolean shoodBeCoast) {}
+  public void setNeutralMode(boolean shouldBeCoast) {}
+
+  @Override
+  public void voltageOut(double voltage) {
+    super.targetMeters = Double.NaN;
+    super.volts = voltage;
+  }
 }
