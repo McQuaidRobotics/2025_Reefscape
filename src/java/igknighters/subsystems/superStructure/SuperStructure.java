@@ -29,7 +29,7 @@ public class SuperStructure implements ExclusiveSubsystem {
   public void goTo(double elevatorMeters, double wristRads) {
     elevator.gotoPosition(elevatorMeters);
     wrist.goToPosition(wristRads);
-    // visualizer.updateSetpoint(elevatorMeters, wristRads);
+    visualizer.updateSetpoint(elevatorMeters, wristRads);
   }
 
   public boolean isAt(

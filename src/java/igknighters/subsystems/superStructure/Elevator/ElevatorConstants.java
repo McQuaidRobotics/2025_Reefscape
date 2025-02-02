@@ -34,14 +34,14 @@ public class ElevatorConstants {
           * (STAGES[0].mass + STAGES[1].mass + STAGES[2].mass + STAGES[3].mass);
 
   // all units below are in radians
-  public static final double KP = 5.0;
-  public static final double KD = 0.0;
+  public static final double KP = 15.0;
+  public static final double KD = 0.5;
   public static final double KG = 0.0;
   public static final double KS = 0.3;
   public static final double KV = (12.0 / (KrakenX60Foc.FREE_SPEED)) * GEAR_RATIO;
   public static final double KA = 0.0;
 
-  public static final double MAX_VELOCITY = KrakenX60Foc.FREE_SPEED / GEAR_RATIO;
+  public static final double MAX_VELOCITY = (12.0 - KS - KG) / KV;
   public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.2;
 
   // is actually .75 inches more
