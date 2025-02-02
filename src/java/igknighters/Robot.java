@@ -78,8 +78,10 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
     localizer.reset(FieldConstants.POSE2D_CENTER);
 
-    driverController = new DriverController(0, localizer, subsystems);
-    operatorController = new OperatorController(1, subsystems);
+    driverController = new DriverController(0);
+    driverController.bind(localizer, subsystems);
+    operatorController = new OperatorController(1);
+    operatorController.bind(localizer, subsystems);
 
     subsystems.swerve.setDefaultCommand(
         new TeleopSwerveTraditionalCmd(subsystems.swerve, driverController));
