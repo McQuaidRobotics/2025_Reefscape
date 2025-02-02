@@ -137,6 +137,11 @@ public class ShamMCX implements ShamMotorController {
       return new CurrentLimits(Amps.of(120.0), Amps.of(70.0), Amps.of(40.0), Seconds.of(1.0));
     }
 
+    public static CurrentLimits of(Current stator, Current supply) {
+      final var base = base();
+      return new CurrentLimits(stator, supply, base.supplyCurrentLimit, base.lowerLimitTriggerTime);
+    }
+
     public CurrentLimits times(double factor) {
       return new CurrentLimits(
           statorCurrentLimit.times(factor),

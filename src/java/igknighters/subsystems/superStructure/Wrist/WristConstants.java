@@ -9,6 +9,8 @@ public class WristConstants {
   public static final int MOTOR_ID = 5;
   public static final int CANCODER_ID = 42;
 
+  public static final boolean INVERT_MOTOR = false;
+  public static final boolean INVERT_ENCODER = false;
   public static final double GEAR_RATIO = (5.0 / 1.0) * (5.0 / 1.0) * (60.0 / 30.0);
 
   public static final double KP = 0.0;

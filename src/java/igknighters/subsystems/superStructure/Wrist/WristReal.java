@@ -10,7 +10,10 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
@@ -48,22 +51,39 @@ public class WristReal extends Wrist {
     cfg.Slot0.kG = WristConstants.KG;
     cfg.Slot0.kV = WristConstants.KV;
     cfg.Slot0.kA = WristConstants.KA;
+
     cfg.Feedback.RotorToSensorRatio = WristConstants.GEAR_RATIO;
     cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
     cfg.Feedback.FeedbackRemoteSensorID = WristConstants.CANCODER_ID;
+
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.FORWARD_LIMIT;
     cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.REVERSE_LIMIT;
+
     cfg.MotionMagic.MotionMagicCruiseVelocity = ElevatorConstants.MAX_VELOCITY;
     cfg.MotionMagic.MotionMagicAcceleration = ElevatorConstants.MAX_ACCELERATION;
+
+    cfg.CurrentLimits.StatorCurrentLimit = WristConstants.STATOR_CURRENT_LIMIT;
+    cfg.CurrentLimits.SupplyCurrentLimit = WristConstants.SUPPLY_CURRENT_LIMIT;
+
+    cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    cfg.MotorOutput.Inverted = WristConstants.INVERT_MOTOR
+      ? InvertedValue.Clockwise_Positive
+      : InvertedValue.CounterClockwise_Positive;
+
     return cfg;
   }
 
   private final CANcoderConfiguration wristCaNcoderConfiguration() {
     var cfg = new CANcoderConfiguration();
+
     cfg.MagnetSensor.MagnetOffset = WristConstants.ANGLE_OFFSET;
     cfg.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
+    cfg.MagnetSensor.SensorDirection = WristConstants.INVERT_ENCODER
+      ? SensorDirectionValue.Clockwise_Positive
+      : SensorDirectionValue.CounterClockwise_Positive;
+
     return cfg;
   }
 

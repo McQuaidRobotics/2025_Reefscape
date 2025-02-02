@@ -20,6 +20,7 @@ import sham.ShamMechanism.HardLimits;
 import sham.ShamMechanism.MechanismDynamics;
 import sham.shamController.ClosedLoop;
 import sham.shamController.ShamMCX;
+import sham.shamController.ShamMCX.CurrentLimits;
 import sham.shamController.unitSafeControl.UnitFeedback.PIDFeedback;
 import sham.shamController.unitSafeControl.UnitFeedforward.ElevatorFeedforward;
 import sham.shamController.unitSafeControl.UnitTrapezoidProfile;
@@ -68,8 +69,10 @@ public class ElevatorSim extends Elevator {
             UnitTrapezoidProfile.forAngle(
                 RadiansPerSecond.of(ElevatorConstants.MAX_VELOCITY),
                 RadiansPerSecondPerSecond.of(ElevatorConstants.MAX_ACCELERATION)));
-    shamMCX.configSensorToMechanismRatio(ElevatorConstants.GEAR_RATIO);
     shamMCX.setBrakeMode(false);
+    shamMCX.configSensorToMechanismRatio(ElevatorConstants.GEAR_RATIO);
+    shamMCX.configureCurrentLimit(
+        CurrentLimits.of(Amps.of(ElevatorConstants.STATOR_CURRENT_LIMIT), Amps.of(ElevatorConstants.SUPPLY_CURRENT_LIMIT)));
   }
 
   @Override

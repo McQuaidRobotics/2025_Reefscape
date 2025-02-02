@@ -19,6 +19,7 @@ import sham.ShamMechanism.HardLimits;
 import sham.ShamMechanism.MechanismDynamics;
 import sham.shamController.ClosedLoop;
 import sham.shamController.ShamMCX;
+import sham.shamController.ShamMCX.CurrentLimits;
 import sham.shamController.unitSafeControl.UnitFeedback.PIDFeedback;
 import sham.shamController.unitSafeControl.UnitFeedforward.SimpleFeedforward;
 import sham.shamController.unitSafeControl.UnitTrapezoidProfile;
@@ -61,7 +62,9 @@ public class WristSim extends Wrist {
             UnitTrapezoidProfile.forAngle(
                 RadiansPerSecond.of(WristConstants.MAX_VELOCITY),
                 RadiansPerSecondPerSecond.of(WristConstants.MAX_ACCELERATION)));
+    shamMCX.setBrakeMode(true);
     shamMCX.configSensorToMechanismRatio(WristConstants.GEAR_RATIO);
+    shamMCX.configureCurrentLimit(CurrentLimits.of(Amps.of(WristConstants.STATOR_CURRENT_LIMIT), Amps.of(WristConstants.SUPPLY_CURRENT_LIMIT)));
   }
 
   @Override
