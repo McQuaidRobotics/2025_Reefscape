@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
 import sham.ShamMechanism;
 import sham.ShamMechanism.Friction;
@@ -70,6 +71,7 @@ public class WristSim extends Wrist {
   @Override
   public void goToPosition(double targetPosition) {
     super.targetRadians = targetPosition;
+    super.controlledLastCycle = true;
     shamMCX.controlVoltage(controlLoop, Radians.of(targetPosition));
   }
 
@@ -81,11 +83,17 @@ public class WristSim extends Wrist {
   @Override
   public void voltageOut(double voltage) {
     super.targetRadians = Double.NaN;
+    super.controlledLastCycle = true;
     shamMCX.controlVoltage(Volts.of(voltage));
   }
 
   @Override
   public void periodic() {
+    if (DriverStation.isDisabled() || !controlledLastCycle) {
+      super.targetRadians = Double.NaN;
+      shamMCX.controlVoltage(Volts.zero());
+    }
+    super.controlledLastCycle = false;
     super.amps = shamMCX.statorCurrent().in(Amps);
     super.volts = shamMCX.voltage().in(Volt);
     super.radians = shamMCX.position().in(Radians);

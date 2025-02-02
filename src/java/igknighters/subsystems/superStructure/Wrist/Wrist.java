@@ -10,6 +10,7 @@ public abstract class Wrist extends Component {
   @Log protected double radiansPerSecond;
   @Log protected double amps;
   @Log protected double volts;
+  @Log protected boolean controlledLastCycle;
 
   /**
    * Requests the wrist to go to a specific position for the next control cycle.

@@ -5,12 +5,14 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.util.can.CANSignalManager;
 
@@ -21,6 +23,7 @@ public class ElevatorReal extends Elevator {
   private final MotionMagicTorqueCurrentFOC controlReq =
       new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
+  private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
 
   private final BaseStatusSignal position, velocity, voltage, current;
   private final StatusSignal<ReverseLimitValue> reverseLimit;
@@ -81,6 +84,7 @@ public class ElevatorReal extends Elevator {
   @Override
   public void gotoPosition(double targetPosition) {
     super.targetMeters = targetPosition;
+    super.controlledLastCycle = true;
     elevatorLeader.setControl(
         controlReq.withPosition(targetPosition / ElevatorConstants.PULLEY_RADIUS));
   }
@@ -107,11 +111,17 @@ public class ElevatorReal extends Elevator {
   @Override
   public void voltageOut(double voltage) {
     super.targetMeters = Double.NaN;
+    super.controlledLastCycle = true;
     elevatorLeader.setControl(voltageOut.withOutput(voltage));
   }
 
   @Override
   public void periodic() {
+    if (DriverStation.isDisabled() || !controlledLastCycle) {
+      super.targetMeters = Double.NaN;
+      elevatorLeader.setControl(neutralOut);
+    }
+    super.controlledLastCycle = false;
     super.meters = position.getValueAsDouble() * ElevatorConstants.PULLEY_CIRCUMFERENCE;
     super.metersPerSecond = velocity.getValueAsDouble() * ElevatorConstants.PULLEY_CIRCUMFERENCE;
     super.volts = voltage.getValueAsDouble();

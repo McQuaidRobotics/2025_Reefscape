@@ -5,6 +5,7 @@ public class ElevatorDisabled extends Elevator {
   public void gotoPosition(double targetPosition) {
     super.targetMeters = targetPosition;
     super.meters = targetPosition;
+    super.controlledLastCycle = true;
   }
 
   @Override
@@ -18,6 +19,12 @@ public class ElevatorDisabled extends Elevator {
   @Override
   public void voltageOut(double voltage) {
     super.targetMeters = Double.NaN;
+    super.controlledLastCycle = true;
     super.volts = voltage;
+  }
+
+  @Override
+  public void periodic() {
+    super.controlledLastCycle = false;
   }
 }

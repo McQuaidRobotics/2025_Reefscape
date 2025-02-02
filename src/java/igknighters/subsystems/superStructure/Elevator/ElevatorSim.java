@@ -13,6 +13,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
 import sham.ShamMechanism;
 import sham.ShamMechanism.Friction;
@@ -78,6 +79,7 @@ public class ElevatorSim extends Elevator {
   @Override
   public void gotoPosition(double targetPosition) {
     super.targetMeters = targetPosition;
+    super.controlledLastCycle = true;
     shamMCX.controlVoltage(
         voltageLoop, Rotations.of(targetPosition / ElevatorConstants.PULLEY_CIRCUMFERENCE));
   }
@@ -90,11 +92,17 @@ public class ElevatorSim extends Elevator {
   @Override
   public void voltageOut(double voltage) {
     super.targetMeters = Double.NaN;
+    super.controlledLastCycle = true;
     shamMCX.controlVoltage(Volts.of(voltage));
   }
 
   @Override
   public void periodic() {
+    if (DriverStation.isDisabled() || !controlledLastCycle) {
+      super.targetMeters = Double.NaN;
+      shamMCX.controlVoltage(Volts.zero());
+    }
+    super.controlledLastCycle = false;
     super.meters = shamMCX.position().in(Rotations) * ElevatorConstants.PULLEY_CIRCUMFERENCE;
     super.amps = shamMCX.statorCurrent().in(Amps);
     super.volts = shamMCX.voltage().in(Volts);

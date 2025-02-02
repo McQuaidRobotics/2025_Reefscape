@@ -6,6 +6,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -30,6 +31,7 @@ public class WristReal extends Wrist {
       new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut =
       new VoltageOut(0.0).withUpdateFreqHz(0.0).withEnableFOC(true);
+  private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
 
   public WristReal() {
     wrist.getConfigurator().apply(wristConfiguration());
@@ -98,6 +100,7 @@ public class WristReal extends Wrist {
   @Override
   public void goToPosition(double targetPosition) {
     super.targetRadians = targetPosition;
+    super.controlledLastCycle = true;
     wrist.setControl(controlReq.withPosition(Conv.RADIANS_TO_ROTATIONS * targetPosition));
   }
 
@@ -113,14 +116,17 @@ public class WristReal extends Wrist {
   @Override
   public void voltageOut(double voltage) {
     super.targetRadians = Double.NaN;
+    super.controlledLastCycle = true;
     wrist.setControl(voltageOut.withOutput(voltage));
   }
 
   @Override
   public void periodic() {
-    if (DriverStation.isDisabled()) {
-      voltageOut(0.0);
+    if (DriverStation.isDisabled() || !controlledLastCycle) {
+      super.targetRadians = Double.NaN;
+      wrist.setControl(neutralOut);
     }
+    super.controlledLastCycle = false;
     super.amps = amps.getValueAsDouble();
     super.volts = voltage.getValueAsDouble();
     super.radians = position.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
