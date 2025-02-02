@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.CurrentUnit;
@@ -95,6 +96,34 @@ public class ShamMCX implements ShamMotorController {
 
     public static OpenLoopCurrentOutput of(Current amps) {
       return new OpenLoopCurrentOutput(amps);
+    }
+
+    public default boolean equals(Output other) {
+      if (!this.getClass().equals(other.getClass())) {
+        return false;
+      }
+      if (this instanceof OpenLoopVoltageOutput castedThis
+          && other instanceof OpenLoopVoltageOutput castedOther) {
+        return MathUtil.isNear(
+            castedThis.volts().baseUnitMagnitude(), castedOther.volts().baseUnitMagnitude(), 0.001);
+      } else if (this instanceof OpenLoopCurrentOutput castedThis
+          && other instanceof OpenLoopCurrentOutput castedOther) {
+        return MathUtil.isNear(
+            castedThis.amps().baseUnitMagnitude(), castedOther.amps().baseUnitMagnitude(), 0.001);
+      } else if (this instanceof ClosedLoopOutput castedThis
+          && other instanceof ClosedLoopOutput castedOther) {
+        return castedThis.controller().equals(castedOther.controller())
+            && MathUtil.isNear(
+                castedThis.value().baseUnitMagnitude(),
+                castedOther.value().baseUnitMagnitude(),
+                0.001)
+            && MathUtil.isNear(
+                castedThis.secondOrderValue().baseUnitMagnitude(),
+                castedOther.secondOrderValue().baseUnitMagnitude(),
+                0.001);
+      } else {
+        return false;
+      }
     }
   }
 
@@ -202,6 +231,10 @@ public class ShamMCX implements ShamMotorController {
   }
 
   private void updateOutput(Output output) {
+    if ((output == null || !this.output.isPresent() || !this.output.get().equals(output))
+        && output instanceof Output.ClosedLoopOutput clo) {
+      clo.controller.reset();
+    }
     this.output = Optional.ofNullable(output);
   }
 

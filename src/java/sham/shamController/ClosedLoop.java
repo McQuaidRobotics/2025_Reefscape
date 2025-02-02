@@ -25,6 +25,8 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit> {
   private final UnitFeedforward<OUTPUT> feedforward;
   private final Optional<UnitTrapezoidProfile<INPUT>> optTrapezoidProfile;
 
+  private State<INPUT> lastGoal = null;
+
   private ClosedLoop(
       PIDFeedback<OUTPUT, INPUT> feedback,
       UnitFeedforward<OUTPUT> feedforward,
@@ -110,6 +112,10 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit> {
     return MeasureMath.zeroIfNAN(feedforward.calculate(position, currentVelocity, nextVelocity));
   }
 
+  public void reset() {
+    lastGoal = null;
+  }
+
   @SuppressWarnings("unchecked")
   public Measure<OUTPUT> run(
       Angle position, State<INPUT> state, State<INPUT> goal, Time dt, EpilogueBackend logger) {
@@ -122,7 +128,12 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit> {
       goal = trapezoidProfile.calculate(state, goal, dt);
       logger.log("step", goal, State.struct);
     }
-    var fbResult = feedback.calculate(state.value(), goal.value());
+
+    if (lastGoal == null) {
+      lastGoal = goal;
+    }
+
+    var fbResult = feedback.calculate(state.value(), lastGoal.value());
     Measure<OUTPUT> feedbackOutput = fbResult.getFirst();
     Measure<OUTPUT> feedforwardOutput = (Measure<OUTPUT>) feedback.getOutputUnit().zero();
     if (goal.slew() != null || isVelocity()) {
@@ -131,6 +142,8 @@ public class ClosedLoop<OUTPUT extends Unit, INPUT extends Unit> {
       feedforwardOutput =
           feedforward.calculateStatics(position, Math.signum(feedbackOutput.magnitude()));
     }
+
+    lastGoal = goal;
 
     logger.log("feedbackError", fbResult.getSecond());
     logger.log("feedforwardOutput", feedforwardOutput);
