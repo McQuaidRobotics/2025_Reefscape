@@ -7,7 +7,7 @@ import igknighters.Localizer;
 import igknighters.commands.swerve.SwerveCommands;
 import igknighters.constants.ConstValues.kControls;
 import igknighters.constants.ConstValues.kSwerve;
-import igknighters.controllers.ControllerBase;
+import igknighters.controllers.DriverController;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.control.RotationalController;
 import java.util.function.Supplier;
@@ -27,7 +27,7 @@ public class TeleopSwerveTargetCmd extends TeleopSwerveBaseCmd {
 
   public TeleopSwerveTargetCmd(
       Swerve swerve,
-      ControllerBase controller,
+      DriverController controller,
       Localizer localizer,
       Translation2d target,
       boolean movementComp,
@@ -37,7 +37,7 @@ public class TeleopSwerveTargetCmd extends TeleopSwerveBaseCmd {
 
   public TeleopSwerveTargetCmd(
       Swerve swerve,
-      ControllerBase controller,
+      DriverController controller,
       Supplier<Translation2d> poseSupplier,
       Translation2d target,
       boolean movementComp,
