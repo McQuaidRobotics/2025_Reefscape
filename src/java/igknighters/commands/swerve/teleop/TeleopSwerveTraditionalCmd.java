@@ -2,13 +2,13 @@ package igknighters.commands.swerve.teleop;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import igknighters.constants.ConstValues.kSwerve;
-import igknighters.controllers.ControllerBase;
+import igknighters.controllers.DriverController;
 import igknighters.subsystems.swerve.Swerve;
 import wpilibExt.Speeds;
 
 public class TeleopSwerveTraditionalCmd extends TeleopSwerveBaseCmd {
 
-  public TeleopSwerveTraditionalCmd(Swerve swerve, ControllerBase controller) {
+  public TeleopSwerveTraditionalCmd(Swerve swerve, DriverController controller) {
     super(swerve, controller);
   }
 

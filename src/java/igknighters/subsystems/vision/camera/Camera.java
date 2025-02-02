@@ -1,5 +1,6 @@
 package igknighters.subsystems.vision.camera;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import igknighters.subsystems.Component;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
@@ -11,7 +12,11 @@ public abstract class Camera extends Component {
    * A configuration for a camera. This allows to statically define cameras without instantiating
    * them.
    */
-  public record CameraConfig(String cameraName, Transform3d cameraTransform) {}
+  public record CameraConfig(String cameraName, Pose3d cameraPose) {
+    public Transform3d cameraTransform() {
+      return new Transform3d(Pose3d.kZero, cameraPose);
+    }
+  }
 
   /**
    * Uses the cameras PoseEstimation pipeline to estimate the pose of the robot.

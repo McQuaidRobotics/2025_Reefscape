@@ -27,5 +27,6 @@
   "editor.indentSize": 2,
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
+  "wpilib.skipSelectSimulateExtension": true,
   "editor.renderWhitespace": "all"
 }

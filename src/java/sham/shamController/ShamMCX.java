@@ -333,37 +333,37 @@ public class ShamMCX implements ShamMotorController {
     updateOutput(Output.of(volts));
   }
 
-  public Angle position() {
+  public synchronized Angle position() {
     return lastState.position();
   }
 
-  public AngularVelocity velocity() {
+  public synchronized AngularVelocity velocity() {
     return lastState.velocity();
   }
 
-  public AngularAcceleration acceleration() {
+  public synchronized AngularAcceleration acceleration() {
     return lastState.acceleration();
   }
 
-  public Current statorCurrent() {
+  public synchronized Current statorCurrent() {
     return lastStatorCurrent;
   }
 
-  public Current supplyCurrent() {
+  public synchronized Current supplyCurrent() {
     return motor.getSupplyCurrent(lastState.velocity(), lastVoltage, lastStatorCurrent);
   }
 
-  public Voltage voltage() {
+  public synchronized Voltage voltage() {
     return lastVoltage;
   }
 
   @Override
-  public boolean brakeEnabled() {
+  public synchronized boolean brakeEnabled() {
     return brakeMode;
   }
 
   @Override
-  public ControllerOutput run(Time dt, Voltage supply, MechanismState rawState) {
+  public synchronized ControllerOutput run(Time dt, Voltage supply, MechanismState rawState) {
     logConfig();
     MechanismState state = rawState.div(sensorToMechanismRatio);
     lastState = state;
