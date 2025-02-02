@@ -21,9 +21,9 @@ public class DriverController extends ControllerBase {
 
     this.B.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.ScoreL3));
 
-    this.X.onTrue(Commands.none());
+    this.X.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.Processor));
 
-    this.Y.onTrue(Commands.none());
+    this.Y.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.ScoreL4));
 
     /// BUMPER
     this.RB.onTrue(Commands.none());
