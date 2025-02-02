@@ -1,9 +1,8 @@
-package igknighters.subsystems.swerve.control;
+package wayfinder.setpointGenerator;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
-import igknighters.subsystems.swerve.module.SwerveModule.AdvancedSwerveModuleState;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.FixedSizeArray;
 import wpilibExt.Speeds.RobotSpeeds;
@@ -15,10 +14,10 @@ public record SwerveSetpoint(
     return new SwerveSetpoint(
         RobotSpeeds.kZero,
         new AdvancedSwerveModuleState[] {
-          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0, 0),
-          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0, 0),
-          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0, 0),
-          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0, 0)
+          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0),
+          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0),
+          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0),
+          new AdvancedSwerveModuleState(0, Rotation2d.kZero, 0)
         });
   }
 

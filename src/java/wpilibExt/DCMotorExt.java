@@ -182,12 +182,34 @@ public class DCMotorExt extends DCMotor {
   /**
    * Calculates the percent output of the motor at a given speed.
    *
+   * @param speedRadPerSec The current angular velocity of the motor.
+   * @param voltageInput The voltage applied to the motor.
+   * @return The percentage of the motor's maximum speed at the given input voltage.
+   */
+  public double getSpeedPercent(double speedRadPerSec, double voltageInput) {
+    return speedRadPerSec / (super.KvRadPerSecPerVolt * voltageInput);
+  }
+
+  /**
+   * Calculates the percent output of the motor at a given speed.
+   *
    * @param speed The current angular velocity of the motor.
    * @param voltageInput The voltage applied to the motor.
    * @return The percentage of the motor's maximum speed at the given input voltage.
    */
   public double getSpeedPercent(AngularVelocity speed, Voltage voltageInput) {
-    return speed.in(RadiansPerSecond) / (this.kV().baseUnitMagnitude() * voltageInput.in(Volts));
+    return this.getSpeedPercent(speed.in(RadiansPerSecond), voltageInput.in(Volts));
+  }
+
+  /**
+   * Calculates the free current of the motor at a given speed.
+   *
+   * @param speedRadPerSec The current angular velocity of the motor.
+   * @param voltageInput The voltage applied to the motor.
+   * @return The free current of the motor.
+   */
+  public double getFreeCurrent(double speedRadPerSec, double voltageInput) {
+    return freeCurrentAmps * getSpeedPercent(speedRadPerSec, voltageInput);
   }
 
   /**
@@ -198,7 +220,19 @@ public class DCMotorExt extends DCMotor {
    * @return The free current of the motor.
    */
   public Current getFreeCurrent(AngularVelocity speed, Voltage voltageInput) {
-    return Amps.of(freeCurrentAmps * getSpeedPercent(speed, voltageInput));
+    return Amps.of(this.getFreeCurrent(speed.in(RadiansPerSecond), voltageInput.in(Volts)));
+  }
+
+  /**
+   * Calculates the maximum power output of a motor at a given applied voltage and supply current
+   * limit.
+   *
+   * @param voltageInput The voltage applied to the motor.
+   * @param supplyLimitAmps The current limit of the power supply.
+   * @return The maximum power output of the motor.
+   */
+  public double getMaxPower(double voltageInput, double supplyLimitAmps) {
+    return voltageInput * supplyLimitAmps;
   }
 
   /**
@@ -217,6 +251,34 @@ public class DCMotorExt extends DCMotor {
    * Calculates the maximum stator current of the motor at a given speed, input voltage and current
    * limits.
    *
+   * @param speedRadPerSec The current angular velocity of the motor.
+   * @param voltageInput The voltage applied to the motor.
+   * @param supplyLimit The current limit of the power supply.
+   * @param statorLimit The current limit of the stator.
+   * @return The maximum stator current of the motor.
+   */
+  public double getMaxStator(
+      double speedRadPerSec, double voltageInput, double supplyLimitAmps, double statorLimitAmps) {
+    double vIn = Math.abs(voltageInput);
+    double vVelo = Math.abs(voltageInput * getSpeedPercent(speedRadPerSec, voltageInput));
+    double maxP = Math.abs(getMaxPower(voltageInput, supplyLimitAmps));
+    double freeCurrent = getFreeCurrent(speedRadPerSec, voltageInput);
+
+    double xSqr = (vVelo * vVelo) - (4.0 * rOhms * (-maxP + (vIn * freeCurrent)));
+
+    if (xSqr < 0) {
+      return statorLimitAmps;
+    }
+
+    double y = Math.abs(-vVelo + Math.sqrt(xSqr)) / (2.0 * rOhms);
+
+    return Math.min(y, statorLimitAmps);
+  }
+
+  /**
+   * Calculates the maximum stator current of the motor at a given speed, input voltage and current
+   * limits.
+   *
    * @param speed The current angular velocity of the motor.
    * @param voltageInput The voltage applied to the motor.
    * @param supplyLimit The current limit of the power supply.
@@ -225,22 +287,30 @@ public class DCMotorExt extends DCMotor {
    */
   public Current getMaxStator(
       AngularVelocity speed, Voltage voltageInput, Current supplyLimit, Current statorLimit) {
-    // Theres a lot of unit coercion happening here that the unit lib doesn't natively support.
-    // Lower the math to type unsafe double math.
-    double vIn = Math.abs(voltageInput.in(Volts));
-    double vVelo = Math.abs(voltageInput.times(getSpeedPercent(speed, voltageInput)).in(Volts));
-    double maxP = Math.abs(getMaxPower(voltageInput, supplyLimit).in(Watts));
-    double freeCurrent = getFreeCurrent(speed, voltageInput).in(Amps);
+    return Amps.of(
+        getMaxStator(
+            speed.in(RadiansPerSecond),
+            voltageInput.in(Volts),
+            supplyLimit.in(Amps),
+            statorLimit.in(Amps)));
+  }
 
-    double xSqr = (vVelo * vVelo) - (4.0 * rOhms * (-maxP + (vIn * freeCurrent)));
-
-    if (xSqr < 0) {
-      return MeasureMath.abs(statorLimit);
-    }
-
-    double y = Math.abs(-vVelo + Math.sqrt(xSqr)) / (2.0 * rOhms);
-
-    return MeasureMath.minAbs(Amps.of(y), statorLimit);
+  /**
+   * Calculates the stator current of the motor at a given speed, input voltage, supply current
+   * limit and stator current limit.
+   *
+   * @param speedRadPerSec The current angular velocity of the motor.
+   * @param voltageInput The voltage applied to the motor.
+   * @param supplyLimitAmps The current limit of the power supply.
+   * @param statorLimitAmps The current limit of the stator.
+   * @return The stator current of the motor.
+   */
+  public double getCurrent(
+      double speedRadPerSec, double voltageInput, double supplyLimitAmps, double statorLimitAmps) {
+    double normalStator = getCurrent(speedRadPerSec, voltageInput);
+    double limitedStator =
+        getMaxStator(speedRadPerSec, voltageInput, supplyLimitAmps, statorLimitAmps);
+    return Math.min(Math.abs(normalStator), Math.abs(limitedStator)) * Math.signum(normalStator);
   }
 
   /**
@@ -255,10 +325,12 @@ public class DCMotorExt extends DCMotor {
    */
   public Current getCurrent(
       AngularVelocity speed, Voltage voltageInput, Current supplyLimit, Current statorLimit) {
-    Current normalStator = getCurrent(speed, voltageInput);
-    Current limitedStator = getMaxStator(speed, voltageInput, supplyLimit, statorLimit);
-    limitedStator = limitedStator.times(MeasureMath.signum(normalStator));
-    return MeasureMath.minAbs(normalStator, limitedStator);
+    return Amps.of(
+        getCurrent(
+            speed.in(RadiansPerSecond),
+            voltageInput.in(Volts),
+            supplyLimit.in(Amps),
+            statorLimit.in(Amps)));
   }
 
   /**

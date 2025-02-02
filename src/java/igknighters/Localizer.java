@@ -1,23 +1,25 @@
 package igknighters;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import igknighters.constants.ConstValues.kSwerve;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.swerve.odometryThread.SwerveDriveSample;
 import igknighters.subsystems.vision.Vision.VisionSample;
-import igknighters.util.TwistyPoseEst;
 import igknighters.util.plumbing.Channel;
 import igknighters.util.plumbing.Channel.Receiver;
 import igknighters.util.plumbing.Channel.Sender;
 import igknighters.util.plumbing.Channel.ThreadSafetyMarker;
 import java.util.List;
 import monologue.Annotations.Log;
+import wayfinder.poseEst.TwistyPoseEst;
 import monologue.GlobalField;
 import monologue.Logged;
+import wpilibExt.Speeds;
+import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Tracer;
 
 public class Localizer implements Logged {
@@ -37,16 +39,13 @@ public class Localizer implements Logged {
   private Pose2d latestPose = FieldConstants.POSE2D_CENTER;
 
   @Log(key = "speeds")
-  private ChassisSpeeds latestSpeeds = new ChassisSpeeds();
-
-  @Log(key = "visionPose")
-  private Pose2d latestVisionPose = FieldConstants.POSE2D_CENTER;
-
-  @Log(key = "visionTimestamp")
-  private double latestVisionTimestamp = 0;
+  private FieldSpeeds latestSpeeds = FieldSpeeds.kZero;
 
   private final Channel<Pose2d> poseResetsChannel = new Channel<>(new Pose2d[0]);
   private final Sender<Pose2d> poseResetsSender = poseResetsChannel.sender();
+
+  private final SwerveDriveKinematics kinematics =
+      new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_OFFSETS);
 
   public Localizer() {
     poseEstimator = new TwistyPoseEst();
@@ -80,7 +79,7 @@ public class Localizer implements Logged {
     final SwerveDriveSample[] swerveSamples = log("swerveSamples", swerveDataReceiver.recvAll());
     for (final SwerveDriveSample sample : swerveSamples) {
       poseEstimator.addDriveSample(
-          kSwerve.KINEMATICS, sample.modulePositions(), sample.gyroYaw(), sample.timestamp(), 1.0);
+          kinematics, sample.modulePositions(), sample.gyroYaw(), sample.timestamp(), 1.0);
     }
     Tracer.endTrace();
     Tracer.startTrace("VisionSamples");
@@ -90,13 +89,9 @@ public class Localizer implements Logged {
         unsortedVisionSamples.stream()
             .sorted((a, b) -> Double.compare(a.timestamp(), b.timestamp()))
             .toList();
-    final double now = Timer.getFPGATimestamp();
     double sumLatency = 0.0;
     for (final VisionSample sample : visionSamples) {
-      latestVisionPose = sample.pose();
-      latestVisionTimestamp = sample.timestamp();
-      sumLatency += now - latestVisionTimestamp;
-      poseEstimator.addVisionSample(latestVisionPose, latestVisionTimestamp, sample.trust());
+      poseEstimator.addVisionSample(sample.pose(), sample.timestamp(), sample.trust());
     }
     log("visionLatency", sumLatency / visionSamples.size());
     Tracer.endTrace();
@@ -110,26 +105,26 @@ public class Localizer implements Logged {
 
     Pose2d poseFromABitAgo = poseEstimator.getEstimatedPoseFromPast(0.05);
     Twist2d twist = poseFromABitAgo.log(latestPose);
-    latestSpeeds = new ChassisSpeeds(twist.dx / 0.05, twist.dy / 0.05, twist.dtheta / 0.05);
+    latestSpeeds = Speeds.fromFieldRelative(twist.dx / 0.05, twist.dy / 0.05, twist.dtheta / 0.05);
   }
 
   public Pose2d pose() {
     return latestPose;
   }
 
-  public ChassisSpeeds speeds() {
+  public Pose2d pose(double secondsAgo) {
+    return poseEstimator.getEstimatedPoseFromPast(secondsAgo);
+  }
+
+  public Rotation2d rotation() {
+    return latestPose.getRotation();
+  }
+
+  public FieldSpeeds speeds() {
     return latestSpeeds;
   }
 
   public Translation2d translation() {
     return latestPose.getTranslation();
-  }
-
-  public Pose2d visionPose(double ageLimit) {
-    if (latestVisionTimestamp + ageLimit < Timer.getFPGATimestamp()) {
-      return latestPose;
-    } else {
-      return latestVisionPose;
-    }
   }
 }

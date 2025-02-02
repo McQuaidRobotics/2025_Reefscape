@@ -1,5 +1,8 @@
 package igknighters.controllers;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -7,6 +10,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.swerve.SwerveCommands;
+import igknighters.constants.ConstValues.kRobotIntrinsics;
+import igknighters.constants.FieldConstants.Reef;
+import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
 import igknighters.util.logging.BootupLogger;
 import java.util.function.DoubleSupplier;
@@ -19,14 +25,29 @@ public class DriverController {
     final var vision = subsystems.vision;
     final var led = subsystems.led;
 
-    // FACE BUTTONS
-    this.A.onTrue(Commands.none());
+    /// FACE BUTTONS
+    this.A.onTrue(
+        SwerveCommands.moveTo(
+            subsystems.swerve,
+            localizer,
+            Reef.Side.FAR_RIGHT.scoreCenter(kRobotIntrinsics.CHASSIS_WIDTH / 1.9),
+            PathObstacles.FAR_RIGHT_REEF));
 
-    this.B.onTrue(Commands.none());
+    this.B.onTrue(subsystems.swerve.runOnce(() -> {}));
 
-    this.X.onTrue(Commands.none());
+    this.X.onTrue(
+        SwerveCommands.moveTo(
+            subsystems.swerve,
+            localizer,
+            Reef.Side.CLOSE_LEFT.scoreCenter(kRobotIntrinsics.CHASSIS_WIDTH / 1.9),
+            PathObstacles.CLOSE_LEFT_REEF));
 
-    this.Y.onTrue(Commands.none());
+    this.Y.onTrue(
+        SwerveCommands.moveTo(
+            subsystems.swerve,
+            localizer,
+            new Pose2d(new Translation2d(1.25, 1.25), Rotation2d.fromDegrees(-125.0)),
+            PathObstacles.Other));
 
     // BUMPER
     this.RB.onTrue(Commands.none());

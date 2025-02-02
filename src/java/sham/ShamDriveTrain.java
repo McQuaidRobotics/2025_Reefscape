@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.Struct;
 import monologue.ProceduralStructGenerator;
+import org.dyn4j.collision.Filter;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.Vector2;
@@ -66,11 +67,19 @@ public class ShamDriveTrain {
         config,
         (Struct<ShamDriveTrainConfig<?, ?>>)
             ProceduralStructGenerator.extractClassStructDynamic(config.getClass()).get());
-    chassis.addFixture(
-        Geometry.createRectangle(config.bumperLengthXMeters, config.bumperWidthYMeters),
-        0.0, // zero density; mass is set explicitly
-        kBumperCoF,
-        kBumperCoR);
+    var fixture =
+        chassis.addFixture(
+            Geometry.createRectangle(config.bumperLengthXMeters, config.bumperWidthYMeters),
+            0.0, // zero density; mass is set explicitly
+            kBumperCoF,
+            kBumperCoR);
+    fixture.setFilter(
+        new Filter() {
+          @Override
+          public boolean isAllowed(Filter filter) {
+            return true;
+          }
+        });
 
     chassis.setMass(new Mass(new Vector2(), config.robotMassKg, config.robotMoI));
   }
