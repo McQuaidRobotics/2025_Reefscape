@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
+
 import igknighters.constants.ConstValues.Conv;
 import igknighters.util.can.CANSignalManager;
 
@@ -28,6 +29,7 @@ public class ElevatorReal extends Elevator {
     elevatorLeader = new TalonFX(ElevatorConstants.LEADER_ID, ElevatorConstants.CANBUS);
     elevatorFollower = new TalonFX(ElevatorConstants.FOLLOWER_ID, ElevatorConstants.CANBUS);
     elevatorLeader.getConfigurator().apply(elevatorConfiguration());
+    elevatorFollower.getConfigurator().apply(elevatorConfiguration());
     elevatorFollower.setControl(new Follower(ElevatorConstants.LEADER_ID, true));
 
     position = elevatorLeader.getPosition();
@@ -40,6 +42,8 @@ public class ElevatorReal extends Elevator {
 
     CANSignalManager.registerSignals(
         ElevatorConstants.CANBUS, position, velocity, voltage, current);
+
+    CANSignalManager.registerDevices(elevatorLeader, elevatorFollower);
   }
 
   private TalonFXConfiguration elevatorConfiguration() {

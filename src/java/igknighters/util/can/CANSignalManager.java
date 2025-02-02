@@ -1,6 +1,10 @@
 package igknighters.util.can;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.hardware.ParentDevice;
+
+import igknighters.constants.ConstValues;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -26,6 +30,16 @@ public class CANSignalManager {
         signalsDatabase.computeIfAbsent(canbus, k -> new ArrayList<>(signals.length));
     for (BaseStatusSignal signal : signals) {
       signalsToAdd.add(signal);
+    }
+  }
+
+  /**
+   * Optimizes the bus utilization of the devices by setting the update frequency of all signals to
+   * @param devices
+   */
+  public static void registerDevices(ParentDevice... devices) {
+    for (ParentDevice device : devices) {
+      device.optimizeBusUtilization(ConstValues.DEBUG_SIGNAL_HZ, 1.0);
     }
   }
 

@@ -12,6 +12,7 @@ public abstract class Elevator extends Component {
   @Log protected double amps;
   @Log protected boolean isHomed;
   @Log protected boolean isLimitTripped;
+  @Log protected boolean controlRequestedLastCycle;
 
   /**
    * Requests the elevator to go to a specific position for the next control cycle.

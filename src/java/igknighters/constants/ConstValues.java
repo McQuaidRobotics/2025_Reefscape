@@ -57,6 +57,7 @@ public final class ConstValues {
   public static final boolean DEMO = false; // this should be false for competition
   public static final double PERIODIC_TIME = 0.02; // 20ms
   public static final int PDH_CAN_ID = 61;
+  public static final double DEBUG_SIGNAL_HZ = DEBUG ? 12.5 : 0;
 
   public static final class kRobotIntrinsics {
     public static final double MASS = 132.0 * Conv.POUNDS_TO_KILOGRAMS;

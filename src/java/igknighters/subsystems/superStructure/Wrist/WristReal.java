@@ -17,11 +17,12 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
+import igknighters.util.can.CANSignalManager;
 
 public class WristReal extends Wrist {
 
-  private final TalonFX wrist = new TalonFX(WristConstants.MOTOR_ID);
-  private final CANcoder encoder = new CANcoder(WristConstants.CANCODER_ID);
+  private final TalonFX wrist = new TalonFX(WristConstants.MOTOR_ID, WristConstants.CANBUS);
+  private final CANcoder encoder = new CANcoder(WristConstants.CANCODER_ID, WristConstants.CANBUS);
 
   private final BaseStatusSignal position, velocity, amps, voltage;
 
@@ -40,6 +41,13 @@ public class WristReal extends Wrist {
     voltage = wrist.getMotorVoltage();
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
+
+    CANSignalManager.registerSignals(
+      WristConstants.CANBUS,
+      position, velocity, amps, voltage
+    );
+
+    CANSignalManager.registerDevices(wrist, encoder);
   }
 
   private final TalonFXConfiguration wristConfiguration() {
