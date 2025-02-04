@@ -182,14 +182,14 @@ public class FieldConstants {
     private static final Translation2d FACE_OFFSET = new Translation2d(inchesToMeters(32.75), 0.0);
 
     public enum BranchHeight {
-      L4(inchesToMeters(72), -90),
-      L3(inchesToMeters(47.625), -35),
-      L2(inchesToMeters(31.875), -35),
-      L1(inchesToMeters(18), 0);
+      L4(inchesToMeters(72), -90 * Conv.DEGREES_TO_RADIANS),
+      L3(inchesToMeters(47.625), -35 * Conv.DEGREES_TO_RADIANS),
+      L2(inchesToMeters(31.875), -35 * Conv.DEGREES_TO_RADIANS),
+      L1(inchesToMeters(18), 0 * Conv.DEGREES_TO_RADIANS);
 
       BranchHeight(double height, double pitch) {
         this.height = height;
-        this.pitch = pitch; // in degrees
+        this.pitch = pitch;
       }
 
       public final double height;

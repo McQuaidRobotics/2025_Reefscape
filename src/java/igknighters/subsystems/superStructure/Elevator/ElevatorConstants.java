@@ -34,21 +34,25 @@ public class ElevatorConstants {
       (PULLEY_RADIUS * PULLEY_RADIUS)
           * (STAGES[0].mass + STAGES[1].mass + STAGES[2].mass + STAGES[3].mass);
 
-  // all units below are in radians
+  public static final double MAX_HEIGHT = 81.0 * Conv.INCHES_TO_METERS;
+  public static final double MIN_HEIGHT = 12.75 * Conv.INCHES_TO_METERS;
+  public static final double DEFAULT_TOLERANCE = 0.0 * Conv.INCHES_TO_METERS;
+
+  // all in rotations
   public static final double KP = 15.0;
   public static final double KD = 0.5;
   public static final double KG = 0.0;
   public static final double KS = 0.3;
-  public static final double KV = (12.0 / (KrakenX60Foc.FREE_SPEED)) * GEAR_RATIO;
+  public static final double KV =
+      (12.0 / (KrakenX60Foc.FREE_SPEED * Conv.RADIANS_TO_ROTATIONS)) * GEAR_RATIO;
   public static final double KA = 0.0;
 
   public static final double MAX_VELOCITY = (12.0 - KS - KG) / KV;
   public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.2;
 
-  // is actually .75 inches more
-  public static final double FORWARD_LIMIT = (81.0 * Conv.INCHES_TO_METERS) / PULLEY_RADIUS;
-  public static final double REVERSE_LIMIT = (12.75 * Conv.INCHES_TO_METERS) / PULLEY_RADIUS;
-  public static final double DEFAULT_TOLERANCE = (1.0 * Conv.INCHES_TO_METERS) / PULLEY_RADIUS;
+  // rotations
+  public static final double FORWARD_LIMIT = MAX_HEIGHT / PULLEY_RADIUS;
+  public static final double REVERSE_LIMIT = MIN_HEIGHT / PULLEY_RADIUS;
 
   public static final double HOMING_VOLTAGE = -KS * 1.5;
 

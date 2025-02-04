@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
@@ -61,16 +62,16 @@ public class ElevatorSim extends Elevator {
         ClosedLoop.forVoltageAngle(
             PIDFeedback.forAngular(Volts, Rotations, ElevatorConstants.KP, ElevatorConstants.KD),
             ElevatorFeedforward.forVoltage(
-                Radians,
+                Rotations,
                 ElevatorConstants.KS,
                 ElevatorConstants.KG,
                 ElevatorConstants.KV,
                 ElevatorConstants.KA,
                 simCtx.timing().dt()),
             UnitTrapezoidProfile.forAngle(
-                RadiansPerSecond.of(ElevatorConstants.MAX_VELOCITY),
-                RadiansPerSecondPerSecond.of(ElevatorConstants.MAX_ACCELERATION)));
-    shamMCX.setBrakeMode(false);
+                RotationsPerSecond.of(ElevatorConstants.MAX_VELOCITY),
+                RotationsPerSecondPerSecond.of(ElevatorConstants.MAX_ACCELERATION)));
+    shamMCX.setBrakeMode(false); // do not enable, this feature is broken
     shamMCX.configSensorToMechanismRatio(ElevatorConstants.GEAR_RATIO);
     shamMCX.configureCurrentLimit(
         CurrentLimits.of(

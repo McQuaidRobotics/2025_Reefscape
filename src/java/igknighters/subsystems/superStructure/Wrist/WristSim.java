@@ -2,10 +2,11 @@ package igknighters.subsystems.superStructure.Wrist;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volt;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -45,25 +46,25 @@ public class WristSim extends Wrist {
             // MechanismDynamics.forArm(Pound.of(9.0), Inches.of(6)),
             MechanismDynamics.zero(),
             HardLimits.of(
-                Radian.of(WristConstants.REVERSE_LIMIT),
-                Radian.of(WristConstants.FORWARD_LIMIT + 0.02)),
+                Rotations.of(WristConstants.REVERSE_LIMIT),
+                Rotations.of(WristConstants.FORWARD_LIMIT + 0.02)),
             0,
             simCtx.robot().timing());
     simCtx.robot().addMechanism(wristMechanism);
 
     controlLoop =
         ClosedLoop.forVoltageAngle(
-            PIDFeedback.forAngular(Volts, Radians, WristConstants.KP, WristConstants.KD),
+            PIDFeedback.forAngular(Volts, Rotations, WristConstants.KP, WristConstants.KD),
             SimpleFeedforward.forVoltage(
-                Radians,
+                Rotations,
                 WristConstants.KS,
                 WristConstants.KV,
                 WristConstants.KA,
                 simCtx.robot().timing().dt()),
             UnitTrapezoidProfile.forAngle(
-                RadiansPerSecond.of(WristConstants.MAX_VELOCITY),
-                RadiansPerSecondPerSecond.of(WristConstants.MAX_ACCELERATION)));
-    shamMCX.setBrakeMode(true);
+                RotationsPerSecond.of(WristConstants.MAX_VELOCITY),
+                RotationsPerSecondPerSecond.of(WristConstants.MAX_ACCELERATION)));
+    shamMCX.setBrakeMode(false); // do not enable, this feature is broken
     shamMCX.configSensorToMechanismRatio(WristConstants.GEAR_RATIO);
     shamMCX.configureCurrentLimit(
         CurrentLimits.of(

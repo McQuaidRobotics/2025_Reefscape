@@ -1,8 +1,5 @@
 package igknighters.controllers;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -11,10 +8,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.superStructure.StateManager;
 import igknighters.commands.swerve.SwerveCommands;
-import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.superStructure.SuperStructureState;
-
 import igknighters.util.logging.BootupLogger;
 import java.util.function.DoubleSupplier;
 
@@ -26,21 +21,16 @@ public class DriverController {
     final var vision = subsystems.vision;
     final var led = subsystems.led;
 
-    final StateManager stateManager = new StateManager();
+    final StateManager stateManager = new StateManager(subsystems.superStructure);
 
     /// FACE BUTTONS
-    this.A.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.IntakeHp));
+    this.A.onTrue(stateManager.holdAt(SuperStructureState.IntakeHp));
 
-    this.B.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.ScoreL4));
+    this.B.onTrue(stateManager.holdAt(SuperStructureState.ScoreL4));
 
-    this.X.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.Processor));
+    this.X.onTrue(stateManager.holdAt(SuperStructureState.Processor));
 
-    this.Y.whileTrue(
-        SwerveCommands.moveTo(
-            subsystems.swerve,
-            localizer,
-            new Pose2d(new Translation2d(1.25, 1.25), Rotation2d.fromDegrees(-125.0)),
-            PathObstacles.Other));
+    this.Y.whileTrue(stateManager.holdAt(SuperStructureState.ScoreL2));
 
     // BUMPER
     this.RB.onTrue(Commands.none());
