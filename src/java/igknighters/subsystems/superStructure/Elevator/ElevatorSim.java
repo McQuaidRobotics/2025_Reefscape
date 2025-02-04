@@ -73,7 +73,9 @@ public class ElevatorSim extends Elevator {
     shamMCX.setBrakeMode(false);
     shamMCX.configSensorToMechanismRatio(ElevatorConstants.GEAR_RATIO);
     shamMCX.configureCurrentLimit(
-        CurrentLimits.of(Amps.of(ElevatorConstants.STATOR_CURRENT_LIMIT), Amps.of(ElevatorConstants.SUPPLY_CURRENT_LIMIT)));
+        CurrentLimits.of(
+            Amps.of(ElevatorConstants.STATOR_CURRENT_LIMIT),
+            Amps.of(ElevatorConstants.SUPPLY_CURRENT_LIMIT)));
   }
 
   @Override
