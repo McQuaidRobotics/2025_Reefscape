@@ -14,7 +14,6 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
@@ -44,10 +43,7 @@ public class WristReal extends Wrist {
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
 
-    CANSignalManager.registerSignals(
-      WristConstants.CANBUS,
-      position, velocity, amps, voltage
-    );
+    CANSignalManager.registerSignals(WristConstants.CANBUS, position, velocity, amps, voltage);
 
     CANSignalManager.registerDevices(wrist, encoder);
   }
@@ -78,9 +74,10 @@ public class WristReal extends Wrist {
     cfg.CurrentLimits.SupplyCurrentLimit = WristConstants.SUPPLY_CURRENT_LIMIT;
 
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    cfg.MotorOutput.Inverted = WristConstants.INVERT_MOTOR
-      ? InvertedValue.Clockwise_Positive
-      : InvertedValue.CounterClockwise_Positive;
+    cfg.MotorOutput.Inverted =
+        WristConstants.INVERT_MOTOR
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
 
     return cfg;
   }
@@ -90,9 +87,10 @@ public class WristReal extends Wrist {
 
     cfg.MagnetSensor.MagnetOffset = WristConstants.ANGLE_OFFSET;
     cfg.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
-    cfg.MagnetSensor.SensorDirection = WristConstants.INVERT_ENCODER
-      ? SensorDirectionValue.Clockwise_Positive
-      : SensorDirectionValue.CounterClockwise_Positive;
+    cfg.MagnetSensor.SensorDirection =
+        WristConstants.INVERT_ENCODER
+            ? SensorDirectionValue.Clockwise_Positive
+            : SensorDirectionValue.CounterClockwise_Positive;
 
     return cfg;
   }

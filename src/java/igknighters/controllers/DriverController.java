@@ -23,14 +23,14 @@ public class DriverController {
     final var vision = subsystems.vision;
     final var led = subsystems.led;
 
-    final StateManager stateManager = new StateManager();
+    final StateManager stateManager = new StateManager(subsystems.superStructure);
 
     /// FACE BUTTONS
-    this.A.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.IntakeHp));
+    this.A.onTrue(stateManager.holdAt(SuperStructureState.IntakeHp));
 
-    this.B.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.ScoreL4));
+    this.B.onTrue(stateManager.holdAt(SuperStructureState.ScoreL4));
 
-    this.X.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.Processor));
+    this.X.onTrue(stateManager.holdAt(SuperStructureState.Processor));
 
     // this.Y.whileTrue(
     //     SwerveCommands.moveTo(
