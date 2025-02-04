@@ -14,18 +14,13 @@ public class TeleopSwerveTraditionalCmd extends TeleopSwerveBaseCmd {
 
   @Override
   public void execute() {
-    Translation2d vt = orientForUser(getTranslation()).times(kSwerve.MAX_DRIVE_VELOCITY);
-
-    // ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-    //         vt.getX(),
-    //         vt.getY(),
-    //         -getRotationX() * kSwerve.MAX_ANGULAR_VELOCITY, // invert because CCW is positive
-    //         new Rotation2d(swerve.getYawRads())
-    // );
+    Translation2d vt = orientForUser(getTranslation());
 
     Speeds fieldSpeeds =
         Speeds.fromFieldRelative(
-            vt.getX(), vt.getY(), -getRotationX() * kSwerve.MAX_ANGULAR_VELOCITY);
+            vt.getX() * kSwerve.MAX_DRIVE_VELOCITY,
+            vt.getY() * kSwerve.MAX_DRIVE_VELOCITY,
+            -getRotationX() * kSwerve.MAX_ANGULAR_VELOCITY * 0.6);
 
     swerve.drive(fieldSpeeds);
   }

@@ -143,5 +143,16 @@ public class Pathing {
 
       this.obstacles = all;
     }
+
+    public static PathObstacles fromReefSide(Reef.Side side) {
+      return switch (side) {
+        case CLOSE_LEFT -> CLOSE_LEFT_REEF;
+        case CLOSE_MID -> CLOSE_MID_REEF;
+        case CLOSE_RIGHT -> CLOSE_RIGHT_REEF;
+        case FAR_LEFT -> FAR_LEFT_REEF;
+        case FAR_MID -> FAR_MID_REEF;
+        case FAR_RIGHT -> FAR_RIGHT_REEF;
+      };
+    }
   }
 }

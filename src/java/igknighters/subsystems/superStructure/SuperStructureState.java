@@ -1,11 +1,14 @@
 package igknighters.subsystems.superStructure;
 
+import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.util.struct.StructSerializable;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.FieldConstants.Reef.BranchHeight;
 import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
 import igknighters.subsystems.superStructure.Wrist.WristConstants;
+import monologue.ProceduralStructGenerator;
 
-public enum SuperStructureState {
+public enum SuperStructureState implements StructSerializable {
   ScoreL4(BranchHeight.L4.height, 20.0 * Conv.DEGREES_TO_RADIANS, 1.0),
   ScoreL3(BranchHeight.L3.height, 50.0 * Conv.DEGREES_TO_RADIANS, 1.0),
   ScoreL2(BranchHeight.L2.height, -20.0 * Conv.DEGREES_TO_RADIANS, 1.0),
@@ -27,4 +30,7 @@ public enum SuperStructureState {
     this.wristRads = wristRads;
     this.toleranceScalar = toleranceScalar;
   }
+
+  public static final Struct<SuperStructureState> struct =
+      ProceduralStructGenerator.genEnum(SuperStructureState.class);
 }

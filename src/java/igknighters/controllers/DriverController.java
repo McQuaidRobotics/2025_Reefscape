@@ -1,27 +1,24 @@
 package igknighters.controllers;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
+import igknighters.commands.OperatorTarget;
 import igknighters.commands.superStructure.StateManager;
 import igknighters.commands.swerve.SwerveCommands;
-import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.superStructure.SuperStructureState;
-
 import igknighters.util.logging.BootupLogger;
 import java.util.function.DoubleSupplier;
 
 public class DriverController {
   // Define the bindings for the controller
   @SuppressWarnings("unused")
-  public void bind(final Localizer localizer, final Subsystems subsystems) {
+  public void bind(
+      final Localizer localizer, final Subsystems subsystems, final OperatorTarget operatorTarget) {
     final var swerve = subsystems.swerve;
     final var vision = subsystems.vision;
     final var led = subsystems.led;
@@ -35,17 +32,21 @@ public class DriverController {
 
     this.X.onTrue(stateManager.moveTo(subsystems.superStructure, SuperStructureState.Processor));
 
+    // this.Y.whileTrue(
+    //     SwerveCommands.moveTo(
+    //         subsystems.swerve,
+    //         localizer,
+    //         new Pose2d(new Translation2d(1.25, 1.25), Rotation2d.fromDegrees(-125.0)),
+    //         PathObstacles.Other));
     this.Y.whileTrue(
-        SwerveCommands.moveTo(
-            subsystems.swerve,
-            localizer,
-            new Pose2d(new Translation2d(1.25, 1.25), Rotation2d.fromDegrees(-125.0)),
-            PathObstacles.Other));
+        operatorTarget.gotoTargetCmd(subsystems.swerve, subsystems.superStructure, localizer));
 
     // BUMPER
     this.RB.onTrue(Commands.none());
 
-    this.LB.onTrue(Commands.none());
+    this.LB
+        .and(this.RT.negate())
+        .whileTrue(operatorTarget.gotoSuperStructureTargetCmd(subsystems.superStructure));
 
     // CENTER BUTTONS
     this.Back.onTrue(Commands.none());
@@ -58,7 +59,10 @@ public class DriverController {
     this.RS.onTrue(Commands.none());
 
     // TRIGGERS
-    this.LT.onTrue(Commands.none());
+    this.LT
+        .and(this.RT.negate())
+        .whileTrue(
+            operatorTarget.gotoTargetCmd(subsystems.swerve, subsystems.superStructure, localizer));
 
     this.RT.onTrue(Commands.none());
 

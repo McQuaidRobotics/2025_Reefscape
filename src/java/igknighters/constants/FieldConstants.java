@@ -4,8 +4,11 @@ import static edu.wpi.first.math.util.Units.inchesToMeters;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.util.struct.StructSerializable;
 import igknighters.constants.ConstValues.Conv;
 import java.util.List;
+import monologue.ProceduralStructGenerator;
 
 /**
  * Contains various field dimensions and useful reference points. All units are in meters and poses
@@ -181,22 +184,25 @@ public class FieldConstants {
     private static final Pose2d CENTER_POSE = new Pose2d(CENTER, Rotation2d.kZero);
     private static final Translation2d FACE_OFFSET = new Translation2d(inchesToMeters(32.75), 0.0);
 
-    public enum BranchHeight {
-      L4(inchesToMeters(72), -90),
-      L3(inchesToMeters(47.625), -35),
-      L2(inchesToMeters(31.875), -35),
+    public enum BranchHeight implements StructSerializable {
+      L4(inchesToMeters(72), -90 * Conv.DEGREES_TO_RADIANS),
+      L3(inchesToMeters(47.625), -35 * Conv.DEGREES_TO_RADIANS),
+      L2(inchesToMeters(31.875), -35 * Conv.DEGREES_TO_RADIANS),
       L1(inchesToMeters(18), 0);
 
       BranchHeight(double height, double pitch) {
         this.height = height;
-        this.pitch = pitch; // in degrees
+        this.pitch = pitch;
       }
 
       public final double height;
       public final double pitch;
+
+      public static final Struct<BranchHeight> struct =
+          ProceduralStructGenerator.genEnum(BranchHeight.class);
     }
 
-    public enum Side {
+    public enum Side implements StructSerializable {
       CLOSE_LEFT(Rotation2d.fromDegrees(120.0)),
       CLOSE_MID(Rotation2d.fromDegrees(180.0)),
       CLOSE_RIGHT(Rotation2d.fromDegrees(-120.0)),
@@ -246,6 +252,8 @@ public class FieldConstants {
       public Pose2d scoreCenter(double distFromFace) {
         return scorePose(distFromFace, 0.0);
       }
+
+      public static final Struct<Side> struct = ProceduralStructGenerator.genEnum(Side.class);
     }
   }
 

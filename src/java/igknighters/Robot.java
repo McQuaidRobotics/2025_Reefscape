@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import igknighters.commands.OperatorTarget;
 import igknighters.commands.autos.AutoController;
 import igknighters.commands.autos.AutoRoutines;
 import igknighters.commands.swerve.teleop.TeleopSwerveTraditionalCmd;
@@ -52,8 +53,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
   public final SimCtx simCtx = new SimCtx(localizer, isSimulation());
 
   private final DriverController driverController;
-
-  @SuppressWarnings("unused")
   private final OperatorController operatorController;
 
   @FlattenedLogged public final Subsystems subsystems;
@@ -82,10 +81,11 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
     localizer.reset(FieldConstants.POSE2D_CENTER);
 
+    final var operatorTarget = new OperatorTarget(this);
     driverController = new DriverController(0);
-    driverController.bind(localizer, subsystems);
+    driverController.bind(localizer, subsystems, operatorTarget);
     operatorController = new OperatorController(1);
-    operatorController.bind(localizer, subsystems);
+    operatorController.bind(localizer, subsystems, operatorTarget);
 
     subsystems.swerve.setDefaultCommand(
         new TeleopSwerveTraditionalCmd(subsystems.swerve, driverController));
