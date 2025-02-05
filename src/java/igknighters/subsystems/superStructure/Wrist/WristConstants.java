@@ -27,6 +27,7 @@ public class WristConstants {
   public static final double REVERSE_LIMIT = -87.0 * Conv.DEGREES_TO_ROTATIONS;
   public static final double DEFAULT_TOLERANCE = 1.0 * Conv.DEGREES_TO_ROTATIONS;
   public static final double ANGLE_OFFSET = 0.0;
+  public static final double LENGTH = 13.0 * Conv.INCHES_TO_METERS; 
 
   public static final double STATOR_CURRENT_LIMIT = 50.0;
   public static final double SUPPLY_CURRENT_LIMIT = 50.0;
