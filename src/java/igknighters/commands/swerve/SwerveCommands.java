@@ -132,7 +132,7 @@ public class SwerveCommands {
   }
 
   public static Command moveTo(
-      Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
+      Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles, double endDist) {
     final ChassisConstraints constraints =
         new ChassisConstraints(
             new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.8, kSwerve.MAX_DRIVE_VELOCITY * 1.2),
@@ -148,8 +148,9 @@ public class SwerveCommands {
             swerve.runOnce(
                 () -> controller.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
             followRepulsor(roughPlanner, swerve, localizer, target, () -> constraints)
-                .until(() -> obstacles.hitBox.contains(localizer.pose().getTranslation())),
+                .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
             followRepulsor(precisePlanner, swerve, localizer, target, () -> constraints))
-        .until(() -> localizer.pose().getTranslation().getDistance(target.getTranslation()) < 0.05);
+        .until(
+            () -> localizer.pose().getTranslation().getDistance(target.getTranslation()) < endDist);
   }
 }

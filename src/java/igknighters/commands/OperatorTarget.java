@@ -8,16 +8,16 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
-import igknighters.commands.superStructure.SuperStructureCommands;
+import igknighters.commands.superStructure.StateManager;
 import igknighters.commands.swerve.SwerveCommands;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
-import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import java.util.Set;
 import java.util.function.Supplier;
+import monologue.GlobalField;
 import monologue.Logged;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
@@ -48,6 +48,7 @@ public class OperatorTarget implements StructSerializable {
 
   private void logThis() {
     loggingNode.log("OperatorTarget", this);
+    GlobalField.setObject("OperatorTarget", targetLocation());
   }
 
   public Trigger isUpdated() {
@@ -100,20 +101,20 @@ public class OperatorTarget implements StructSerializable {
             .unless(hasTarget().negate()));
   }
 
-  public Command gotoTargetCmd(Swerve swerve, SuperStructure superStructure, Localizer localizer) {
+  public Command gotoTargetCmd(
+      Swerve swerve, StateManager superStructureStateManager, Localizer localizer) {
     Supplier<Command> c =
         () ->
-            Commands.parallel(
-                Commands.print("Goto Target"),
+            Commands.deadline(
                 SwerveCommands.moveTo(
-                    swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side)),
-                SuperStructureCommands.holdAt(superStructure, superStructureState));
-    return makeRefreshableCmd(c, swerve, superStructure);
+                    swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side), -0.01),
+                superStructureStateManager.holdAt(superStructureState));
+    return makeRefreshableCmd(c, swerve, superStructureStateManager.superStructure);
   }
 
-  public Command gotoSuperStructureTargetCmd(SuperStructure superStructure) {
-    Supplier<Command> c = () -> SuperStructureCommands.holdAt(superStructure, superStructureState);
-    return makeRefreshableCmd(c, superStructure);
+  public Command gotoSuperStructureTargetCmd(StateManager superStructureStateManager) {
+    Supplier<Command> c = () -> superStructureStateManager.holdAt(superStructureState);
+    return makeRefreshableCmd(c, superStructureStateManager.superStructure);
   }
 
   public Command updateTargetCmd(

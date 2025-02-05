@@ -38,15 +38,14 @@ public class DriverController {
     //         localizer,
     //         new Pose2d(new Translation2d(1.25, 1.25), Rotation2d.fromDegrees(-125.0)),
     //         PathObstacles.Other));
-    this.Y.whileTrue(
-        operatorTarget.gotoTargetCmd(subsystems.swerve, subsystems.superStructure, localizer));
+    this.Y.whileTrue(operatorTarget.gotoTargetCmd(subsystems.swerve, stateManager, localizer));
 
     // BUMPER
     this.RB.onTrue(Commands.none());
 
     this.LB
         .and(this.RT.negate())
-        .whileTrue(operatorTarget.gotoSuperStructureTargetCmd(subsystems.superStructure));
+        .whileTrue(operatorTarget.gotoSuperStructureTargetCmd(stateManager));
 
     // CENTER BUTTONS
     this.Back.onTrue(Commands.none());
@@ -61,8 +60,8 @@ public class DriverController {
     // TRIGGERS
     this.LT
         .and(this.RT.negate())
-        .whileTrue(
-            operatorTarget.gotoTargetCmd(subsystems.swerve, subsystems.superStructure, localizer));
+        .and(operatorTarget.hasTarget())
+        .whileTrue(operatorTarget.gotoTargetCmd(subsystems.swerve, stateManager, localizer));
 
     this.RT.onTrue(Commands.none());
 

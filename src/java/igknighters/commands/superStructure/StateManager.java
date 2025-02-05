@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class StateManager {
 
-  private final SuperStructure superStructure;
+  public final SuperStructure superStructure;
   private SuperStructureState lastState = SuperStructureState.Stow;
   private final EnumMap<SuperStructureState, EnumMap<SuperStructureState, Transition>> transitions =
       new EnumMap<>(SuperStructureState.class);
