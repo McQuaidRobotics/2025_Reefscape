@@ -17,6 +17,7 @@ import igknighters.constants.ConstValues.kSwerve.kDriveMotor;
 import igknighters.constants.ConstValues.kSwerve.kSteerMotor;
 import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.util.logging.BootupLogger;
+import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
 
 public class SwerveModuleSim extends SwerveModule {
   private static final DCMotor MOTOR = DCMotor.getFalcon500(1);

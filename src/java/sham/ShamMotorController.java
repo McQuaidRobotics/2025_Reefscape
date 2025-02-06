@@ -69,6 +69,16 @@ public interface ShamMotorController {
         return Math.signum(((CurrentOutput) this).current().baseUnitMagnitude());
       }
     }
+
+    public default boolean isNanOrInfinity() {
+      if (this instanceof VoltageOutput) {
+        return Double.isNaN(((VoltageOutput) this).voltage().baseUnitMagnitude())
+            || Double.isInfinite(((VoltageOutput) this).voltage().baseUnitMagnitude());
+      } else {
+        return Double.isNaN(((CurrentOutput) this).current().baseUnitMagnitude())
+            || Double.isInfinite(((CurrentOutput) this).current().baseUnitMagnitude());
+      }
+    }
   }
 
   /**
