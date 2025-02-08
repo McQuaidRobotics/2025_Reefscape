@@ -16,7 +16,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
-import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
 import igknighters.util.can.CANSignalManager;
 
 public class WristReal extends Wrist {
@@ -67,8 +66,8 @@ public class WristReal extends Wrist {
     cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.REVERSE_LIMIT;
 
-    cfg.MotionMagic.MotionMagicCruiseVelocity = ElevatorConstants.MAX_VELOCITY;
-    cfg.MotionMagic.MotionMagicAcceleration = ElevatorConstants.MAX_ACCELERATION;
+    cfg.MotionMagic.MotionMagicCruiseVelocity = WristConstants.MAX_VELOCITY;
+    cfg.MotionMagic.MotionMagicAcceleration = WristConstants.MAX_ACCELERATION;
 
     cfg.CurrentLimits.StatorCurrentLimit = WristConstants.STATOR_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLimit = WristConstants.SUPPLY_CURRENT_LIMIT;
