@@ -3,7 +3,6 @@ package igknighters.subsystems.climber.pivot;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
@@ -80,16 +79,21 @@ public class PivotSim extends Pivot {
     super.controlledLastCycle = true;
     shamMCX.controlVoltage(controlLoop, Radians.of(targetRads));
   }
-  public boolean isAtPosition(double positionRads, double toleranceRads){
-    return MathUtil.isNear(positionRads, shamMCX.position().in(Rotations)*Conv.ROTATIONS_TO_RADIANS, toleranceRads);
+
+  public boolean isAtPosition(double positionRads, double toleranceRads) {
+    return MathUtil.isNear(
+        positionRads, shamMCX.position().in(Rotations) * Conv.ROTATIONS_TO_RADIANS, toleranceRads);
   }
-  public double getPositionRads(){
+
+  public double getPositionRads() {
     return shamMCX.position().in(Radians);
   }
+
   @Override
   public void setNeutralMode(boolean coast) {
     shamMCX.setBrakeMode(!coast);
   }
+
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {

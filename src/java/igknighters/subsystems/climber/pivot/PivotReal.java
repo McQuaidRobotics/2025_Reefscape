@@ -5,17 +5,14 @@ import static edu.wpi.first.units.Units.Radians;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
@@ -25,7 +22,8 @@ import igknighters.util.can.CANSignalManager;
 public class PivotReal extends Pivot {
 
   private final TalonFX pivot = new TalonFX(PivotConstants.MOTOR_ID, PivotConstants.MOTOR_CANBUS);
-  private final CANcoder encoder = new CANcoder(PivotConstants.ENCODER_ID, PivotConstants.ENCODER_CANBUS);
+  private final CANcoder encoder =
+      new CANcoder(PivotConstants.ENCODER_ID, PivotConstants.ENCODER_CANBUS);
 
   private final BaseStatusSignal position, velocity, amps, voltage;
 
@@ -43,7 +41,8 @@ public class PivotReal extends Pivot {
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
 
-    CANSignalManager.registerSignals(PivotConstants.MOTOR_CANBUS, position, velocity, amps, voltage);
+    CANSignalManager.registerSignals(
+        PivotConstants.MOTOR_CANBUS, position, velocity, amps, voltage);
 
     CANSignalManager.registerDevices(pivot, encoder);
   }
@@ -82,12 +81,16 @@ public class PivotReal extends Pivot {
 
     return cfg;
   }
-  public final double getPositionRads(){
+
+  public final double getPositionRads() {
     return position.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
   }
-  public final boolean isAtPosition(double positionRads, double toleranceRads){
-    return MathUtil.isNear(positionRads, position.getValueAsDouble()*Conv.ROTATIONS_TO_RADIANS, toleranceRads);
+
+  public final boolean isAtPosition(double positionRads, double toleranceRads) {
+    return MathUtil.isNear(
+        positionRads, position.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS, toleranceRads);
   }
+
   private final CANcoderConfiguration wristCaNcoderConfiguration() {
     var cfg = new CANcoderConfiguration();
 
@@ -103,8 +106,8 @@ public class PivotReal extends Pivot {
 
   @Override
   public void setPositionRads(double targetRads) {
-    
-     super.targetRads = targetRads;
+
+    super.targetRads = targetRads;
     pivot.setControl(controlReq.withPosition(Conv.RADIANS_TO_ROTATIONS * targetRads));
   }
 
@@ -125,5 +128,5 @@ public class PivotReal extends Pivot {
     }
     super.amps = amps.getValueAsDouble();
     super.radians = position.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
-    }
+  }
 }
