@@ -24,6 +24,7 @@ import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import sham.ShamArena;
+import sham.ShamArena.ShamEnvTiming;
 import sham.ShamRobot;
 import sham.ShamSwerve;
 import sham.configs.ShamGyroConfig;
@@ -109,6 +110,10 @@ public class SimCtx {
 
   public ShamRobot<ShamSwerve> robot() {
     return simRobot;
+  }
+
+  public ShamEnvTiming timing() {
+    return robot().timing();
   }
 
   public VisionSystemSim aprilTagSim() {

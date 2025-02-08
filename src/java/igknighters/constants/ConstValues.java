@@ -17,25 +17,28 @@ public final class ConstValues {
 
   // all measurements are in meters unless otherwise specified
   // all angles are in radians unless otherwise specified
-  static final class Conv {
+  public static final class Conv {
     public static final double FEET_TO_METERS = 0.3048;
     public static final double INCHES_TO_METERS = 0.0254;
     public static final double DEGREES_TO_RADIANS = Math.PI / 180.0;
-    public static final double ROTATIONS_TO_RADIANTS = TAU;
+    public static final double DEGREES_TO_ROTATIONS = 1.0 / 360.0;
+    public static final double ROTATIONS_TO_RADIANS = TAU;
     public static final double RPM_TO_RADIANS_PER_SECOND = TAU / 60.0;
+    public static final double RADIANS_TO_DEGREES = 180.0 / Math.PI;
+    public static final double RADIANS_TO_ROTATIONS = 1.0 / TAU;
     public static final double POUNDS_TO_KILOGRAMS = 0.4535;
   }
 
   @SuppressWarnings("unused")
-  private static final class Motors {
-    private static final class Falcon500 {
+  public static final class Motors {
+    public static final class Falcon500 {
       public static final double FREE_SPEED = 668.1;
       public static final double FREE_CURRENT = 1.5;
       public static final double STALL_TORQUE = 4.69;
       public static final double STALL_CURRENT = 257.0;
     }
 
-    private static final class Falcon500Foc {
+    public static final class Falcon500Foc {
       public static final double FREE_SPEED = 636.7;
       public static final double FREE_CURRENT = 1.5;
       public static final double STALL_TORQUE = 5.84;
@@ -54,6 +57,7 @@ public final class ConstValues {
   public static final boolean DEMO = false; // this should be false for competition
   public static final double PERIODIC_TIME = 0.02; // 20ms
   public static final int PDH_CAN_ID = 61;
+  public static final double DEBUG_SIGNAL_HZ = DEBUG ? 12.5 : 0;
 
   public static final class kRobotIntrinsics {
     public static final double MASS = 132.0 * Conv.POUNDS_TO_KILOGRAMS;
