@@ -46,35 +46,26 @@ public class ShamMCX implements ShamMotorController {
         Time dt, Voltage supply, MechanismState state, EpilogueBackend logger);
 
     public record ClosedLoopOutput<U extends Unit>(
-        ClosedLoop<?, U, AngleUnit> controller, Measure<U> value, Velocity<U> secondOrderValue)
+        ClosedLoop<?, U> controller, Measure<U> value, Velocity<U> secondOrderValue)
         implements Output {
-      @Override
+
+      private State<U> goal() {
+        return new State<>((Measure<U>) value, (Velocity<U>) secondOrderValue);
+      }
+
       @SuppressWarnings("unchecked")
+      private State<U> current(MechanismState state) {
+        if (controller().isVelocity()) {
+          return (State<U>) State.of(state.velocity(), state.acceleration());
+        } else {
+          return (State<U>) State.of(state.position(), state.velocity());
+        }
+      }
+
+      @Override
       public ControllerOutput run(
           Time dt, Voltage supply, MechanismState state, EpilogueBackend logger) {
-        Measure<?> output;
-        if (controller().isVelocity()) {
-          output =
-              controller()
-                  .runVelocity(
-                      state.position(),
-                      State.of(state.velocity(), state.acceleration()),
-                      new State<>(
-                          (Measure<AngularVelocityUnit>) value,
-                          (Velocity<AngularVelocityUnit>) secondOrderValue),
-                      dt,
-                      logger);
-        } else {
-          output =
-              controller()
-                  .runPosition(
-                      state.position(),
-                      State.of(state.position(), state.velocity()),
-                      new State<>(
-                          (Measure<AngleUnit>) value, (Velocity<AngleUnit>) secondOrderValue),
-                      dt,
-                      logger);
-        }
+        Measure<?> output = controller().run(state.position(), current(state), goal(), dt, logger);
         if (output.unit() instanceof VoltageUnit) {
           return ControllerOutput.of((Voltage) output);
         } else {
@@ -239,24 +230,18 @@ public class ShamMCX implements ShamMotorController {
     this.brakeMode = brakeMode;
   }
 
-  private void updateOutput(Output output, Runnable ifChangedCallback) {
-    if (output == null) {
-      this.output = Optional.empty();
-      ifChangedCallback.run();
-      return;
+  private void updateOutput(Output output) {
+    if ((output == null || !this.output.isPresent() || !this.output.get().equals(output))
+        && output instanceof Output.ClosedLoopOutput clo) {
+      clo.controller.reset();
     }
-    if (this.output.isEmpty() || !this.output.get().equals(output)) {
-      ifChangedCallback.run();
-    }
-    this.output = Optional.of(output);
+    this.output = Optional.ofNullable(output);
   }
 
   public void controlCurrent(
-      ClosedLoop<CurrentUnit, AngleUnit, AngleUnit> controller,
-      Angle position,
-      AngularVelocity velocity) {
+      ClosedLoop<CurrentUnit, AngleUnit> controller, Angle position, AngularVelocity velocity) {
     if (controller == null || position == null) {
-      updateOutput(null, controller::reset);
+      updateOutput(null);
       return;
     }
 
@@ -264,21 +249,19 @@ public class ShamMCX implements ShamMotorController {
     logger.log("control/velocity", velocity);
     logger.log("control/acceleration", RadiansPerSecondPerSecond.zero());
     updateOutput(
-        new Output.ClosedLoopOutput<>(controller, position, VU.of(velocity.baseUnitMagnitude())),
-        controller::reset);
+        new Output.ClosedLoopOutput<>(controller, position, VU.of(velocity.baseUnitMagnitude())));
   }
 
-  public void controlCurrent(
-      ClosedLoop<CurrentUnit, AngleUnit, AngleUnit> controller, Angle position) {
+  public void controlCurrent(ClosedLoop<CurrentUnit, AngleUnit> controller, Angle position) {
     controlCurrent(controller, position, RadiansPerSecond.zero());
   }
 
   public void controlCurrent(
-      ClosedLoop<CurrentUnit, AngularVelocityUnit, AngleUnit> controller,
+      ClosedLoop<CurrentUnit, AngularVelocityUnit> controller,
       AngularVelocity velocity,
       AngularAcceleration acceleration) {
     if (controller == null || velocity == null) {
-      updateOutput(null, controller::reset);
+      updateOutput(null);
       return;
     }
 
@@ -287,30 +270,25 @@ public class ShamMCX implements ShamMotorController {
     logger.log("control/acceleration", acceleration);
     updateOutput(
         new Output.ClosedLoopOutput<>(
-            controller, velocity, AU.of(acceleration.baseUnitMagnitude())),
-        controller::reset);
+            controller, velocity, AU.of(acceleration.baseUnitMagnitude())));
   }
 
   public void controlCurrent(
-      ClosedLoop<CurrentUnit, AngularVelocityUnit, AngleUnit> controller,
-      AngularVelocity velocity) {
+      ClosedLoop<CurrentUnit, AngularVelocityUnit> controller, AngularVelocity velocity) {
     controlCurrent(controller, velocity, RadiansPerSecondPerSecond.zero());
   }
 
   public void controlCurrent(Current amps) {
-
     logger.log("control/position", Radians.zero());
     logger.log("control/velocity", RadiansPerSecond.zero());
     logger.log("control/acceleration", RadiansPerSecondPerSecond.zero());
-    updateOutput(Output.of(amps), () -> {});
+    updateOutput(Output.of(amps));
   }
 
   public void controlVoltage(
-      ClosedLoop<VoltageUnit, AngleUnit, AngleUnit> controller,
-      Angle position,
-      AngularVelocity velocity) {
+      ClosedLoop<VoltageUnit, AngleUnit> controller, Angle position, AngularVelocity velocity) {
     if (controller == null || position == null) {
-      updateOutput(null, controller::reset);
+      updateOutput(null);
       return;
     }
 
@@ -318,21 +296,19 @@ public class ShamMCX implements ShamMotorController {
     logger.log("control/velocity", velocity);
     logger.log("control/acceleration", RadiansPerSecondPerSecond.zero());
     updateOutput(
-        new Output.ClosedLoopOutput<>(controller, position, VU.of(velocity.baseUnitMagnitude())),
-        controller::reset);
+        new Output.ClosedLoopOutput<>(controller, position, VU.of(velocity.baseUnitMagnitude())));
   }
 
-  public void controlVoltage(
-      ClosedLoop<VoltageUnit, AngleUnit, AngleUnit> controller, Angle position) {
+  public void controlVoltage(ClosedLoop<VoltageUnit, AngleUnit> controller, Angle position) {
     controlVoltage(controller, position, RadiansPerSecond.zero());
   }
 
   public void controlVoltage(
-      ClosedLoop<VoltageUnit, AngularVelocityUnit, AngleUnit> controller,
+      ClosedLoop<VoltageUnit, AngularVelocityUnit> controller,
       AngularVelocity velocity,
       AngularAcceleration acceleration) {
     if (controller == null || velocity == null) {
-      updateOutput(null, controller::reset);
+      updateOutput(null);
       return;
     }
 
@@ -341,13 +317,11 @@ public class ShamMCX implements ShamMotorController {
     logger.log("control/acceleration", acceleration);
     updateOutput(
         new Output.ClosedLoopOutput<>(
-            controller, velocity, AU.of(acceleration.baseUnitMagnitude())),
-        controller::reset);
+            controller, velocity, AU.of(acceleration.baseUnitMagnitude())));
   }
 
   public void controlVoltage(
-      ClosedLoop<VoltageUnit, AngularVelocityUnit, AngleUnit> controller,
-      AngularVelocity velocity) {
+      ClosedLoop<VoltageUnit, AngularVelocityUnit> controller, AngularVelocity velocity) {
     controlVoltage(controller, velocity, RadiansPerSecondPerSecond.zero());
   }
 
@@ -356,7 +330,7 @@ public class ShamMCX implements ShamMotorController {
     logger.log("control/position", Radians.zero());
     logger.log("control/velocity", RadiansPerSecond.zero());
     logger.log("control/acceleration", RadiansPerSecondPerSecond.zero());
-    updateOutput(Output.of(volts), () -> {});
+    updateOutput(Output.of(volts));
   }
 
   public synchronized Angle position() {

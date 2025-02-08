@@ -88,13 +88,12 @@ public class ShamMechanism {
     }
 
     static MechanismDynamics forElevator(
-        Mass mass, Distance spoolDiameter, Supplier<Rotation2d> tilt) {
+        Mass mass, Distance spoolRadius, Supplier<Rotation2d> tilt) {
       return new MechanismDynamics() {
         @Override
         public Torque environment(MechanismState state) {
           Force f = mass.times(Constants.kGravity).times(tilt.get().getSin());
-          Distance r = spoolDiameter.div(2.0);
-          return MeasureMath.times(f, r);
+          return MeasureMath.times(f, spoolRadius);
         }
 
         @Override
@@ -104,12 +103,12 @@ public class ShamMechanism {
       };
     }
 
-    static MechanismDynamics forElevator(Mass mass, Distance spoolDiameter, Rotation2d tilt) {
-      return forElevator(mass, spoolDiameter, () -> tilt);
+    static MechanismDynamics forElevator(Mass mass, Distance spoolRadius, Rotation2d tilt) {
+      return forElevator(mass, spoolRadius, () -> tilt);
     }
 
-    static MechanismDynamics forElevator(Mass mass, Distance spoolDiameter) {
-      return forElevator(mass, spoolDiameter, Rotation2d.kCCW_90deg);
+    static MechanismDynamics forElevator(Mass mass, Distance spoolRadius) {
+      return forElevator(mass, spoolRadius, Rotation2d.kCCW_90deg);
     }
 
     static MechanismDynamics forArm(Mass mass, Distance comDistance) {

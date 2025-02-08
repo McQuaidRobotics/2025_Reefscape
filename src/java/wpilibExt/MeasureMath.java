@@ -221,4 +221,12 @@ public class MeasureMath {
     return AccelerationUnit.combine(VelocityUnit.combine(Radian, Second), Second)
         .of(aa.in(RadiansPerSecondPerSecond));
   }
+
+  @SuppressWarnings("unchecked")
+  public static <M extends Measure<?>> M zeroIfNAN(M m) {
+    if (Double.isNaN(m.baseUnitMagnitude())) {
+      return (M) m.unit().zero();
+    }
+    return m;
+  }
 }

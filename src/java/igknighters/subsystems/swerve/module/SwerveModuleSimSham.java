@@ -35,8 +35,8 @@ public class SwerveModuleSimSham extends SwerveModule {
 
   private final ShamMCX driveMotor;
   private final ShamMCX steerMotor;
-  private final ClosedLoop<VoltageUnit, AngularVelocityUnit, AngleUnit> driveLoop;
-  private final ClosedLoop<VoltageUnit, AngleUnit, AngleUnit> steerLoop;
+  private final ClosedLoop<VoltageUnit, AngularVelocityUnit> driveLoop;
+  private final ClosedLoop<VoltageUnit, AngleUnit> steerLoop;
 
   public SwerveModuleSimSham(
       final int moduleId, SimSwerveOdometryThread odoThread, ShamSwerve sim) {
@@ -58,8 +58,7 @@ public class SwerveModuleSimSham extends SwerveModule {
         ClosedLoop.forVoltageAngle(
             PIDFeedback.forAngular(Volts, Rotations, kSteerMotor.kP, kSteerMotor.kD)
                 .withContinuousAngularInput(),
-            SimpleFeedforward.forVoltage(Rotations, kSteerMotor.kS, 0.0, 0.0, sim.timing().dt()),
-            true);
+            SimpleFeedforward.forVoltage(Rotations, kSteerMotor.kS, 0.0, 0.0, sim.timing().dt()));
 
     steerMotor.configSensorToMechanismRatio(kSwerve.STEER_GEAR_RATIO);
 
