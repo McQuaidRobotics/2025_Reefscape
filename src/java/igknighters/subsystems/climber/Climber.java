@@ -25,9 +25,12 @@ public class Climber implements ExclusiveSubsystem {
     }
   }
 
-  public void setClimberStatus(double positionRads, boolean magnetOn) {
-    pivot.setPositionRads(positionRads);
-    magnet.setOn(magnetOn);
+  public void enableMagnet(boolean enable) {
+    magnet.setOn(enable);
+  }
+
+  public void setPivotPosition(double position) {
+    pivot.setPositionRads(position);
   }
 
   @Override
