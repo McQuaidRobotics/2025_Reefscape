@@ -2,7 +2,7 @@ package igknighters.subsystems.intake.rollers;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -16,28 +16,32 @@ import sham.utils.GearRatio;
 import wpilibExt.DCMotorExt;
 
 public class RollerSim extends Rollers {
-  private final ShamMechanism intakMechanism;
+  private final ShamMechanism intakeMechanism;
   private final ShamMCX intakeMotor;
 
   public RollerSim(SimCtx simCtx) {
     intakeMotor = new ShamMCX("IntakeMotor");
-    intakMechanism =
+    intakeMechanism =
         new ShamMechanism(
             "IntakeMechanism",
             new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1),
             intakeMotor,
-            KilogramSquareMeters.of(0.1),
+            KilogramSquareMeters.of(0.03),
             GearRatio.reduction(RollerConstants.GEAR_RATIO),
-            Friction.of(DCMotor.getKrakenX60Foc(1), Volts.of(1)),
+            Friction.of(DCMotor.getKrakenX60Foc(1), Volts.of(0.12)),
             MechanismDynamics.zero(),
             HardLimits.unbounded(),
             0,
             simCtx.robot().timing());
-    simCtx.robot().addMechanism(intakMechanism);
+    simCtx.robot().addMechanism(intakeMechanism);
   }
 
   public void setVoltage(double voltage) {
     intakeMotor.controlVoltage(Volts.of(voltage));
+  }
+
+  public void setTorque(double current) {
+    intakeMotor.controlCurrent(Amps.of(current));
   }
 
   @Override
@@ -52,9 +56,10 @@ public class RollerSim extends Rollers {
 
   @Override
   public void periodic() {
-    amps = intakeMotor.statorCurrent().in(Amps);
-    rads = intakeMotor.velocity().in(RPM);
-    hasAlgae = hasAlgae();
-    hasCoral = hasCoral();
+    super.volts = intakeMotor.voltage().in(Volts);
+    super.current = intakeMotor.statorCurrent().in(Amps);
+    super.radiansPerSecond = intakeMotor.velocity().in(RadiansPerSecond);
+    super.hasAlgae = hasAlgae();
+    super.hasCoral = hasCoral();
   }
 }
