@@ -30,15 +30,14 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
     addRequirements(swerve);
     this.localizer = localizer;
     this.heading = heading;
-    this.rotController = new RotationalController(3.0, 0.1);
+    this.rotController = new RotationalController(5.0, 0.0, true);
     this.constraints = constraints;
   }
 
   @Override
   public void initialize() {
     rotController.reset(
-        localizer.pose().getRotation().getRadians(), 0.0 // TODO
-        );
+        localizer.pose().getRotation().getRadians(), swerve.getRobotSpeeds().omega());
   }
 
   @Override
@@ -50,6 +49,7 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
         rotController.calculate(
             ConstValues.PERIODIC_TIME,
             localizer.pose().getRotation().getRadians(),
+            swerve.getRobotSpeeds().omega(),
             heading.get().getRadians(),
             1.0 * Conv.DEGREES_TO_RADIANS,
             constraints.rotation());

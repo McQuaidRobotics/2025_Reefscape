@@ -44,14 +44,15 @@ public class DriverController {
                         this,
                         localizer,
                         () -> {
-                          if (localizer.pose().getY() > FieldConstants.FIELD_WIDTH) {
+                          final double angle = 54.0;
+                          if (localizer.pose().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
                             return AllianceFlipper.isBlue()
-                                ? Rotation2d.fromDegrees(145)
-                                : Rotation2d.fromDegrees(35);
+                                ? Rotation2d.fromDegrees(180 - angle)
+                                : Rotation2d.fromDegrees(angle);
                           } else {
                             return AllianceFlipper.isBlue()
-                                ? Rotation2d.fromDegrees(-145)
-                                : Rotation2d.fromDegrees(-35);
+                                ? Rotation2d.fromDegrees(-(180 - angle))
+                                : Rotation2d.fromDegrees(-angle);
                           }
                         },
                         kSwerve.CONSTRAINTS)))

@@ -1,74 +1,102 @@
 package wayfinder.controllers;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.LinearVelocityUnit;
+import edu.wpi.first.units.measure.Per;
 import wayfinder.controllers.Types.Constraints;
 import wayfinder.controllers.Types.State;
 import wpilibExt.Speeds.FieldSpeeds;
 
+/**
+ * A translation controller that implements feedback and trapezoidal motion profiling on the
+ * distance to the target position and then extrapolates those into X and Y velocities.
+ */
 public class TranslationController {
+  // These classes don't use the wpilib classes for a few reasons:
+  // - in order for the trapezoidal profile in wpilib to be dynamic you have to recreate the object
+  // each cycle
+  // - the wpilib classes are harder to introspect for me with weird behavior
+  // - i wanted to implement them myself to understand them better :3
+  //
+  // If you would like to use this in your own code feel free to implement this using the wpilib
+  // classes
+
   private final double kP, kD;
+  private final boolean replanning;
 
   private double prevError = 0;
   private State prevSetpoint = State.kZero;
 
-  public TranslationController(double kP, double kD) {
+  public TranslationController(double kP, double kD, boolean replanning) {
     this.kP = kP;
     this.kD = kD;
+    this.replanning = replanning;
   }
 
-  private double signSqr(double x) {
-    return Math.copySign(Math.pow(x, 2.0), x);
+  public TranslationController(
+      Per<DistanceUnit, DistanceUnit> kP,
+      Per<LinearVelocityUnit, LinearVelocityUnit> kD,
+      boolean replanning) {
+    this.kP = kP.in(Meters.per(Meters));
+    this.kD = kD.in(MetersPerSecond.per(MetersPerSecond));
+    this.replanning = replanning;
+  }
+
+  private double veloInDirection(FieldSpeeds speeds, Rotation2d targetDirection) {
+    Rotation2d speedsDirection = speeds.direction();
+    double dot =
+        speedsDirection.getCos() * targetDirection.getCos()
+            + speedsDirection.getSin() * targetDirection.getSin();
+    return speeds.magnitude() * dot;
   }
 
   public FieldSpeeds calculate(
       double period,
       Translation2d measurement,
+      FieldSpeeds measurementVelo,
       Translation2d target,
       double deadband,
       Constraints constraints) {
-
-    // GlobalField.setObject(
-    //     "Track", new Pose2d(measurement, Rotation2d.kZero), new Pose2d(target,
-    // Rotation2d.kZero));
 
     final double distance = measurement.getDistance(target);
     if (distance < deadband + 0.001) {
       return FieldSpeeds.kZero;
     }
-    final Rotation2d direction =
-        new Rotation2d(measurement.getX() - target.getX(), measurement.getY() - target.getY());
+    final Rotation2d direction = measurement.minus(target).getAngle();
+    final double velo = veloInDirection(measurementVelo, direction);
 
     State setpoint =
         DynamicTrapezoidProfile.calculate(
             period,
-            prevSetpoint,
-            State.kZero,
+            replanning ? distance : prevSetpoint.position(),
+            replanning ? velo : prevSetpoint.velocity(),
+            0.0,
+            0.0,
             constraints.maxVelocity(),
             constraints.maxAcceleration());
+
+    double positionError = prevSetpoint.position() - distance;
+    double errorOverTime = (positionError - prevError) / period;
+    prevError = positionError;
+
     prevSetpoint = setpoint;
 
-    double positionError = setpoint.position() - distance;
-    prevError = positionError;
-    double errorOverTime = (positionError - prevError) / period;
-    double dirVelo =
-        MathUtil.clamp(
-            (kP * positionError) + (kD * errorOverTime) + setpoint.velocity(),
-            -constraints.maxVelocity(),
-            constraints.maxVelocity());
+    double dirVelo = (kP * positionError) + (kD * errorOverTime) + setpoint.velocity();
+    dirVelo = MathUtil.clamp(dirVelo, -constraints.maxVelocity(), constraints.maxVelocity());
 
-    return new FieldSpeeds(
-        dirVelo * signSqr(direction.getCos()), dirVelo * signSqr(direction.getSin()), 0.0);
+    return new FieldSpeeds(dirVelo * direction.getCos(), dirVelo * direction.getSin(), 0.0);
   }
 
   public void reset(Translation2d measurement, FieldSpeeds measurementVelo, Translation2d target) {
     prevError = 0;
     final Rotation2d direction = measurement.minus(target).getAngle();
     final double distance = measurement.getDistance(target);
-    final double velo =
-        measurementVelo.vx() * signSqr(direction.getCos())
-            + measurementVelo.vy() * signSqr(direction.getSin());
-    prevSetpoint = new State(distance, Math.abs(velo));
+    prevSetpoint = new State(distance, veloInDirection(measurementVelo, direction));
   }
 }

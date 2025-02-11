@@ -9,6 +9,7 @@ import java.util.List;
 import wayfinder.controllers.CircularSlewRateLimiter;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.Types.ChassisConstraints;
+import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
 
 public class RepulsorFieldPlanner {
@@ -54,10 +55,15 @@ public class RepulsorFieldPlanner {
   }
 
   public FieldSpeeds calculate(
-      double period, Pose2d measurement, Pose2d target, ChassisConstraints constraints) {
+      double period,
+      Pose2d measurement,
+      Speeds measurementVelo,
+      Pose2d target,
+      ChassisConstraints constraints) {
     double straightDist = measurement.getTranslation().getDistance(target.getTranslation()) * 1.5;
     if (straightDist < 0.2) {
-      return controller.calculate(period, measurement, target, Transform2d.kZero, constraints);
+      return controller.calculate(
+          period, measurement, measurementVelo, target, Transform2d.kZero, constraints);
     } else {
       Translation2d netForce = getForce(measurement.getTranslation(), target.getTranslation());
       netForce = netForce.times(straightDist / netForce.getNorm());
@@ -68,6 +74,7 @@ public class RepulsorFieldPlanner {
       return controller.calculate(
           period,
           measurement,
+          measurementVelo,
           new Pose2d(measurement.getTranslation().plus(netForce), target.getRotation()),
           Transform2d.kZero,
           constraints);

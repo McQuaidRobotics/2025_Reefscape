@@ -127,7 +127,9 @@ public class SwerveCommands {
           }
           var c = constraints.get();
           swerve.drive(
-              planner.calculate(ConstValues.PERIODIC_TIME, localizer.pose(), target, c), c);
+              planner.calculate(
+                  ConstValues.PERIODIC_TIME, localizer.pose(), swerve.getFieldSpeeds(), target, c),
+              c);
         });
   }
 
@@ -139,7 +141,8 @@ public class SwerveCommands {
             new Constraints(kSwerve.MAX_ANGULAR_VELOCITY, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
     final PositionalController controller =
         new PositionalController(
-            new TranslationController(3.0, 0.13), new RotationalController(10.0, 0.2));
+            new TranslationController(3.0, 0.13, false),
+            new RotationalController(10.0, 0.2, false));
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(controller, obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
