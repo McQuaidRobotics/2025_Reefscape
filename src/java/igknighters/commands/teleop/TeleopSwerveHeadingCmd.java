@@ -16,9 +16,11 @@ import wpilibExt.Speeds;
 public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
 
   private final Localizer localizer;
-  private final Supplier<Rotation2d> heading;
+  private final Supplier<Rotation2d> headingSupplier;
   private final RotationalController rotController;
   private final ChassisConstraints constraints;
+
+  private Rotation2d lastHeading = Rotation2d.kZero;
 
   public TeleopSwerveHeadingCmd(
       Swerve swerve,
@@ -29,15 +31,19 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
     super(swerve, controller);
     addRequirements(swerve);
     this.localizer = localizer;
-    this.heading = heading;
-    this.rotController = new RotationalController(5.0, 0.0, true);
+    this.headingSupplier = heading;
+    this.rotController = new RotationalController(3.0, 0.03, false);
     this.constraints = constraints;
+  }
+
+  private void reset() {
+    rotController.reset(
+        localizer.pose().getRotation().getRadians(), swerve.getRobotSpeeds().omega());
   }
 
   @Override
   public void initialize() {
-    rotController.reset(
-        localizer.pose().getRotation().getRadians(), swerve.getRobotSpeeds().omega());
+    reset();
   }
 
   @Override
@@ -45,13 +51,19 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
 
     Translation2d vt = orientForUser(getTranslation()).times(kSwerve.MAX_DRIVE_VELOCITY);
 
+    Rotation2d heading = this.headingSupplier.get();
+    if (!lastHeading.equals(heading)) {
+      reset();
+      lastHeading = heading;
+    }
+
     double omega =
         rotController.calculate(
             ConstValues.PERIODIC_TIME,
             localizer.pose().getRotation().getRadians(),
             swerve.getRobotSpeeds().omega(),
-            heading.get().getRadians(),
-            1.0 * Conv.DEGREES_TO_RADIANS,
+            heading.getRadians(),
+            0.0 * Conv.DEGREES_TO_RADIANS,
             constraints.rotation());
 
     swerve.drive(Speeds.fromFieldRelative(vt.getX(), vt.getY(), omega), constraints);
