@@ -2,15 +2,48 @@ package sham.seasonspecific;
 
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Time;
 import java.util.Arrays;
+import java.util.List;
+import org.dyn4j.geometry.Geometry;
 import sham.ShamArena;
+import sham.ShamGamePiece.GamePieceTarget;
+import sham.ShamGamePiece.GamePieceVariant;
 import wpilibExt.AllianceFlipper;
 
 public class Reefscape {
+  public static final GamePieceVariant CORAL =
+      new GamePieceVariant(
+          "Coral",
+          Units.inchesToMeters(4.5),
+          0.7,
+          Geometry.createRectangle(Units.inchesToMeters(4.5), Units.inchesToMeters(11.75)),
+          List.of(),
+          false,
+          0);
+
+  public static final GamePieceVariant ALGAE =
+      new GamePieceVariant(
+          "Algae",
+          Units.inchesToMeters(16.0),
+          0.5,
+          Geometry.createCircle(Units.inchesToMeters(16.0)),
+          List.of(
+              new GamePieceTarget(
+                  new Rectangle2d(new Pose2d(0.0, 0.0, Rotation2d.kZero), 0.5, 0.2),
+                  new Pair<>(0.0, 1.0)),
+              new GamePieceTarget(
+                  new Rectangle2d(new Pose2d(0.0, 0.0, Rotation2d.kZero), 0.5, 0.2),
+                  new Pair<>(0.0, 1.0))),
+          true,
+          0);
+
   public static class ReefscapeShamArena extends ShamArena {
     public static final class ReefscapeFieldObstacleMap extends FieldMap {
       public ReefscapeFieldObstacleMap() {

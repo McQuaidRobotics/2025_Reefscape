@@ -11,16 +11,20 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
-
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.system.plant.DCMotor;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.util.can.CANSignalManager;
 
 public class RollersReal extends Rollers {
-  private final TalonFX intakeMotor = new TalonFX(RollerConstants.INTAKE_MOTOR_ID);
-  private final CANrange distanceSensor = new CANrange(RollerConstants.DISTANCE_SENSOR_ID);
+  private final TalonFX intakeMotor =
+      new TalonFX(RollerConstants.INTAKE_MOTOR_ID, RollerConstants.CANBUS);
+  private final CANrange distanceSensor =
+      new CANrange(RollerConstants.DISTANCE_SENSOR_ID, RollerConstants.CANBUS);
 
-  private final VoltageOut voltageReq = new VoltageOut(0.0).withUpdateFreqHz(0.0);
+  private final VoltageOut voltageReq =
+      new VoltageOut(0.0).withUpdateFreqHz(0.0).withEnableFOC(true);
   private final TorqueCurrentFOC currentReq = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
   private final Debouncer algaeDebouncer = new Debouncer(0.1, DebounceType.kRising);
@@ -28,14 +32,12 @@ public class RollersReal extends Rollers {
   private final StatusSignal<ReverseLimitValue> coralSensor;
   private final BaseStatusSignal current, volts, velocity, temperature;
 
-  private final double kt;
-
   private TalonFXConfiguration intakeConfiguration() {
     var cfg = new TalonFXConfiguration();
 
     // this can change the latency behavior,
     // we found higher latency was possibly better here but will revisit
-    cfg.HardwareLimitSwitch.ReverseLimitEnable = false; 
+    cfg.HardwareLimitSwitch.ReverseLimitEnable = false;
     cfg.HardwareLimitSwitch.ReverseLimitSource = ReverseLimitSourceValue.RemoteCANrange;
     cfg.HardwareLimitSwitch.ReverseLimitRemoteSensorID = distanceSensor.getDeviceID();
 
@@ -56,30 +58,35 @@ public class RollersReal extends Rollers {
   }
 
   public RollersReal() {
+    super(DCMotor.getKrakenX60(1).withReduction(RollerConstants.GEAR_RATIO));
     coralSensor = intakeMotor.getReverseLimit();
     current = intakeMotor.getTorqueCurrent();
     volts = intakeMotor.getMotorVoltage();
     velocity = intakeMotor.getVelocity();
     temperature = intakeMotor.getDeviceTemp();
-    kt = intakeMotor.getMotorKT().waitForUpdate(1.0).getValueAsDouble();
     intakeMotor.getConfigurator().apply(intakeConfiguration());
     distanceSensor.getConfigurator().apply(intakeSensorConfiguration());
+
+    CANSignalManager.registerSignals(
+        RollerConstants.CANBUS, coralSensor, current, volts, velocity, temperature);
+
+    CANSignalManager.registerDevices(intakeMotor, distanceSensor);
   }
 
   @Override
   public void setVoltage(double voltage) {
-    if (voltage > 0.0) {
+    if (voltage >= 0.0) {
       algaeDebouncer.calculate(false);
     }
     intakeMotor.setControl(voltageReq.withOutput(voltage));
   }
 
   @Override
-  public void setTorque(double torque) {
-    if (torque > 0.0) {
+  public void setCurrent(double current) {
+    if (current >= 0.0) {
       algaeDebouncer.calculate(false);
     }
-    intakeMotor.setControl(currentReq.withOutput(torque / kt));
+    intakeMotor.setControl(currentReq.withOutput(current));
   }
 
   @Override
@@ -88,8 +95,7 @@ public class RollersReal extends Rollers {
   }
 
   private boolean probablyHasAlgae() {
-    return super.current > RollerConstants.ALGAE_TRIP_VALUE
-        && !hasCoral();
+    return super.current > RollerConstants.ALGAE_TRIP_VALUE && !hasCoral();
   }
 
   @Override
@@ -104,7 +110,7 @@ public class RollersReal extends Rollers {
     super.hasAlgae = hasAlgae();
     super.hasCoral = hasCoral();
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
-    log("rpm", velocity.getValueAsDouble()*60.0);
+    log("rpm", velocity.getValueAsDouble() * 60.0);
     log("temp", temperature.getValueAsDouble());
   }
 }

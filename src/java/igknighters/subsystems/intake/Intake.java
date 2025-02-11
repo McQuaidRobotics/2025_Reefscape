@@ -1,19 +1,25 @@
 package igknighters.subsystems.intake;
 
-import java.util.function.BooleanSupplier;
-
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.intake.rollers.RollerSim;
 import igknighters.subsystems.intake.rollers.Rollers;
 import igknighters.subsystems.intake.rollers.RollersReal;
+import java.util.function.BooleanSupplier;
 
 public class Intake implements ExclusiveSubsystem {
   public enum Holding {
     CORAL,
     ALGAE,
     NONE
+  }
+
+  public enum ControlType {
+    VOLTAGE,
+    CURRENT,
+    TORQUE,
+    VELOCITY
   }
 
   private final Rollers rollers;
@@ -26,25 +32,26 @@ public class Intake implements ExclusiveSubsystem {
     }
   }
 
-  public void runAtVoltage(double volts){
-    rollers.setVoltage(volts);
+  public void control(ControlType controlType, double value) {
+    switch (controlType) {
+      case VOLTAGE -> rollers.setVoltage(value);
+      case CURRENT -> rollers.setCurrent(value);
+      case TORQUE -> rollers.setTorque(value);
+      case VELOCITY -> rollers.setVelocity(value);
+    }
   }
 
-  public void runAtTorque(double torque){
-    rollers.setTorque(torque);
-  }
-
-  public Holding getHolding(){
-    if(rollers.hasCoral()){
+  public Holding getHolding() {
+    if (rollers.hasCoral()) {
       return Holding.CORAL;
-    } else if(rollers.hasAlgae()){
+    } else if (rollers.hasAlgae()) {
       return Holding.ALGAE;
     } else {
       return Holding.NONE;
     }
   }
 
-  public BooleanSupplier isHolding(Holding holding){
+  public BooleanSupplier isHolding(Holding holding) {
     return () -> getHolding() == holding;
   }
 

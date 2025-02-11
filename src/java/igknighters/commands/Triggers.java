@@ -1,26 +1,35 @@
 package igknighters.commands;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.IntSupplier;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.OptionalInt;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
+import java.util.function.IntSupplier;
 
 public class Triggers {
   private static final AtomicInteger count = new AtomicInteger(0);
-  private static final Command counter = new Command() {
-    // needs access to `this` so can't be done with command factories
-    { this.schedule(); }
-    public void execute() { count.incrementAndGet(); };
-    public void end(boolean interrupted) { this.schedule(); };
-  }.withName("LoopCounter")
-  .ignoringDisable(true);
+  private static final Command counter =
+      new Command() {
+        // needs access to `this` so can't be done with command factories
+        {
+          this.schedule();
+        }
+
+        public void execute() {
+          count.incrementAndGet();
+        }
+        ;
+
+        public void end(boolean interrupted) {
+          this.schedule();
+        }
+        ;
+      }.withName("LoopCounter").ignoringDisable(true);
 
   static void addCounterToNewScheduler(CommandScheduler scheduler) {
     scheduler.schedule(counter);
@@ -77,21 +86,22 @@ public class Triggers {
   }
 
   public static Trigger enterExit(Trigger enter, Trigger exit) {
-    Trigger checker = new Trigger(
-        new BooleanSupplier() {
-          boolean output = false;
+    Trigger checker =
+        new Trigger(
+            new BooleanSupplier() {
+              boolean output = false;
 
-          @Override
-          public boolean getAsBoolean() {
-            if (enter.getAsBoolean()) {
-              output = true;
-            }
-            if (exit.getAsBoolean()) {
-              output = false;
-            }
-            return output;
-          }
-        });
+              @Override
+              public boolean getAsBoolean() {
+                if (enter.getAsBoolean()) {
+                  output = true;
+                }
+                if (exit.getAsBoolean()) {
+                  output = false;
+                }
+                return output;
+              }
+            });
     // this is a cheeky way to use the event loop of `enter`
     return enter.or(enter.negate()).and(checker);
   }
@@ -100,24 +110,24 @@ public class Triggers {
     return enterExit(trigger, trigger.negate());
   }
 
-  public static Trigger timer(EventLoop loop, double targetTime, Timer timer, IntSupplier cycleCounter) {
+  public static Trigger timer(
+      EventLoop loop, double targetTime, Timer timer, IntSupplier cycleCounter) {
     // Make the trigger only be high for 1 cycle when the time has elapsed
     return new CycleCachedTrigger(
-      loop,
-      new BooleanSupplier() {
-        double lastTimestamp = -1.0;
+        loop,
+        new BooleanSupplier() {
+          double lastTimestamp = -1.0;
 
-        public boolean getAsBoolean() {
-          if (!timer.isRunning()) {
-            lastTimestamp = -1.0;
-            return false;
+          public boolean getAsBoolean() {
+            if (!timer.isRunning()) {
+              lastTimestamp = -1.0;
+              return false;
+            }
+            double nowTimestamp = timer.get();
+            return lastTimestamp < targetTime && nowTimestamp >= targetTime;
           }
-          double nowTimestamp = timer.get();
-          return lastTimestamp < targetTime && nowTimestamp >= targetTime;
-        }
-      },
-      cycleCounter
-    );
+        },
+        cycleCounter);
   }
 
   public static Trigger timer(double targetTime, Timer timer) {
@@ -125,25 +135,26 @@ public class Triggers {
   }
 
   public static Trigger just(Trigger trigger) {
-    Trigger checker = new CycleCachedTrigger(
-        new BooleanSupplier() {
-          boolean last = false;
+    Trigger checker =
+        new CycleCachedTrigger(
+            new BooleanSupplier() {
+              boolean last = false;
 
-          @Override
-          public boolean getAsBoolean() {
-            boolean current = trigger.getAsBoolean();
-            boolean output = current && !last;
-            last = current;
-            return output;
-          }
-        },
-        Triggers::monotonicCycleCounter);
+              @Override
+              public boolean getAsBoolean() {
+                boolean current = trigger.getAsBoolean();
+                boolean output = current && !last;
+                last = current;
+                return output;
+              }
+            },
+            Triggers::monotonicCycleCounter);
     return trigger.or(trigger.negate()).and(checker);
   }
 
   /**
-   * Trigger that is true when no command is requiring the subsystem
-   * or when the default command for the subsystem is running.
+   * Trigger that is true when no command is requiring the subsystem or when the default command for
+   * the subsystem is running.
    *
    * @param loop the event loop to use
    * @param subsystem the subsystem to check
@@ -155,13 +166,12 @@ public class Triggers {
         () -> {
           final Command requiring = subsystem.getCurrentCommand();
           return requiring == null || requiring.equals(subsystem.getDefaultCommand());
-        }
-    );
+        });
   }
 
   /**
-   * Trigger that is true when no command is requiring the subsystem
-   * or when the default command for the subsystem is running.
+   * Trigger that is true when no command is requiring the subsystem or when the default command for
+   * the subsystem is running.
    *
    * @param subsystem the subsystem to check
    * @return the trigger

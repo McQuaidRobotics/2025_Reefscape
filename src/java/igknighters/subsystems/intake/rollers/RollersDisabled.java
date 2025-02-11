@@ -1,21 +1,25 @@
 package igknighters.subsystems.intake.rollers;
 
+import edu.wpi.first.math.system.plant.DCMotor;
+
 public class RollersDisabled extends Rollers {
+  public RollersDisabled() {
+    super(DCMotor.getKrakenX60(1).withReduction(RollerConstants.GEAR_RATIO));
+  }
+
   @Override
   public boolean hasAlgae() {
-    return true;
+    return false;
   }
 
   @Override
   public boolean hasCoral() {
-    return true;
+    return false;
   }
 
   @Override
-  public void setVoltage(double voltage) {
-  }
+  public void setVoltage(double voltage) {}
 
   @Override
-  public void setTorque(double current) {
-  }
+  public void setCurrent(double current) {}
 }

@@ -15,11 +15,15 @@ public class SubsystemTriggers {
     final var superStructure = subsystems.superStructure;
     final var intake = subsystems.intake;
 
-    subsystemIdle(intake).and(intake.isHolding(Holding.ALGAE)).onTrue(
-      IntakeCommands.runTorque(intake, 0.45) //roughly 25 amps at stall
-    );
-    subsystemIdle(intake).and(intake.isHolding(Holding.CORAL)).onTrue(
-      IntakeCommands.runTorque(intake, 0.2) //roughly 10 amps at stall
-    );
+    subsystemIdle(intake)
+        .and(intake.isHolding(Holding.ALGAE))
+        .onTrue(
+            IntakeCommands.runTorque(intake, 0.45) // roughly 25 amps at stall
+            );
+    subsystemIdle(intake)
+        .and(intake.isHolding(Holding.CORAL))
+        .onTrue(
+            IntakeCommands.runTorque(intake, 0.2) // roughly 10 amps at stall
+            );
   }
 }

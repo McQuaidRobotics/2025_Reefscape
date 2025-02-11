@@ -26,7 +26,8 @@ public class Subsystems implements Logged {
   @Log(key = "SuperStructure")
   public final SuperStructure superStructure;
 
-  public Subsystems(Swerve swerve, Vision vision, Led led, SuperStructure superStructure, Intake intake) {
+  public Subsystems(
+      Swerve swerve, Vision vision, Led led, SuperStructure superStructure, Intake intake) {
     this.swerve = swerve;
     this.led = led;
     this.vision = vision;
