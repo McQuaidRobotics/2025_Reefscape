@@ -14,7 +14,8 @@ public class PivotConstants {
   public static final double KD = 0.0;
   public static final double KA = 0.0;
   public static final double KS = 1.0;
-  public static final double KV = ((12.0 - KS) / (KrakenX60Foc.FREE_SPEED * Conv.RADIANS_TO_ROTATIONS)) * GEAR_RATIO;
+  public static final double KV =
+      ((12.0 - KS) / (KrakenX60Foc.FREE_SPEED * Conv.RADIANS_TO_ROTATIONS)) * GEAR_RATIO;
   public static final double FORWARD_LIMIT = Math.PI;
   public static final double REVERSE_LIMIT = -Math.PI;
   public static final boolean INVERT_MOTOR = false;

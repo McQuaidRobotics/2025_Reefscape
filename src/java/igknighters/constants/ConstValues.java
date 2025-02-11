@@ -11,6 +11,8 @@ import igknighters.constants.RobotConfig.RobotID;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.util.LerpTable;
 import igknighters.util.LerpTable.LerpTableEntry;
+import wayfinder.controllers.Types.ChassisConstraints;
+import wayfinder.controllers.Types.Constraints;
 
 public final class ConstValues {
   private static final double TAU = 2 * Math.PI;
@@ -199,6 +201,11 @@ public final class ConstValues {
 
     public static final double MAX_STEERING_VELOCITY =
         Motors.Falcon500Foc.FREE_SPEED / (STEER_GEAR_RATIO * MOTOR_CLOSED_LOOP_OUTPUT_SCALAR);
+
+    public static final ChassisConstraints CONSTRAINTS =
+        new ChassisConstraints(
+            new Constraints(MAX_DRIVE_VELOCITY, MAX_DRIVE_VELOCITY * 3.0),
+            new Constraints(MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY));
 
     /* Inverts */
     public static final InvertedValue ANGLE_MOTOR_INVERT = InvertedValue.Clockwise_Positive;

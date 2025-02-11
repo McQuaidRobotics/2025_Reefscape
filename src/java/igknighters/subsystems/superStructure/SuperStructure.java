@@ -4,9 +4,11 @@ import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.superStructure.Elevator.Elevator;
+import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
 import igknighters.subsystems.superStructure.Elevator.ElevatorReal;
 import igknighters.subsystems.superStructure.Elevator.ElevatorSim;
 import igknighters.subsystems.superStructure.Wrist.Wrist;
+import igknighters.subsystems.superStructure.Wrist.WristConstants;
 import igknighters.subsystems.superStructure.Wrist.WristReal;
 import igknighters.subsystems.superStructure.Wrist.WristSim;
 
@@ -32,10 +34,22 @@ public class SuperStructure implements ExclusiveSubsystem {
     visualizer.updateSetpoint(elevatorMeters, wristRads);
   }
 
+  public void goTo(SuperStructureState state) {
+    goTo(state.elevatorMeters, state.wristRads);
+  }
+
   public boolean isAt(
       double height, double wristAngle, double elevatorTolerance, double wristTolerance) {
     return (elevator.isAtPosition(height, elevatorTolerance)
         && wrist.isAtPosition(wristAngle, wristTolerance));
+  }
+
+  public boolean isAt(SuperStructureState state) {
+    return isAt(
+        state.elevatorMeters,
+        state.wristRads,
+        ElevatorConstants.DEFAULT_TOLERANCE * state.toleranceScalar,
+        WristConstants.DEFAULT_TOLERANCE * state.toleranceScalar);
   }
 
   @Override

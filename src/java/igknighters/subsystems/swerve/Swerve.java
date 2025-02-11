@@ -8,11 +8,9 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.SimCtx;
-import igknighters.commands.swerve.teleop.TeleopSwerveBaseCmd;
 import igknighters.constants.ConstValues;
 import igknighters.constants.ConstValues.kSwerve;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
@@ -81,7 +79,6 @@ public class Swerve implements ExclusiveSubsystem {
 
   private final Optional<ShamSwerve> sim;
 
-  private Optional<TeleopSwerveBaseCmd> defaultCommand = Optional.empty();
   private SwerveSetpoint setpoint = SwerveSetpoint.zeroed();
 
   public Swerve(final Localizer localizer, final SimCtx simCtx) {
@@ -240,16 +237,6 @@ public class Swerve implements ExclusiveSubsystem {
 
     visualizer.update();
 
-    defaultCommand.ifPresent(
-        cmd -> {
-          log("Commanded", cmd);
-        });
-
     Tracer.endTrace();
-  }
-
-  public void setDefaultCommand(TeleopSwerveBaseCmd defaultCmd) {
-    defaultCommand = Optional.of(defaultCmd);
-    CommandScheduler.getInstance().setDefaultCommand(this, defaultCmd);
   }
 }

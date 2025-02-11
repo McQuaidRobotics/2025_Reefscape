@@ -20,8 +20,10 @@ import igknighters.util.can.CANSignalManager;
 
 public class PivotReal extends Pivot {
 
-  private final TalonFX pivotLeader = new TalonFX(PivotConstants.LEADER_MOTOR_ID, PivotConstants.CANBUS);
-  private final TalonFX pivotFollower = new TalonFX(PivotConstants.FOLLOWER_MOTOR_ID, PivotConstants.CANBUS);
+  private final TalonFX pivotLeader =
+      new TalonFX(PivotConstants.LEADER_MOTOR_ID, PivotConstants.CANBUS);
+  private final TalonFX pivotFollower =
+      new TalonFX(PivotConstants.FOLLOWER_MOTOR_ID, PivotConstants.CANBUS);
   private final CANcoder encoder = new CANcoder(PivotConstants.ENCODER_ID, PivotConstants.CANBUS);
 
   private final BaseStatusSignal position, velocity, amps, voltage;
@@ -41,8 +43,7 @@ public class PivotReal extends Pivot {
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
 
-    CANSignalManager.registerSignals(
-        PivotConstants.CANBUS, position, velocity, amps, voltage);
+    CANSignalManager.registerSignals(PivotConstants.CANBUS, position, velocity, amps, voltage);
 
     CANSignalManager.registerDevices(pivotLeader, encoder);
   }

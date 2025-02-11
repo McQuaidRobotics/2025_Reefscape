@@ -8,11 +8,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
-import igknighters.commands.superStructure.StateManager;
-import igknighters.commands.swerve.SwerveCommands;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
+import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import java.util.Set;
@@ -59,6 +58,13 @@ public class OperatorTarget implements StructSerializable {
     return new Trigger(() -> hasTarget);
   }
 
+  public Trigger superStructureAtSetpoint(SuperStructure superStructure) {
+    return new Trigger(
+        () ->
+            !superStructureState.equals(SuperStructureState.Stow)
+                && superStructure.isAt(superStructureState));
+  }
+
   public Pose2d targetLocation() {
     var ret =
         switch (faceSubLocation) {
@@ -102,7 +108,7 @@ public class OperatorTarget implements StructSerializable {
   }
 
   public Command gotoTargetCmd(
-      Swerve swerve, StateManager superStructureStateManager, Localizer localizer) {
+      Swerve swerve, SuperStructureManager superStructureStateManager, Localizer localizer) {
     Supplier<Command> c =
         () ->
             Commands.deadline(
@@ -112,7 +118,7 @@ public class OperatorTarget implements StructSerializable {
     return makeRefreshableCmd(c, swerve, superStructureStateManager.superStructure);
   }
 
-  public Command gotoSuperStructureTargetCmd(StateManager superStructureStateManager) {
+  public Command gotoSuperStructureTargetCmd(SuperStructureManager superStructureStateManager) {
     Supplier<Command> c = () -> superStructureStateManager.holdAt(superStructureState);
     return makeRefreshableCmd(c, superStructureStateManager.superStructure);
   }

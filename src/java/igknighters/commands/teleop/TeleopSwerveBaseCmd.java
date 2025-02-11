@@ -1,9 +1,7 @@
-package igknighters.commands.swerve.teleop;
+package igknighters.commands.teleop;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.util.struct.Struct;
-import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj2.command.Command;
 import igknighters.Robot;
 import igknighters.constants.ConstValues.kSwerve;
@@ -11,11 +9,10 @@ import igknighters.controllers.DriverController;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.util.plumbing.TunableValues;
 import igknighters.util.plumbing.TunableValues.TunableDouble;
-import java.nio.ByteBuffer;
 import java.util.function.DoubleSupplier;
 import wpilibExt.AllianceFlipper;
 
-public class TeleopSwerveBaseCmd extends Command implements StructSerializable {
+public class TeleopSwerveBaseCmd extends Command {
   private static boolean shouldOrientForSim() {
     return Robot.isSimulation()
         && TunableValues.getBoolean("OrientTeleopForSim", kSwerve.ORIENT_TELEOP_FOR_SIM_DEFAULT)
@@ -108,65 +105,4 @@ public class TeleopSwerveBaseCmd extends Command implements StructSerializable {
     if (Robot.isDemo()) processed *= rotationMod.value();
     return processed;
   }
-
-  public static class TeleopSwerveBaseStruct implements Struct<TeleopSwerveBaseCmd> {
-    @Override
-    public Class<TeleopSwerveBaseCmd> getTypeClass() {
-      return TeleopSwerveBaseCmd.class;
-    }
-
-    @Override
-    public int getSize() {
-      return 8 * 8;
-    }
-
-    @Override
-    public String getSchema() {
-      return "double RawTranslationX; "
-          + "double TranslationX; "
-          + "double RawTranslationY; "
-          + "double TranslationY; "
-          + "double RawRotationX; "
-          + "double RotationX; "
-          + "double RawRotationY; "
-          + "double RotationY;";
-    }
-
-    @Override
-    public String getTypeName() {
-      return getTypeClass().getSimpleName();
-    }
-
-    @Override
-    public void pack(ByteBuffer bb, TeleopSwerveBaseCmd value) {
-      if (value.isScheduled()) {
-        Translation2d translation = value.getTranslation();
-        Translation2d rotation = value.getRotation();
-        bb.putDouble(value.rawTranslationXSup.getAsDouble());
-        bb.putDouble(translation.getX());
-        bb.putDouble(value.rawTranslationYSup.getAsDouble());
-        bb.putDouble(translation.getY());
-        bb.putDouble(value.rawRotationXSup.getAsDouble());
-        bb.putDouble(rotation.getX());
-        bb.putDouble(value.rawRotationYSup.getAsDouble());
-        bb.putDouble(rotation.getY());
-      } else {
-        bb.putDouble(0.0);
-        bb.putDouble(0.0);
-        bb.putDouble(0.0);
-        bb.putDouble(0.0);
-        bb.putDouble(0.0);
-        bb.putDouble(0.0);
-        bb.putDouble(0.0);
-        bb.putDouble(0.0);
-      }
-    }
-
-    @Override
-    public TeleopSwerveBaseCmd unpack(ByteBuffer bb) {
-      throw new UnsupportedOperationException();
-    }
-  }
-
-  public static final TeleopSwerveBaseStruct struct = new TeleopSwerveBaseStruct();
 }

@@ -1,18 +1,25 @@
 package igknighters.controllers;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
+import igknighters.commands.IntakeCommands;
 import igknighters.commands.OperatorTarget;
-import igknighters.commands.superStructure.StateManager;
-import igknighters.commands.swerve.SwerveCommands;
+import igknighters.commands.SuperStructureManager;
+import igknighters.commands.SwerveCommands;
+import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
+import igknighters.constants.ConstValues.kSwerve;
+import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.util.logging.BootupLogger;
 import java.util.function.DoubleSupplier;
+import wpilibExt.AllianceFlipper;
 
 public class DriverController {
   // Define the bindings for the controller
@@ -20,32 +27,68 @@ public class DriverController {
   public void bind(
       final Localizer localizer, final Subsystems subsystems, final OperatorTarget operatorTarget) {
     final var swerve = subsystems.swerve;
+    final var intake = subsystems.intake;
+    final var superStructure = subsystems.superStructure;
     final var vision = subsystems.vision;
     final var led = subsystems.led;
 
-    final StateManager stateManager = new StateManager(subsystems.superStructure);
+    final SuperStructureManager stateManager = new SuperStructureManager(superStructure);
 
     /// FACE BUTTONS
-    this.A.onTrue(stateManager.holdAt(SuperStructureState.IntakeHp));
+    this.A.whileTrue(
+            stateManager
+                .holdAt(SuperStructureState.IntakeHp)
+                .alongWith(
+                    new TeleopSwerveHeadingCmd(
+                        swerve,
+                        this,
+                        localizer,
+                        () -> {
+                          if (localizer.pose().getY() > FieldConstants.FIELD_WIDTH) {
+                            return AllianceFlipper.isBlue()
+                                ? Rotation2d.fromDegrees(145)
+                                : Rotation2d.fromDegrees(35);
+                          } else {
+                            return AllianceFlipper.isBlue()
+                                ? Rotation2d.fromDegrees(-145)
+                                : Rotation2d.fromDegrees(-35);
+                          }
+                        },
+                        kSwerve.CONSTRAINTS)))
+        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
 
-    this.B.onTrue(stateManager.holdAt(SuperStructureState.ScoreL4));
+    this.B.whileTrue(
+            stateManager
+                .holdAt(SuperStructureState.Processor)
+                .alongWith(
+                    new TeleopSwerveHeadingCmd(
+                        swerve,
+                        this,
+                        localizer,
+                        () -> AllianceFlipper.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
+                        kSwerve.CONSTRAINTS)))
+        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
 
-    this.X.onTrue(stateManager.holdAt(SuperStructureState.Processor));
+    this.X.onTrue(stateManager.holdAt(SuperStructureState.Stow));
 
-    // this.Y.whileTrue(
-    //     SwerveCommands.moveTo(
-    //         subsystems.swerve,
-    //         localizer,
-    //         new Pose2d(new Translation2d(1.25, 1.25), Rotation2d.fromDegrees(-125.0)),
-    //         PathObstacles.Other));
-    this.Y.whileTrue(operatorTarget.gotoTargetCmd(subsystems.swerve, stateManager, localizer));
+    this.Y.whileTrue(
+            stateManager
+                .holdAt(SuperStructureState.Net)
+                .alongWith(
+                    new TeleopSwerveHeadingCmd(
+                        swerve,
+                        this,
+                        localizer,
+                        () -> AllianceFlipper.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+                        kSwerve.CONSTRAINTS)))
+        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
 
     // BUMPER
-    this.RB.onTrue(Commands.none());
+    this.RB.onTrue(IntakeCommands.runVoltage(intake, 12.0).withTimeout(0.4));
 
     this.LB
-        .and(this.RT.negate())
-        .whileTrue(operatorTarget.gotoSuperStructureTargetCmd(stateManager));
+        .whileTrue(operatorTarget.gotoSuperStructureTargetCmd(stateManager))
+        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
 
     // CENTER BUTTONS
     this.Back.onTrue(Commands.none());
@@ -59,11 +102,14 @@ public class DriverController {
 
     // TRIGGERS
     this.LT
-        .and(this.RT.negate())
         .and(operatorTarget.hasTarget())
-        .whileTrue(operatorTarget.gotoTargetCmd(subsystems.swerve, stateManager, localizer));
+        .whileTrue(operatorTarget.gotoTargetCmd(subsystems.swerve, stateManager, localizer))
+        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
 
-    this.RT.onTrue(Commands.none());
+    this.RT
+        .and(operatorTarget.superStructureAtSetpoint(superStructure))
+        .and(new Trigger(intake.isHolding(Holding.NONE)).negate())
+        .onTrue(IntakeCommands.runVoltage(intake, 12.0).until(intake.isHolding(Holding.NONE)));
 
     // DPAD
     this.DPR.onTrue(Commands.none());

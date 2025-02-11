@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import igknighters.commands.OperatorTarget;
 import igknighters.commands.autos.AutoController;
 import igknighters.commands.autos.AutoRoutines;
-import igknighters.commands.swerve.teleop.TeleopSwerveTraditionalCmd;
+import igknighters.commands.teleop.TeleopSwerveTraditionalCmd;
 import igknighters.commands.tests.Characterizers;
 import igknighters.commands.tests.TestManager;
 import igknighters.constants.ConstValues;

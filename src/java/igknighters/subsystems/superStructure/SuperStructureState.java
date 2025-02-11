@@ -15,7 +15,7 @@ public enum SuperStructureState implements StructSerializable {
   ScoreL1(BranchHeight.L1.height, -50.0 * Conv.DEGREES_TO_RADIANS, 1.0),
   AlgaeL3(51.0 * Conv.INCHES_TO_METERS, 20.0 * Conv.DEGREES_TO_RADIANS, 1.0),
   AlgaeL2(37.0 * Conv.INCHES_TO_METERS, 20.0 * Conv.DEGREES_TO_RADIANS, 1.0),
-  Stow(ElevatorConstants.REVERSE_LIMIT + 0.3, WristConstants.FORWARD_LIMIT * 0.98, 1.0),
+  Stow(ElevatorConstants.MIN_HEIGHT + 0.1, WristConstants.FORWARD_LIMIT * 0.98, 1.0),
   Processor(20.0 * Conv.INCHES_TO_METERS, 0.0, 1.0),
   Net(ElevatorConstants.FORWARD_LIMIT * 0.98, 60.0 * Conv.DEGREES_TO_RADIANS, 1.0),
   IntakeHp(32.0 * Conv.INCHES_TO_METERS, 35.0 * Conv.DEGREES_TO_RADIANS, 1.0),

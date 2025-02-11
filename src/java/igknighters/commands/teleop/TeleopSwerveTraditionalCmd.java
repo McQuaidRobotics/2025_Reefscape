@@ -1,4 +1,4 @@
-package igknighters.commands.swerve.teleop;
+package igknighters.commands.teleop;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import igknighters.constants.ConstValues.kSwerve;
@@ -24,6 +24,4 @@ public class TeleopSwerveTraditionalCmd extends TeleopSwerveBaseCmd {
 
     swerve.drive(fieldSpeeds);
   }
-
-  public static final TeleopSwerveBaseStruct struct = new TeleopSwerveBaseStruct();
 }

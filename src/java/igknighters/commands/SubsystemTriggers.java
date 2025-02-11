@@ -2,7 +2,6 @@ package igknighters.commands;
 
 import static igknighters.commands.Triggers.*;
 
-import igknighters.commands.intake.IntakeCommands;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake.Holding;
 
@@ -17,13 +16,12 @@ public class SubsystemTriggers {
 
     subsystemIdle(intake)
         .and(intake.isHolding(Holding.ALGAE))
-        .onTrue(
-            IntakeCommands.runTorque(intake, 0.45) // roughly 25 amps at stall
-            );
+        .onTrue(IntakeCommands.runCurrent(intake, 25.0));
     subsystemIdle(intake)
         .and(intake.isHolding(Holding.CORAL))
-        .onTrue(
-            IntakeCommands.runTorque(intake, 0.2) // roughly 10 amps at stall
-            );
+        .onTrue(IntakeCommands.runCurrent(intake, 10.0));
+    subsystemIdle(intake)
+        .and(intake.isHolding(Holding.NONE))
+        .onTrue(IntakeCommands.runCurrent(intake, 0.0));
   }
 }

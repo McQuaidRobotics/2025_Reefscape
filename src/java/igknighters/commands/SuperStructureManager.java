@@ -1,4 +1,4 @@
-package igknighters.commands.superStructure;
+package igknighters.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -9,7 +9,7 @@ import igknighters.subsystems.superStructure.Wrist.WristConstants;
 import java.util.EnumMap;
 import java.util.Set;
 
-public class StateManager {
+public class SuperStructureManager {
 
   public final SuperStructure superStructure;
   private SuperStructureState lastState = SuperStructureState.Stow;
@@ -54,7 +54,7 @@ public class StateManager {
     transitions.get(from).put(to, transition);
   }
 
-  public StateManager(SuperStructure superStructure) {
+  public SuperStructureManager(SuperStructure superStructure) {
     this.superStructure = superStructure;
   }
 
