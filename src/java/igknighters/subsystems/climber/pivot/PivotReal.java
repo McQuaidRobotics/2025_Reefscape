@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Radians;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -33,6 +34,8 @@ public class PivotReal extends Pivot {
     pivotLeader.getConfigurator().apply(motorConfiguration());
     pivotFollower.getConfigurator().apply(motorConfiguration());
     encoder.getConfigurator().apply(encoderConfiguration());
+
+    pivotFollower.setControl(new Follower(pivotLeader.getDeviceID(), controlledLastCycle));
 
     position = pivotLeader.getPosition();
     velocity = pivotLeader.getVelocity();
