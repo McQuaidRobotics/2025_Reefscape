@@ -3,6 +3,7 @@ package wpilibExt;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -56,6 +57,21 @@ public sealed interface Speeds extends StructSerializable {
       return new ChassisSpeeds(vx, vy, omega);
     }
 
+    public Rotation2d direction() {
+      if (MathUtil.isNear(0, magnitude(), 0.0001)) {
+        return Rotation2d.kZero;
+      }
+      return new Rotation2d(vx, vy);
+    }
+
+    public double magnitude() {
+      return Math.hypot(vx, vy);
+    }
+
+    public double magnitudeInDirection(Rotation2d direction) {
+      return Math.abs(vx * direction.getCos() + vy * direction.getSin());
+    }
+
     public LinearVelocity vxMeasure() {
       return MetersPerSecond.of(vx());
     }
@@ -66,6 +82,10 @@ public sealed interface Speeds extends StructSerializable {
 
     public AngularVelocity omegaMeasure() {
       return RadiansPerSecond.of(omega());
+    }
+
+    public LinearVelocity magnitudeMeasure() {
+      return MetersPerSecond.of(magnitude());
     }
 
     @Override
@@ -107,6 +127,14 @@ public sealed interface Speeds extends StructSerializable {
       return new ChassisSpeeds(vx, vy, omega);
     }
 
+    public Rotation2d direction() {
+      return new Rotation2d(vx, vy);
+    }
+
+    public double magnitude() {
+      return Math.hypot(vx, vy);
+    }
+
     public LinearVelocity vxMeasure() {
       return MetersPerSecond.of(vx());
     }
@@ -117,6 +145,10 @@ public sealed interface Speeds extends StructSerializable {
 
     public AngularVelocity omegaMeasure() {
       return RadiansPerSecond.of(omega());
+    }
+
+    public LinearVelocity magnitudeMeasure() {
+      return MetersPerSecond.of(magnitude());
     }
 
     @Override
@@ -215,7 +247,7 @@ public sealed interface Speeds extends StructSerializable {
 
     @Override
     public int getSize() {
-      return SpeedsType.struct.getSize() + 3 * Double.BYTES;
+      return SpeedsType.struct.getSize() + 4 * Double.BYTES;
     }
 
     @Override
@@ -235,11 +267,13 @@ public sealed interface Speeds extends StructSerializable {
         bb.putDouble(fieldSpeeds.vx());
         bb.putDouble(fieldSpeeds.vy());
         bb.putDouble(fieldSpeeds.omega());
+        bb.putDouble(Math.hypot(fieldSpeeds.vx(), fieldSpeeds.vy()));
       } else if (value instanceof RobotSpeeds robotSpeeds) {
         SpeedsType.struct.pack(bb, SpeedsType.ROBOT);
         bb.putDouble(robotSpeeds.vx());
         bb.putDouble(robotSpeeds.vy());
         bb.putDouble(robotSpeeds.omega());
+        bb.putDouble(Math.hypot(robotSpeeds.vx(), robotSpeeds.vy()));
       } else {
         throw new IllegalArgumentException("Unknown Speeds type");
       }
@@ -248,19 +282,18 @@ public sealed interface Speeds extends StructSerializable {
     @Override
     public Speeds unpack(ByteBuffer bb) {
       SpeedsType type = SpeedsType.struct.unpack(bb);
-      switch (type) {
-        case FIELD:
-          return new FieldSpeeds(bb.getDouble(), bb.getDouble(), bb.getDouble());
-        case ROBOT:
-          return new RobotSpeeds(bb.getDouble(), bb.getDouble(), bb.getDouble());
-        default:
-          throw new IllegalArgumentException("Unknown Speeds type");
-      }
+      var ret =
+          switch (type) {
+            case FIELD -> new FieldSpeeds(bb.getDouble(), bb.getDouble(), bb.getDouble());
+            case ROBOT -> new RobotSpeeds(bb.getDouble(), bb.getDouble(), bb.getDouble());
+          };
+      bb.getDouble();
+      return ret;
     }
 
     @Override
     public String getSchema() {
-      return "SpeedsType type; double vx; double vy; double omega;";
+      return "SpeedsType type; double vx; double vy; double omega; double magnitude;";
     }
   }
 }
