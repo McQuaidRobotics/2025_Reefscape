@@ -3,6 +3,7 @@ package igknighters.subsystems.swerve.module;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -92,22 +93,24 @@ public class SwerveModuleSimSham extends SwerveModule {
     return this.moduleId;
   }
 
-  private void setAngle(SwerveModuleState desiredState) {
+  private void setAngle(AdvancedSwerveModuleState desiredState) {
     Rotation2d angle =
         (Math.abs(desiredState.speedMetersPerSecond) <= (kSwerve.MAX_DRIVE_VELOCITY * 0.01))
             ? new Rotation2d(super.steerAbsoluteRads)
             : desiredState.angle;
     super.targetSteerAbsoluteRads = angle.getRadians();
-    steerMotor.controlVoltage(steerLoop, angle.getMeasure());
+    steerMotor.controlVoltage(
+        steerLoop, angle.getMeasure(), RadiansPerSecond.of(desiredState.steerVelocity));
   }
 
-  private void setSpeed(SwerveModuleState desiredState) {
+  private void setSpeed(AdvancedSwerveModuleState desiredState) {
     super.targetDriveVeloMPS = desiredState.speedMetersPerSecond;
     driveMotor.controlVoltage(
         driveLoop,
         RotationsPerSecond.of(
             (desiredState.speedMetersPerSecond / kSwerve.WHEEL_CIRCUMFERENCE)
-                * kSwerve.DRIVE_GEAR_RATIO));
+                * kSwerve.DRIVE_GEAR_RATIO),
+        RadiansPerSecondPerSecond.of(desiredState.driveAcceleration));
   }
 
   @Override

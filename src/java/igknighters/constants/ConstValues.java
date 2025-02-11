@@ -227,6 +227,8 @@ public final class ConstValues {
       public static final double kD = 0.0;
 
       public static final double kS = 0.0;
+      public static final double kV =
+          ((12.0 - kS) / (KrakenX60Foc.FREE_SPEED * Conv.RADIANS_TO_ROTATIONS)) * STEER_GEAR_RATIO;
     }
 
     public static final boolean ORIENT_TELEOP_FOR_SIM_DEFAULT = false;
