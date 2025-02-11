@@ -47,6 +47,7 @@ public class StateManager {
         };
   }
 
+  @SuppressWarnings("unused")
   private void addTransition(
       SuperStructureState from, SuperStructureState to, Transition transition) {
     transitions.putIfAbsent(from, new EnumMap<>(SuperStructureState.class));

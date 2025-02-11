@@ -23,6 +23,7 @@ import igknighters.constants.FieldConstants;
 import igknighters.controllers.DriverController;
 import igknighters.controllers.OperatorController;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
 import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.swerve.Swerve;
@@ -77,7 +78,8 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             new Swerve(localizer, simCtx),
             new Vision(localizer, simCtx),
             new Led(),
-            new SuperStructure(simCtx));
+            new SuperStructure(simCtx),
+            new Intake(simCtx));
 
     localizer.reset(FieldConstants.POSE2D_CENTER);
 
@@ -142,12 +144,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
   }
 
   @Override
-  public void disabledPeriodic() {}
-
-  @Override
-  public void teleopInit() {}
-
-  @Override
   public void autonomousInit() {
     Command autoCmd = autoChooser.selectedCommand();
     String msg = "---- Starting auto command: " + autoCmd.getName() + " ----";
@@ -155,9 +151,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     Monologue.log("AutoEvent", msg);
     scheduler.schedule(autoCmd);
   }
-
-  @Override
-  public void autonomousPeriodic() {}
 
   @Override
   public void autonomousExit() {
@@ -176,19 +169,13 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     System.gc();
   }
 
-  @Override
-  public void teleopPeriodic() {}
-
-  @Override
-  public void simulationPeriodic() {}
-
   private void setupLogging() {
     WatchdogSilencer.silence(this, "m_watchdog");
     WatchdogSilencer.silence(scheduler, "m_watchdog");
 
     DriverStation.silenceJoystickConnectionWarning(true);
 
-    // turn off auto logging for signal logger, doesnt get us any info we need
+    // turn off auto logging for signal logger, doesn't get us any info we need
     if (isReal()) {
       SignalLogger.enableAutoLogging(false);
     }

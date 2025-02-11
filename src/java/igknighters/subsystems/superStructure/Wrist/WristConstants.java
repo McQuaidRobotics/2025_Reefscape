@@ -5,8 +5,8 @@ import igknighters.constants.ConstValues.Motors.KrakenX60Foc;
 
 public class WristConstants {
   public static final String CANBUS = "Superstructure";
-  public static final int MOTOR_ID = 5;
-  public static final int CANCODER_ID = 42;
+  public static final int MOTOR_ID = 11;
+  public static final int CANCODER_ID = 25;
 
   public static final boolean INVERT_MOTOR = false;
   public static final boolean INVERT_ENCODER = false;
@@ -27,6 +27,7 @@ public class WristConstants {
   public static final double REVERSE_LIMIT = -87.0 * Conv.DEGREES_TO_ROTATIONS;
   public static final double DEFAULT_TOLERANCE = 1.0 * Conv.DEGREES_TO_ROTATIONS;
   public static final double ANGLE_OFFSET = 0.0;
+  public static final double LENGTH = 13.0 * Conv.INCHES_TO_METERS;
 
   public static final double STATOR_CURRENT_LIMIT = 50.0;
   public static final double SUPPLY_CURRENT_LIMIT = 50.0;
