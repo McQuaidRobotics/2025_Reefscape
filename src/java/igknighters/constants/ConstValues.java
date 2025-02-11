@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import igknighters.constants.ConstValues.Motors.KrakenX60Foc;
 import igknighters.constants.RobotConfig.RobotID;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.util.LerpTable;
@@ -218,12 +219,13 @@ public final class ConstValues {
     public static final NeutralModeValue DRIVE_NEUTRAL_MODE = NeutralModeValue.Brake;
 
     public static final class kDriveMotor {
-      public static final double kP = 0.27;
+      public static final double kP = 0.3;
       public static final double kI = 0.0;
-      public static final double kD = 0.0;
+      public static final double kD = 0.01;
 
       public static final double kS = 0.15;
-      public static final double kV = 0.12;
+      public static final double kV =
+          (12.0 - kS) / (KrakenX60Foc.FREE_SPEED * Conv.RADIANS_TO_ROTATIONS);
     }
 
     public static final class kSteerMotor {
@@ -232,6 +234,8 @@ public final class ConstValues {
       public static final double kD = 0.0;
 
       public static final double kS = 0.0;
+      public static final double kV =
+          ((12.0 - kS) / (KrakenX60Foc.FREE_SPEED * Conv.RADIANS_TO_ROTATIONS)) * STEER_GEAR_RATIO;
     }
 
     public static final boolean ORIENT_TELEOP_FOR_SIM_DEFAULT = false;
