@@ -98,46 +98,46 @@ public final class ConstValues {
     public static final double MAX_ANGLE_DELTA = 5.0 * Conv.DEGREES_TO_RADIANS;
 
     public static enum CameraConfigs {
-      CRASH(
+      Mk1(
           new CameraConfig[] {
             new CameraConfig(
-                "photon_module_1",
+                "photon_front_forward_1",
                 new Pose3d(
                     new Translation3d(
-                        3 * Conv.INCHES_TO_METERS,
-                        8.6 * Conv.INCHES_TO_METERS,
-                        8.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(
-                        0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
-            new CameraConfig(
-                "photon_module_2",
-                new Pose3d(
-                    new Translation3d(
-                        3 * Conv.INCHES_TO_METERS,
-                        -8.6 * Conv.INCHES_TO_METERS,
+                        6.0 * Conv.INCHES_TO_METERS,
+                        -13.0 * Conv.INCHES_TO_METERS,
                         8.0 * Conv.INCHES_TO_METERS),
                     new Rotation3d(
                         0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
             new CameraConfig(
-                "photon_climber_1",
+                "photon_front_forward_2",
                 new Pose3d(
                     new Translation3d(
-                        -11.5 * Conv.INCHES_TO_METERS,
-                        8.0 * Conv.INCHES_TO_METERS,
-                        12.0 * Conv.INCHES_TO_METERS),
+                        6.0 * Conv.INCHES_TO_METERS,
+                        13.0 * Conv.INCHES_TO_METERS,
+                        8.0 * Conv.INCHES_TO_METERS),
                     new Rotation3d(
-                        0.0, -12.0 * Conv.DEGREES_TO_RADIANS, 135.0 * Conv.DEGREES_TO_RADIANS))),
-            new CameraConfig(
-                "photon_climber_2",
-                new Pose3d(
-                    new Translation3d(
-                        -11.5 * Conv.INCHES_TO_METERS,
-                        -8.0 * Conv.INCHES_TO_METERS,
-                        12.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(
-                        0.0, -12.0 * Conv.DEGREES_TO_RADIANS, -135.0 * Conv.DEGREES_TO_RADIANS))),
+                        0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
+            // new CameraConfig(
+            //     "photon_climber_1",
+            //     new Pose3d(
+            //         new Translation3d(
+            //             kSwerve.MODULE_CHASSIS_OFFSETS[1].getX(),
+            //             kSwerve.MODULE_CHASSIS_OFFSETS[1].getY(),
+            //             8.0 * Conv.INCHES_TO_METERS),
+            //         new Rotation3d(
+            //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 145.0 * Conv.DEGREES_TO_RADIANS))),
+            // new CameraConfig(
+            //     "photon_climber_2",
+            //     new Pose3d(
+            //         new Translation3d(
+            //             kSwerve.MODULE_CHASSIS_OFFSETS[2].getX(),
+            //             kSwerve.MODULE_CHASSIS_OFFSETS[2].getY(),
+            //             8.0 * Conv.INCHES_TO_METERS),
+            //         new Rotation3d(
+            //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -145.0 * Conv.DEGREES_TO_RADIANS))),
           }),
-      BURN(new CameraConfig[] {});
+      Mk2(new CameraConfig[] {});
 
       public final CameraConfig[] cameras;
 
@@ -147,8 +147,8 @@ public final class ConstValues {
 
       public static CameraConfig[] forRobot(RobotID id) {
         return switch (RobotConfig.getRobotID()) {
-          case Mk1 -> CameraConfigs.CRASH.cameras;
-          default -> CameraConfigs.BURN.cameras;
+          case Mk1 -> CameraConfigs.Mk1.cameras;
+          default -> CameraConfigs.Mk2.cameras;
         };
       }
     }
