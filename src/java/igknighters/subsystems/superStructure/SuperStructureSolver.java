@@ -10,8 +10,10 @@ public class SuperStructureSolver {
   private final double wristLength = WristConstants.LENGTH;
   private final Rectangle2d boundingBox =
       new Rectangle2d(new Translation2d(0.0, 10.0), new Translation2d(24.0, 0.0));
+
   /**
-   * Checks for potential colisions we dont need to do this calculation this complexly simply use cos(theta) = yPosition/wristLength
+   * Checks for potential colisions we dont need to do this calculation this complexly simply use
+   * cos(theta) = yPosition/wristLength
    *
    * @param elevHeight The height of the elevator in meters
    * @param theta
