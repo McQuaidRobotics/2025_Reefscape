@@ -112,8 +112,8 @@ public class OperatorTarget implements StructSerializable {
     Supplier<Command> c =
         () ->
             Commands.deadline(
-                SwerveCommands.moveTo(
-                    swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side), -0.01),
+                SwerveCommands.moveToReef(
+                    swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side), 0.013),
                 superStructureStateManager.holdAt(superStructureState));
     return makeRefreshableCmd(c, swerve, superStructureStateManager.superStructure);
   }

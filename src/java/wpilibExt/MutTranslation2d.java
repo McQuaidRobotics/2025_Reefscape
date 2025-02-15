@@ -111,6 +111,11 @@ public class MutTranslation2d extends Translation2d {
     this.y = y;
   }
 
+  public void setZero() {
+    x = 0.0;
+    y = 0.0;
+  }
+
   public void set(Translation2d other) {
     x = other.getX();
     y = other.getY();
@@ -124,6 +129,11 @@ public class MutTranslation2d extends Translation2d {
   public void setPolar(double distance, double radians) {
     x = distance * Math.cos(radians);
     y = distance * Math.sin(radians);
+  }
+
+  public void setPolar(double distance, Rotation2d rotation) {
+    x = distance * rotation.getCos();
+    y = distance * rotation.getSin();
   }
 
   public void plusMut(Translation2d other) {

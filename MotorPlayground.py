@@ -111,7 +111,36 @@ KRAKEN_FOC: DCMotor = DCMotor.make_motor(12.0, 9.37, 483.0, 2.0, rpm_to_rad_per_
 speed = 0.0
 voltage = 5.0
 stator = KRAKEN_FOC.get_current_limited(speed, voltage, 40.0, 120.0)
-print(KRAKEN_FOC.get_voltage(KRAKEN_FOC.get_torque(stator), speed))
-print(stator)
-print(KRAKEN_FOC.get_torque(stator))
-print(KRAKEN_FOC.get_supply_current(speed, voltage, stator))
+# print(KRAKEN_FOC.get_voltage(KRAKEN_FOC.get_torque(stator), speed))
+# print(stator)
+# print(KRAKEN_FOC.get_torque(stator))
+# print(KRAKEN_FOC.get_supply_current(speed, voltage, stator))
+
+
+
+def test_cos(rad: float):
+    cos = math.cos(rad)
+    unary_cos = math.cos(-rad)
+    if (cos == unary_cos):
+        print("True")
+    else:
+        print("False")
+
+def test_sin(rad: float):
+    sin = math.sin(rad)
+    unary_sin = math.sin(-rad)
+    if (sin == unary_sin):
+        print("True")
+    else:
+        print("False")
+
+def test_xy(x: float, y: float):
+    rad = math.atan2(y, x)
+    unary_rad = math.atan2(-y, x)
+    print(-rad == unary_rad)
+
+import random
+for i in range(0, 100):
+    x = random.uniform(-100, 100)
+    y = random.uniform(-100, 100)
+    test_xy(x, y)

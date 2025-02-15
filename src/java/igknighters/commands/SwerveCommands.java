@@ -3,16 +3,19 @@ package igknighters.commands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import igknighters.Localizer;
 import igknighters.constants.ConstValues;
 import igknighters.constants.ConstValues.kSwerve;
+import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.util.plumbing.TunableValues;
 import java.util.function.Supplier;
 import monologue.GlobalField;
+import monologue.Monologue;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.TranslationController;
@@ -21,6 +24,7 @@ import wayfinder.controllers.Types.Constraints;
 import wayfinder.repulsorField.RepulsorFieldPlanner;
 import wpilibExt.AllianceFlipper;
 import wpilibExt.Speeds;
+import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Speeds.RobotSpeeds;
 
 public class SwerveCommands {
@@ -133,25 +137,64 @@ public class SwerveCommands {
         });
   }
 
-  public static Command moveTo(
+  public static Command moveToReef(
       Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles, double endDist) {
     final ChassisConstraints constraints =
         new ChassisConstraints(
             new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.8, kSwerve.MAX_DRIVE_VELOCITY * 1.2),
             new Constraints(kSwerve.MAX_ANGULAR_VELOCITY, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
+
+    final RotationalController rotController = new RotationalController(10.0, 0.2, true);
     final PositionalController controller =
         new PositionalController(
-            new TranslationController(3.0, 0.13, false),
+            new TranslationController(3.0, 0.09, 0.19, false),
             new RotationalController(10.0, 0.2, false));
+
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(controller, obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
         new RepulsorFieldPlanner(controller, PathObstacles.Other.obstacles);
+
+    final Command moveRough =
+        swerve.run(
+            () -> {
+              var c = constraints;
+              FieldSpeeds measuredSpeeds = swerve.getFieldSpeeds();
+              FieldSpeeds speeds =
+                  roughPlanner.calculate(
+                      ConstValues.PERIODIC_TIME, localizer.pose(), measuredSpeeds, target, c);
+              Translation2d reefCenter =
+                  AllianceFlipper.isBlue() ? Reef.CENTER : AllianceFlipper.flip(Reef.CENTER);
+              double rotSpeeds =
+                  rotController.calculate(
+                      ConstValues.PERIODIC_TIME,
+                      localizer.pose().getRotation().getRadians(),
+                      measuredSpeeds.omega(),
+                      Monologue.log(
+                          "targetAngle",
+                          localizer
+                              .pose()
+                              .getTranslation()
+                              .minus(reefCenter)
+                              .getAngle()
+                              .rotateBy(Rotation2d.k180deg)
+                              .getRadians()),
+                      Units.degreesToRadians(1.0),
+                      c.rotation());
+              FieldSpeeds newSpeeds = new FieldSpeeds(speeds.vx(), speeds.vy(), rotSpeeds);
+              swerve.drive(newSpeeds, c);
+            });
+
     return Commands.sequence(
             swerve.runOnce(
-                () -> controller.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
-            followRepulsor(roughPlanner, swerve, localizer, target, () -> constraints)
-                .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
+                () -> {
+                  roughPlanner.reset(localizer.pose(), swerve.getFieldSpeeds(), target);
+                  rotController.reset(
+                      localizer.pose().getRotation().getRadians(), swerve.getFieldSpeeds().omega());
+                }),
+            moveRough.until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
+            swerve.runOnce(
+                () -> precisePlanner.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
             followRepulsor(precisePlanner, swerve, localizer, target, () -> constraints))
         .until(
             () -> localizer.pose().getTranslation().getDistance(target.getTranslation()) < endDist);

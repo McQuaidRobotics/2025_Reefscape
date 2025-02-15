@@ -1,14 +1,8 @@
 package wayfinder.controllers;
 
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.DistanceUnit;
-import edu.wpi.first.units.LinearVelocityUnit;
-import edu.wpi.first.units.measure.Per;
 import wayfinder.controllers.Types.Constraints;
 import wayfinder.controllers.Types.State;
 import wpilibExt.Speeds.FieldSpeeds;
@@ -27,25 +21,21 @@ public class TranslationController {
   // If you would like to use this in your own code feel free to implement this using the wpilib
   // classes
 
-  private final double kP, kD;
+  private final double kP, kI, kD;
   private final boolean replanning;
 
-  private double prevError = 0;
+  private double prevError, totalError;
   private State prevSetpoint = State.kZero;
 
-  public TranslationController(double kP, double kD, boolean replanning) {
+  public TranslationController(double kP, double kI, double kD, boolean replanning) {
     this.kP = kP;
+    this.kI = kI;
     this.kD = kD;
     this.replanning = replanning;
   }
 
-  public TranslationController(
-      Per<DistanceUnit, DistanceUnit> kP,
-      Per<LinearVelocityUnit, LinearVelocityUnit> kD,
-      boolean replanning) {
-    this.kP = kP.in(Meters.per(Meters));
-    this.kD = kD.in(MetersPerSecond.per(MetersPerSecond));
-    this.replanning = replanning;
+  public TranslationController(double kP, double kD, boolean replanning) {
+    this(kP, 0, kD, replanning);
   }
 
   private double veloInDirection(FieldSpeeds speeds, Rotation2d targetDirection) {
@@ -82,12 +72,20 @@ public class TranslationController {
             constraints.maxAcceleration());
 
     double positionError = prevSetpoint.position() - distance;
-    double errorOverTime = (positionError - prevError) / period;
+    double errorDerivative = (positionError - prevError) / period;
+    if (kI > 0) {
+      totalError +=
+          MathUtil.clamp(
+              positionError * period,
+              -constraints.maxAcceleration() * period / kI,
+              constraints.maxAcceleration() * period / kI);
+    }
     prevError = positionError;
 
     prevSetpoint = setpoint;
 
-    double dirVelo = (kP * positionError) + (kD * errorOverTime) + setpoint.velocity();
+    double dirVelo =
+        (kP * positionError) + (kI * totalError) + (kD * errorDerivative) + setpoint.velocity();
     dirVelo = MathUtil.clamp(dirVelo, -constraints.maxVelocity(), constraints.maxVelocity());
 
     return new FieldSpeeds(dirVelo * direction.getCos(), dirVelo * direction.getSin(), 0.0);
