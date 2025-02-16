@@ -20,7 +20,6 @@ import igknighters.subsystems.Subsystems.SharedSubsystem;
 import igknighters.subsystems.vision.camera.Camera;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.subsystems.vision.camera.CameraDisabled;
-import igknighters.subsystems.vision.camera.CameraRealPhoton;
 import igknighters.subsystems.vision.camera.CameraSimPhoton;
 import igknighters.util.plumbing.Channel.Sender;
 import igknighters.util.plumbing.TunableValues;
@@ -129,7 +128,8 @@ public class Vision implements SharedSubsystem {
       if (Robot.isSimulation()) {
         return new CameraSimPhoton(config, simCtx, this::rotationAtTimestamp);
       } else {
-        return new CameraRealPhoton(config, this::rotationAtTimestamp);
+        // return new CameraRealPhoton(config, this::rotationAtTimestamp);
+        return new CameraDisabled(config.cameraName(), config.cameraTransform());
       }
     } catch (Exception e) {
       // if the camera fails to initialize, return a disabled camera to not crash the code

@@ -49,7 +49,7 @@ public class SwerveModuleReal extends SwerveModule {
 
     driveMotor = new TalonFX((moduleId * 2) + 1, kSwerve.CANBUS);
     steerMotor = new TalonFX((moduleId * 2) + 2, kSwerve.CANBUS);
-    steerEncoder = new CANcoder(21 + moduleId, kSwerve.CANBUS);
+    steerEncoder = new CANcoder((moduleId * 2) + 2, kSwerve.CANBUS);
 
     CANRetrier.retryStatusCode(
         () -> driveMotor.getConfigurator().apply(driveMotorConfig(), 1.0), 5);

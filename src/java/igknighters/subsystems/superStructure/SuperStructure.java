@@ -4,10 +4,10 @@ import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.superStructure.Elevator.Elevator;
-import igknighters.subsystems.superStructure.Elevator.ElevatorReal;
+import igknighters.subsystems.superStructure.Elevator.ElevatorDisabled;
 import igknighters.subsystems.superStructure.Elevator.ElevatorSim;
 import igknighters.subsystems.superStructure.Wrist.Wrist;
-import igknighters.subsystems.superStructure.Wrist.WristReal;
+import igknighters.subsystems.superStructure.Wrist.WristDisabled;
 import igknighters.subsystems.superStructure.Wrist.WristSim;
 
 public class SuperStructure implements ExclusiveSubsystem {
@@ -18,8 +18,10 @@ public class SuperStructure implements ExclusiveSubsystem {
   public SuperStructure(SimCtx simCtx) {
     visualizer = new SuperStructureVisualizer();
     if (Robot.isReal()) {
-      wrist = new WristReal();
-      elevator = new ElevatorReal();
+      // wrist = new WristReal();
+      // elevator = new ElevatorReal();
+      wrist = new WristDisabled();
+      elevator = new ElevatorDisabled();
     } else {
       wrist = new WristSim(simCtx);
       elevator = new ElevatorSim(simCtx);

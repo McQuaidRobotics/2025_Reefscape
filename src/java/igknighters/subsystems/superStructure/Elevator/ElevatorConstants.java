@@ -4,7 +4,7 @@ import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.Motors.KrakenX60Foc;
 
 public class ElevatorConstants {
-  public static final String CANBUS = "Superstructure";
+  public static final String CANBUS = "Super";
   public static final int LEADER_ID = 11;
   public static final int FOLLOWER_ID = 12;
 

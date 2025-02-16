@@ -164,7 +164,7 @@ public final class ConstValues {
       static final double STEER = 150.0 / 7.0;
     }
 
-    public static final String CANBUS = "DriveBus";
+    public static final String CANBUS = "Drive";
 
     public static final int PIGEON_ID = 33;
     public static final boolean INVERT_GYRO = false;
@@ -248,10 +248,10 @@ public final class ConstValues {
             new LerpTableEntry(0.7, 0.4),
             new LerpTableEntry(1.0, 1.0));
 
-    public static final double[] CRASH_ROTATION_OFFSETS =
-        new double[] {-0.1015, 0.42529, -0.4182, -0.1086};
+    public static final double[] MK1_ROTATION_OFFSETS =
+        new double[] {-0.2055, 0.0360352, -0.388184, -0.192383};
 
-    public static final double[] BURN_ROTATION_OFFSETS =
+    public static final double[] MK2_ROTATION_OFFSETS =
         new double[] {0.0824, 0.10595, -0.21533, -0.398925};
 
     public static final Translation2d[] MODULE_CHASSIS_OFFSETS =
