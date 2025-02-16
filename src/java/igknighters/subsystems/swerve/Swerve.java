@@ -2,6 +2,7 @@ package igknighters.subsystems.swerve;
 
 import edu.wpi.first.epilogue.logging.NTEpilogueBackend;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -141,6 +142,7 @@ public class Swerve implements ExclusiveSubsystem {
         || !Double.isFinite(robotSpeeds.vy())
         || !Double.isFinite(robotSpeeds.omega())) {
       DriverStation.reportError("Drivetrain driven at NAN", false);
+      drive(FieldSpeeds.kZero, constraints);
       return;
     }
 
@@ -174,14 +176,21 @@ public class Swerve implements ExclusiveSubsystem {
   }
 
   /**
-   * @return The raw gyro yaw value in radians
+   * Gets the current yaw of the robot
+   *
+   * @return A {@link Rotation2d} representing the current yaw
    */
-  public double getYawRads() {
-    return gyro.getYawRads();
+  public Rotation2d getYaw() {
+    return Rotation2d.fromRadians(gyro.getYawRads());
   }
 
-  public Rotation2d getYaw() {
-    return Rotation2d.fromRadians(getYawRads());
+  /**
+   * Gets the current 3d rotation of the robot
+   *
+   * @return A {@link Rotation3d} representing the current rotation
+   */
+  public Rotation3d getRotation() {
+    return new Rotation3d(gyro.getRollRads(), gyro.getPitchRads(), gyro.getYawRads());
   }
 
   public SwerveModulePosition[] getModulePositions() {

@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import igknighters.commands.autos.AutoController;
 import igknighters.commands.autos.AutoRoutines;
 import igknighters.commands.swerve.teleop.TeleopSwerveTraditionalCmd;
-import igknighters.commands.tests.Characterizers;
 import igknighters.commands.tests.TestManager;
 import igknighters.constants.ConstValues;
 import igknighters.constants.FieldConstants;
@@ -116,8 +115,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     setupAutoChooser();
 
     testManager = new TestManager();
-    testManager.addTestRoutine(
-        "Characterize Swerve", Characterizers.characterizeSwerve(subsystems.swerve));
 
     System.gc();
   }

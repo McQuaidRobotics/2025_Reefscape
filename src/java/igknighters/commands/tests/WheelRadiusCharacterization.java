@@ -52,7 +52,7 @@ public class WheelRadiusCharacterization extends Command {
   public WheelRadiusCharacterization(Swerve swerve, Direction omegaDirection) {
     this.swerve = swerve;
     this.omegaDirection = omegaDirection;
-    this.gyroYawRadsSupplier = swerve::getYawRads;
+    this.gyroYawRadsSupplier = () -> swerve.getYaw().getRadians();
     addRequirements(swerve);
   }
 
