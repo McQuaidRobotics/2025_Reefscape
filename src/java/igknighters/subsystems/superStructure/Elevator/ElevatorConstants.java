@@ -5,8 +5,12 @@ import igknighters.constants.ConstValues.Motors.KrakenX60Foc;
 
 public class ElevatorConstants {
   public static final String CANBUS = "Superstructure";
-  public static final int LEADER_ID = 11;
-  public static final int FOLLOWER_ID = 12;
+
+  /** Wire run side */
+  public static final int LEADER_ID = 9;
+
+  /** Opposite wire run side */
+  public static final int FOLLOWER_ID = 10;
 
   public static final boolean INVERT_LEADER = false;
   public static final double GEAR_RATIO = (54.0 / 18.0) * (54.0 / 18.0);

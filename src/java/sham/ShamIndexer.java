@@ -61,6 +61,11 @@ public class ShamIndexer {
     return Optional.ofNullable(gamePieces.poll()).map(ShamGamePiece::userControlled);
   }
 
+  /** */
+  public Optional<ShamGamePiece> peekGamePiece() {
+    return Optional.ofNullable(gamePieces.peek());
+  }
+
   /**
    * Removes all game pieces from the storage.
    *
