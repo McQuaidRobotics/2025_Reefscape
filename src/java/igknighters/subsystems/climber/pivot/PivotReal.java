@@ -46,7 +46,8 @@ public class PivotReal extends Pivot {
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
 
-    CANSignalManager.registerSignals(PivotConstants.CANBUS, position, velocity, amps, voltage);
+    CANSignalManager.registerSignals(
+        PivotConstants.CANBUS, position, velocity, amps, voltage);
 
     CANSignalManager.registerDevices(pivotLeader, encoder);
   }
