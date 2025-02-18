@@ -104,29 +104,20 @@ public final class ConstValues {
                 "photon_front_forward_1",
                 new Pose3d(
                     new Translation3d(
-                        6.0 * Conv.INCHES_TO_METERS,
-                        -13.0 * Conv.INCHES_TO_METERS,
-                        8.0 * Conv.INCHES_TO_METERS),
+                        6.3 * Conv.INCHES_TO_METERS,
+                        -11.5 * Conv.INCHES_TO_METERS,
+                        7.0 * Conv.INCHES_TO_METERS),
                     new Rotation3d(
-                        0.0, -17.5 * Conv.DEGREES_TO_RADIANS, 35.0 * Conv.DEGREES_TO_RADIANS))),
-            // new CameraConfig(
-            //     "photon_front_forward_2",
-            //     new Pose3d(
-            //         new Translation3d(
-            //             6.0 * Conv.INCHES_TO_METERS,
-            //             13.0 * Conv.INCHES_TO_METERS,
-            //             8.0 * Conv.INCHES_TO_METERS),
-            //         new Rotation3d(
-            //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
+                        0.0, -17.5 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
             new CameraConfig(
-                "rofl",
+                "photon_front_forward_2",
                 new Pose3d(
                     new Translation3d(
-                        kSwerve.MODULE_CHASSIS_OFFSETS[3].getX() - 2.5 * Conv.INCHES_TO_METERS,
-                        kSwerve.MODULE_CHASSIS_OFFSETS[3].getY(),
-                        12.0 * Conv.INCHES_TO_METERS),
+                        6.3 * Conv.INCHES_TO_METERS,
+                        11.5 * Conv.INCHES_TO_METERS,
+                        7.0 * Conv.INCHES_TO_METERS),
                     new Rotation3d(
-                        0.0, -0.0 * Conv.DEGREES_TO_RADIANS, -5.0 * Conv.DEGREES_TO_RADIANS))),
+                        0.0, -17.5 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
             new CameraConfig(
                 "photon_climber_1",
                 new Pose3d(
