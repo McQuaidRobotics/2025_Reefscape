@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
+import igknighters.commands.Experiments;
 import igknighters.commands.IntakeCommands;
 import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureManager;
@@ -115,7 +116,7 @@ public class DriverController {
     // DPAD
     this.DPR.onTrue(Commands.none());
 
-    this.DPD.onTrue(Commands.none());
+    this.DPD.onTrue(Experiments.testScoringTime(stateManager));
 
     this.DPL.onTrue(Commands.none());
 

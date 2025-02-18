@@ -71,6 +71,7 @@ public class SuperStructureManager {
     return Commands.defer(
             () -> getTransitionCmd(superStructure, this.lastState, to), Set.of(superStructure))
         .finallyDo(() -> this.lastState = to)
+        .until(() -> superStructure.isAt(to))
         .withName("MoveTo(" + to.name() + ")");
   }
 

@@ -7,8 +7,10 @@ import edu.wpi.first.math.jni.ArmFeedforwardJNI;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.util.plumbing.TunableValues;
 import igknighters.util.plumbing.TunableValues.TunableDouble;
 import monologue.Monologue;
@@ -76,5 +78,19 @@ public class Experiments {
                       dt.value()));
             })
         .ignoringDisable(true);
+  }
+
+  public static Command testScoringTime(SuperStructureManager ss) {
+    Timer timer = new Timer();
+    return Commands.sequence(
+        ss.moveTo(SuperStructureState.ScoreL2),
+        Commands.runOnce(() -> Monologue.log("bleh", "pre-amble")),
+        Commands.runOnce(() -> timer.restart()),
+        ss.moveTo(SuperStructureState.ScoreL4),
+        Commands.waitSeconds(0.15),
+        Commands.runOnce(() -> Monologue.log("scoreHalfTime", timer.get())),
+        ss.moveTo(SuperStructureState.ScoreL2),
+        Commands.runOnce(() -> timer.stop()),
+        Commands.runOnce(() -> Monologue.log("scoreTime", timer.get())));
   }
 }
