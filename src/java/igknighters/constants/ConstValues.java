@@ -249,10 +249,10 @@ public final class ConstValues {
             new LerpTableEntry(1.0, 1.0));
 
     public static final double[] MK1_ROTATION_OFFSETS =
-        new double[] {-0.2055, 0.0360352, -0.388184, -0.192383};
+        new double[] {-0.2055, -0.39453, 0.35766, -0.192383};
 
     public static final double[] MK2_ROTATION_OFFSETS =
-        new double[] {0.0824, 0.10595, -0.21533, -0.398925};
+        new double[] {0.0, 0.0, 0.0, 0.0};
 
     public static final Translation2d[] MODULE_CHASSIS_OFFSETS =
         new Translation2d[] {
