@@ -2,10 +2,10 @@ package igknighters.commands.superStructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
 import igknighters.subsystems.superStructure.SuperStructure;
+import igknighters.subsystems.superStructure.SuperStructureConstants.ElevatorConstants;
+import igknighters.subsystems.superStructure.SuperStructureConstants.WristConstants;
 import igknighters.subsystems.superStructure.SuperStructureState;
-import igknighters.subsystems.superStructure.Wrist.WristConstants;
 import java.util.EnumMap;
 import java.util.Set;
 

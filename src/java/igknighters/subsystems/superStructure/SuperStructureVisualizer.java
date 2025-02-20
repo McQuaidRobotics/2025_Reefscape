@@ -1,6 +1,6 @@
 package igknighters.subsystems.superStructure;
 
-import static igknighters.subsystems.superStructure.Elevator.ElevatorConstants.*;
+import static igknighters.subsystems.superStructure.SuperStructureConstants.ElevatorConstants.*;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import igknighters.constants.ConstValues.Conv;
-import igknighters.subsystems.superStructure.Elevator.ElevatorConstants.Stage;
+import igknighters.subsystems.superStructure.SuperStructureConstants.ElevatorConstants.Stage;
 
 public class SuperStructureVisualizer {
   private final Mechanism2d mechanism;
@@ -72,10 +72,26 @@ public class SuperStructureVisualizer {
     SmartDashboard.putData("SuperStructure", mechanism);
   }
 
+  /**
+   * Updates the visualized setpoint of the superstructure
+   *
+   * @param elevatorMeters The height of the elevator in meters
+   * @param wristRads The angle of the wrist in rads
+   */
   public void updateSetpoint(double elevatorMeters, double wristRads) {
-    elevatorSetpoint.setLength(elevatorMeters + (2.0 * Conv.INCHES_TO_METERS));
+    if (Double.isFinite(elevatorMeters)) {
+      elevatorSetpoint.setLength(elevatorMeters + (2.0 * Conv.INCHES_TO_METERS));
+    } else {
+      elevatorSetpoint.setLength(0.0);
+    }
   }
 
+  /**
+   * Updates the visualized current position of the superstructure
+   *
+   * @param elevatorMeters The height of the elevator in meters
+   * @param wristRads The angle of the wrist in rads
+   */
   public void updatePosition(double elevatorMeters, double wristRads) {
     rootCurrentCarriage.setPosition(1.25, elevatorMeters - (6.0 * Conv.INCHES_TO_METERS));
 

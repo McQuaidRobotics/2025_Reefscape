@@ -30,7 +30,6 @@ public final class ConstValues {
     public static final double POUNDS_TO_KILOGRAMS = 0.4535;
   }
 
-  @SuppressWarnings("unused")
   public static final class Motors {
     public static final class Falcon500 {
       public static final double FREE_SPEED = 668.1;
@@ -58,7 +57,6 @@ public final class ConstValues {
   public static final boolean DEMO = false; // this should be false for competition
   public static final double PERIODIC_TIME = 0.02; // 20ms
   public static final int PDH_CAN_ID = 61;
-  public static final double DEBUG_SIGNAL_HZ = DEBUG ? 12.5 : 0;
 
   public static final class kRobotIntrinsics {
     public static final double MASS = 132.0 * Conv.POUNDS_TO_KILOGRAMS;
@@ -133,7 +131,8 @@ public final class ConstValues {
             //             kSwerve.MODULE_CHASSIS_OFFSETS[2].getY(),
             //             8.0 * Conv.INCHES_TO_METERS),
             //         new Rotation3d(
-            //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -145.0 * Conv.DEGREES_TO_RADIANS))),
+            //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -145.0 *
+            // Conv.DEGREES_TO_RADIANS))),
           }),
       Mk2(new CameraConfig[] {});
 
@@ -214,7 +213,7 @@ public final class ConstValues {
     public static final class kDriveMotor {
       public static final double kP = 0.3;
       public static final double kI = 0.0;
-      public static final double kD = 0.01;
+      public static final double kD = 0.0;
 
       public static final double kS = 0.15;
       public static final double kV =
@@ -251,8 +250,7 @@ public final class ConstValues {
     public static final double[] MK1_ROTATION_OFFSETS =
         new double[] {-0.2055, -0.39453, 0.35766, -0.192383};
 
-    public static final double[] MK2_ROTATION_OFFSETS =
-        new double[] {0.0, 0.0, 0.0, 0.0};
+    public static final double[] MK2_ROTATION_OFFSETS = new double[] {0.0, 0.0, 0.0, 0.0};
 
     public static final Translation2d[] MODULE_CHASSIS_OFFSETS =
         new Translation2d[] {
@@ -261,19 +259,5 @@ public final class ConstValues {
           new Translation2d(-DRIVEBASE_WIDTH / 2.0, DRIVEBASE_WIDTH / 2.0),
           new Translation2d(DRIVEBASE_WIDTH / 2.0, DRIVEBASE_WIDTH / 2.0)
         };
-  }
-
-  public static final class kAuto {
-    public static final class kTranslation {
-      public static final double kP = 3.4;
-      public static final double kI = 0.0;
-      public static final double kD = 0.0;
-    }
-
-    public static final class kRotation {
-      public static final double kP = 3.0;
-      public static final double kI = 0.0;
-      public static final double kD = 0.0;
-    }
   }
 }

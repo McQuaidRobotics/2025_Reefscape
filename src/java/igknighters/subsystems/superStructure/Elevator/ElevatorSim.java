@@ -16,6 +16,7 @@ import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
+import igknighters.subsystems.superStructure.SuperStructureConstants.ElevatorConstants;
 import sham.ShamMechanism;
 import sham.ShamMechanism.Friction;
 import sham.ShamMechanism.HardLimits;
@@ -47,22 +48,23 @@ public class ElevatorSim extends Elevator {
             //     Pounds.of(22.0), Meters.of(ElevatorConstants.PULLEY_RADIUS * 2.0)),
             MechanismDynamics.zero(),
             HardLimits.of(
-                Radians.of(ElevatorConstants.REVERSE_LIMIT),
-                Radians.of(ElevatorConstants.FORWARD_LIMIT)),
+                Rotations.of(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.PULLEY_CIRCUMFERENCE),
+                Rotations.of(
+                    ElevatorConstants.MAX_HEIGHT / ElevatorConstants.PULLEY_CIRCUMFERENCE)),
             0.0,
             simCtx.robot().timing());
     shamMechanism.setState(
         new ShamMechanism.MechanismState(
-            Radians.of(ElevatorConstants.REVERSE_LIMIT),
+            Rotations.of(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.PULLEY_CIRCUMFERENCE),
             RadiansPerSecond.zero(),
             RadiansPerSecondPerSecond.zero()));
     simCtx.robot().addMechanism(shamMechanism);
 
     voltageLoop =
         ClosedLoop.forVoltageAngle(
-            PIDFeedback.forAngular(Volts, Rotations, ElevatorConstants.KP, ElevatorConstants.KD),
+            PIDFeedback.forAngular(Volts, ElevatorConstants.KP, ElevatorConstants.KD),
             ElevatorFeedforward.forVoltage(
-                Rotations,
+                Radians,
                 ElevatorConstants.KS,
                 ElevatorConstants.KG,
                 ElevatorConstants.KV,

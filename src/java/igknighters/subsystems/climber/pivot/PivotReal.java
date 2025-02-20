@@ -16,7 +16,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
-import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
 import igknighters.util.can.CANSignalManager;
 
 public class PivotReal extends Pivot {
@@ -46,8 +45,7 @@ public class PivotReal extends Pivot {
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
 
-    CANSignalManager.registerSignals(
-        PivotConstants.CANBUS, position, velocity, amps, voltage);
+    CANSignalManager.registerSignals(PivotConstants.CANBUS, position, velocity, amps, voltage);
 
     CANSignalManager.registerDevices(pivotLeader, encoder);
   }
@@ -56,10 +54,8 @@ public class PivotReal extends Pivot {
     var cfg = new TalonFXConfiguration();
 
     cfg.Slot0.kP = PivotConstants.KP;
+    cfg.Slot0.kI = PivotConstants.KI;
     cfg.Slot0.kD = PivotConstants.KD;
-    cfg.Slot0.kS = PivotConstants.KS;
-    cfg.Slot0.kV = PivotConstants.KV;
-    cfg.Slot0.kA = PivotConstants.KA;
 
     cfg.Feedback.RotorToSensorRatio = PivotConstants.GEAR_RATIO;
     cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
@@ -70,8 +66,8 @@ public class PivotReal extends Pivot {
     cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = PivotConstants.REVERSE_LIMIT;
 
-    cfg.MotionMagic.MotionMagicCruiseVelocity = ElevatorConstants.MAX_VELOCITY;
-    cfg.MotionMagic.MotionMagicAcceleration = ElevatorConstants.MAX_ACCELERATION;
+    cfg.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.MAX_VELOCITY;
+    cfg.MotionMagic.MotionMagicAcceleration = PivotConstants.MAX_ACCELERATION;
 
     cfg.CurrentLimits.StatorCurrentLimit = PivotConstants.STATOR_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLimit = PivotConstants.SUPPLY_CURRENT_LIMIT;

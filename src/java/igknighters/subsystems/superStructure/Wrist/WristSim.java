@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volt;
@@ -15,6 +14,7 @@ import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
+import igknighters.subsystems.superStructure.SuperStructureConstants.WristConstants;
 import sham.ShamMechanism;
 import sham.ShamMechanism.Friction;
 import sham.ShamMechanism.HardLimits;
@@ -46,17 +46,16 @@ public class WristSim extends Wrist {
             // MechanismDynamics.forArm(Pound.of(9.0), Inches.of(6)),
             MechanismDynamics.zero(),
             HardLimits.of(
-                Rotations.of(WristConstants.REVERSE_LIMIT),
-                Rotations.of(WristConstants.FORWARD_LIMIT + 0.02)),
+                Radians.of(WristConstants.MIN_ANGLE), Radians.of(WristConstants.MAX_ANGLE + 0.02)),
             0,
             simCtx.robot().timing());
     simCtx.robot().addMechanism(wristMechanism);
 
     controlLoop =
         ClosedLoop.forVoltageAngle(
-            PIDFeedback.forAngular(Volts, Rotations, WristConstants.KP, WristConstants.KD),
+            PIDFeedback.forAngular(Volts, WristConstants.KP, WristConstants.KD),
             SimpleFeedforward.forVoltage(
-                Rotations,
+                Radians,
                 WristConstants.KS,
                 WristConstants.KV,
                 WristConstants.KA,

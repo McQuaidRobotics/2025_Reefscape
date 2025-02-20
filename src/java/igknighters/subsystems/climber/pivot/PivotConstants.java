@@ -1,7 +1,6 @@
 package igknighters.subsystems.climber.pivot;
 
 import igknighters.constants.ConstValues.Conv;
-import igknighters.constants.ConstValues.Motors.KrakenX60Foc;
 
 public class PivotConstants {
   public static final double GEAR_RATIO = 50.0;
@@ -12,10 +11,6 @@ public class PivotConstants {
   public static final double KP = 1.0;
   public static final double KI = 0.0;
   public static final double KD = 0.0;
-  public static final double KA = 0.0;
-  public static final double KS = 1.0;
-  public static final double KV =
-      ((12.0 - KS) / (KrakenX60Foc.FREE_SPEED * Conv.RADIANS_TO_ROTATIONS)) * GEAR_RATIO;
   public static final double FORWARD_LIMIT = 0.327148 * Conv.ROTATIONS_TO_RADIANS;
   public static final double REVERSE_LIMIT = 0.588623 * Conv.ROTATIONS_TO_RADIANS;
   public static final boolean INVERT_MOTOR = false;

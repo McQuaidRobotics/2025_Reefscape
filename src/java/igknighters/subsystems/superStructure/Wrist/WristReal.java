@@ -16,12 +16,16 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.superStructure.SuperStructureConstants;
+import igknighters.subsystems.superStructure.SuperStructureConstants.WristConstants;
 import igknighters.util.can.CANSignalManager;
 
 public class WristReal extends Wrist {
 
-  private final TalonFX wrist = new TalonFX(WristConstants.MOTOR_ID, WristConstants.CANBUS);
-  private final CANcoder encoder = new CANcoder(WristConstants.CANCODER_ID, WristConstants.CANBUS);
+  private final TalonFX wrist =
+      new TalonFX(WristConstants.MOTOR_ID, SuperStructureConstants.CANBUS);
+  private final CANcoder encoder =
+      new CANcoder(WristConstants.CANCODER_ID, SuperStructureConstants.CANBUS);
 
   private final BaseStatusSignal position, velocity, amps, voltage;
 
@@ -42,7 +46,8 @@ public class WristReal extends Wrist {
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
 
-    CANSignalManager.registerSignals(WristConstants.CANBUS, position, velocity, amps, voltage);
+    CANSignalManager.registerSignals(
+        SuperStructureConstants.CANBUS, position, velocity, amps, voltage);
 
     CANSignalManager.registerDevices(wrist, encoder);
   }
@@ -54,7 +59,7 @@ public class WristReal extends Wrist {
     cfg.Slot0.kD = WristConstants.KD;
     cfg.Slot0.kS = WristConstants.KS;
     cfg.Slot0.kG = WristConstants.KG;
-    cfg.Slot0.kV = WristConstants.KV;
+    cfg.Slot0.kV = WristConstants.KV * Conv.RADIANS_TO_ROTATIONS;
     cfg.Slot0.kA = WristConstants.KA;
 
     cfg.Feedback.RotorToSensorRatio = WristConstants.GEAR_RATIO;
@@ -62,9 +67,9 @@ public class WristReal extends Wrist {
     cfg.Feedback.FeedbackRemoteSensorID = WristConstants.CANCODER_ID;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.FORWARD_LIMIT;
+    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.MAX_ANGLE;
     cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.REVERSE_LIMIT;
+    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.MIN_ANGLE;
 
     cfg.MotionMagic.MotionMagicCruiseVelocity = WristConstants.MAX_VELOCITY;
     cfg.MotionMagic.MotionMagicAcceleration = WristConstants.MAX_ACCELERATION;

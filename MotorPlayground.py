@@ -111,7 +111,21 @@ KRAKEN_FOC: DCMotor = DCMotor.make_motor(12.0, 9.37, 483.0, 2.0, rpm_to_rad_per_
 speed = 0.0
 voltage = 5.0
 stator = KRAKEN_FOC.get_current_limited(speed, voltage, 40.0, 120.0)
-print(KRAKEN_FOC.get_voltage(KRAKEN_FOC.get_torque(stator), speed))
-print(stator)
-print(KRAKEN_FOC.get_torque(stator))
-print(KRAKEN_FOC.get_supply_current(speed, voltage, stator))
+# print(KRAKEN_FOC.get_voltage(KRAKEN_FOC.get_torque(stator), speed))
+# print(stator)
+# print(KRAKEN_FOC.get_torque(stator))
+# print(KRAKEN_FOC.get_supply_current(speed, voltage, stator))
+
+import math
+def test_wrist_safety(elev_height: float, wrist_theta: float) -> float | None:
+    WRIST_LENGTH = 0.3302
+    Y_LOWER_LIMIT = 0.6096
+    wrist_y = elev_height + WRIST_LENGTH * math.sin(wrist_theta)
+    if (wrist_y > Y_LOWER_LIMIT):
+        return wrist_theta
+    elif ((elev_height + WRIST_LENGTH) < Y_LOWER_LIMIT):
+        return None
+    else:
+        return math.asin((elev_height - Y_LOWER_LIMIT) / WRIST_LENGTH)
+
+print(math.degrees(test_wrist_safety(0.3, math.radians(0.0))))
