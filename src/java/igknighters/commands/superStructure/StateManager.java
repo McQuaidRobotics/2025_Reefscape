@@ -20,22 +20,6 @@ public class StateManager {
       SuperStructure superStructure, double elevatorMeters, double wristRads) {
     return superStructure.run(() -> superStructure.goTo(elevatorMeters, wristRads));
   }
-
-  private static Command basicMoveTo(
-      SuperStructure superStructure,
-      double elevatorMeters,
-      double wristRads,
-      double toleranceScalar) {
-    return basicHoldAt(superStructure, elevatorMeters, wristRads)
-        .until(
-            () ->
-                superStructure.isAt(
-                    elevatorMeters,
-                    wristRads,
-                    ElevatorConstants.DEFAULT_TOLERANCE * toleranceScalar,
-                    WristConstants.DEFAULT_TOLERANCE * toleranceScalar));
-  }
-
   @FunctionalInterface
   public interface Transition {
     Command getCommand(
@@ -43,7 +27,7 @@ public class StateManager {
 
     public static Transition DEFAULT =
         (superStructure, from, to) -> {
-          return basicMoveTo(superStructure, to.elevatorMeters, to.wristRads, to.toleranceScalar);
+          return basicHoldAt(superStructure, to.elevatorMeters, to.wristRads);
         };
   }
 
@@ -71,13 +55,19 @@ public class StateManager {
     return Commands.defer(
             () -> getTransitionCmd(superStructure, this.lastState, to), Set.of(superStructure))
         .finallyDo(() -> this.lastState = to)
+        .until(
+            () ->
+                superStructure.isAt(
+                    to.elevatorMeters,
+                    to.wristRads,
+                    ElevatorConstants.DEFAULT_TOLERANCE * to.toleranceScalar,
+                    WristConstants.DEFAULT_TOLERANCE * to.toleranceScalar))
         .withName("MoveTo(" + to.name() + ")");
   }
 
   public Command holdAt(SuperStructureState to) {
-    // return moveTo(to)
-    //     .andThen(basicHoldAt(superStructure, to.elevatorMeters, to.wristRads))
-    //     .withName("HoldAt(" + to.name() + ")");
-    return basicHoldAt(superStructure, to.elevatorMeters, to.wristRads);
+    return moveTo(to)
+        .andThen(basicHoldAt(superStructure, to.elevatorMeters, to.wristRads))
+        .withName("HoldAt(" + to.name() + ")");
   }
 }
