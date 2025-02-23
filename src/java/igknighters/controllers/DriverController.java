@@ -20,22 +20,23 @@ public class DriverController {
     final var swerve = subsystems.swerve;
     final var vision = subsystems.vision;
     final var led = subsystems.led;
+    final var climber = subsystems.climber;
 
     final StateManager stateManager = new StateManager(subsystems.superStructure);
 
     /// FACE BUTTONS
-    this.A.onTrue(stateManager.holdAt(SuperStructureState.IntakeHp));
+    this.A.onTrue(stateManager.holdAt(SuperStructureState.Stow));
 
     this.B.onTrue(stateManager.holdAt(SuperStructureState.ScoreL4));
 
     this.X.onTrue(stateManager.holdAt(SuperStructureState.Processor));
 
-    this.Y.whileTrue(stateManager.holdAt(SuperStructureState.ScoreL2));
+    this.Y.onTrue(stateManager.holdAt(SuperStructureState.TEST_BOTTOM));
 
     // BUMPER
-    this.RB.onTrue(Commands.none());
+    this.RB.onTrue(climber.runOnce(() -> climber.setMagnetPower(true)));
 
-    this.LB.onTrue(Commands.none());
+    this.LB.onTrue(climber.runOnce(() -> climber.setMagnetPower(false)));
 
     // CENTER BUTTONS
     this.Back.onTrue(Commands.none());
@@ -53,13 +54,16 @@ public class DriverController {
     this.RT.onTrue(Commands.none());
 
     // DPAD
-    this.DPR.onTrue(Commands.none());
+    this.DPR.whileTrue(
+        climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    this.DPD.onTrue(Commands.none());
+    this.DPD.whileTrue(
+        climber.run(() -> climber.voltageOut(-6.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
     this.DPL.onTrue(Commands.none());
 
-    this.DPU.onTrue(Commands.none());
+    this.DPU.whileTrue(
+        climber.run(() -> climber.voltageOut(6.0)).finallyDo(() -> climber.voltageOut(0.0)));
   }
 
   // Define the buttons on the controller

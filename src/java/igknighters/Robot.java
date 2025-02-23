@@ -21,6 +21,7 @@ import igknighters.constants.FieldConstants;
 import igknighters.controllers.DriverController;
 import igknighters.controllers.OperatorController;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.climber.Climber;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
 import igknighters.subsystems.superStructure.SuperStructure;
@@ -79,7 +80,8 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             new Vision(localizer, simCtx),
             new Led(),
             new SuperStructure(simCtx),
-            new Intake(simCtx));
+            new Intake(simCtx),
+            new Climber(simCtx));
 
     localizer.reset(FieldConstants.POSE2D_CENTER);
 

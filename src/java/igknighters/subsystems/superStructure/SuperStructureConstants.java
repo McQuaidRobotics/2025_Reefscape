@@ -13,7 +13,7 @@ public class SuperStructureConstants {
     /** Opposite wire run side */
     public static final int FOLLOWER_ID = 10;
 
-    public static final int LIMIT_SWITCH_ID = 0;
+    public static final int LIMIT_SWITCH_ID = 9;
 
     public static final boolean INVERT_LEADER = false;
     public static final double GEAR_RATIO = (54.0 / 18.0) * (54.0 / 18.0);
@@ -53,12 +53,13 @@ public class SuperStructureConstants {
 
     public static final double KP = 6.0;
     public static final double KD = 0.0;
-    public static final double KG = 0.00;
+    public static final double KG = 0.05;
     public static final double KS = 0.3;
+    // public static final double KV = 0.0;
     public static final double KV = (12.0 / KrakenX60Foc.FREE_SPEED) * GEAR_RATIO;
     public static final double KA = 0.0;
 
-    public static final double MAX_VELOCITY = (12.0 - KS - KG) / KV;
+    public static final double MAX_VELOCITY = ((12.0 - KS - KG) / KV) * 0.2;
     public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.2;
 
     public static final double HOMING_VOLTAGE = -KS * 2.0;
@@ -70,10 +71,11 @@ public class SuperStructureConstants {
   public class WristConstants {
     public static final double LENGTH = 13.0 * Conv.INCHES_TO_METERS;
     public static final double MAX_ANGLE = 87.0 * Conv.DEGREES_TO_RADIANS;
+    public static final double MAX_ANGLE_ALGAE = 87.0 * Conv.DEGREES_TO_RADIANS;
     public static final double MIN_ANGLE = -87.0 * Conv.DEGREES_TO_RADIANS;
 
     public static final int MOTOR_ID = 11;
-    public static final int CANCODER_ID = 25;
+    public static final int CANCODER_ID = 11;
 
     public static final boolean INVERT_MOTOR = false;
     public static final boolean INVERT_ENCODER = false;
@@ -90,7 +92,7 @@ public class SuperStructureConstants {
     public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.5;
 
     public static final double DEFAULT_TOLERANCE = 1.0 * Conv.DEGREES_TO_RADIANS;
-    public static final double ANGLE_OFFSET = 0.0;
+    public static final double ANGLE_OFFSET = -0.215087890625;
 
     public static final double STATOR_CURRENT_LIMIT = 50.0;
     public static final double SUPPLY_CURRENT_LIMIT = 50.0;

@@ -16,6 +16,7 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.climber.ClimberConstants.PivotConstants;
 import sham.ShamMechanism;
 import sham.ShamMechanism.Friction;
 import sham.ShamMechanism.HardLimits;
@@ -87,6 +88,13 @@ public class PivotSim extends Pivot {
   @Override
   public void setNeutralMode(boolean coast) {
     shamMCX.setBrakeMode(!coast);
+  }
+
+  @Override
+  public void voltageOut(double voltage) {
+    super.targetRads = Double.NaN;
+    super.controlledLastCycle = true;
+    shamMCX.controlVoltage(Volts.of(voltage));
   }
 
   @Override

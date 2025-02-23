@@ -20,6 +20,7 @@ public class StateManager {
       SuperStructure superStructure, double elevatorMeters, double wristRads) {
     return superStructure.run(() -> superStructure.goTo(elevatorMeters, wristRads));
   }
+
   @FunctionalInterface
   public interface Transition {
     Command getCommand(

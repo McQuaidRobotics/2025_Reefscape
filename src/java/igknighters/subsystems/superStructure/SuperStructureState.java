@@ -17,7 +17,8 @@ public enum SuperStructureState {
   Stow(MIN_HEIGHT + STAGES[3].rangeOfMotion(), MIN_ANGLE, 2.0),
   Processor(20.0 * INCHES_TO_METERS, 0.0, 1.5),
   Net(MAX_HEIGHT, MAX_ANGLE, 1.0),
-  IntakeHp(32.0 * INCHES_TO_METERS, 55.0 * DEGREES_TO_RADIANS, 0.8);
+  IntakeHp(32.0 * INCHES_TO_METERS, 55.0 * DEGREES_TO_RADIANS, 0.8),
+  TEST_BOTTOM(MIN_HEIGHT, MAX_ANGLE, 1.0);
 
   public final double elevatorMeters;
   public final double wristRads;

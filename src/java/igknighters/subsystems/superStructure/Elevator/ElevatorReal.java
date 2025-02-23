@@ -3,7 +3,7 @@ package igknighters.subsystems.superStructure.Elevator;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -17,11 +17,10 @@ import igknighters.subsystems.superStructure.SuperStructureConstants.ElevatorCon
 import igknighters.util.can.CANSignalManager;
 
 public class ElevatorReal extends Elevator {
-  private final TalonFX elevatorFollower;
-  private final TalonFX elevatorLeader;
+  private final TalonFX follower;
+  private final TalonFX leader;
 
-  private final MotionMagicTorqueCurrentFOC controlReq =
-      new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
+  private final MotionMagicVoltage controlReq = new MotionMagicVoltage(0.0).withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
 
@@ -29,23 +28,25 @@ public class ElevatorReal extends Elevator {
   private final DigitalInput limitSwitch;
 
   public ElevatorReal() {
-    elevatorLeader = new TalonFX(ElevatorConstants.LEADER_ID, SuperStructureConstants.CANBUS);
-    elevatorFollower = new TalonFX(ElevatorConstants.FOLLOWER_ID, SuperStructureConstants.CANBUS);
-    elevatorLeader.getConfigurator().apply(elevatorConfiguration());
-    elevatorFollower.getConfigurator().apply(elevatorConfiguration());
-    elevatorFollower.setControl(new Follower(ElevatorConstants.LEADER_ID, true));
+    leader = new TalonFX(ElevatorConstants.LEADER_ID, SuperStructureConstants.CANBUS);
+    follower = new TalonFX(ElevatorConstants.FOLLOWER_ID, SuperStructureConstants.CANBUS);
+    leader.getConfigurator().apply(elevatorConfiguration());
+    follower.getConfigurator().apply(elevatorConfiguration());
+    follower.setControl(new Follower(ElevatorConstants.LEADER_ID, true));
 
-    position = elevatorLeader.getPosition();
-    velocity = elevatorLeader.getVelocity();
-    voltage = elevatorLeader.getMotorVoltage();
-    current = elevatorLeader.getTorqueCurrent();
+    position = leader.getPosition();
+    velocity = leader.getVelocity();
+    voltage = leader.getMotorVoltage();
+    current = leader.getTorqueCurrent();
 
     limitSwitch = new DigitalInput(ElevatorConstants.LIMIT_SWITCH_ID);
 
     CANSignalManager.registerSignals(
         SuperStructureConstants.CANBUS, position, velocity, voltage, current);
 
-    CANSignalManager.registerDevices(elevatorLeader, elevatorFollower);
+    CANSignalManager.registerDevices(leader, follower);
+
+    leader.setPosition(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.PULLEY_CIRCUMFERENCE);
   }
 
   private TalonFXConfiguration elevatorConfiguration() {
@@ -88,27 +89,26 @@ public class ElevatorReal extends Elevator {
     if (isLimitTripped && targetPosition < meters) {
       voltageOut(0.0);
     } else {
-      elevatorLeader.setControl(
-          controlReq.withPosition(targetPosition / ElevatorConstants.PULLEY_RADIUS));
+      leader.setControl(
+          controlReq.withPosition(targetPosition / ElevatorConstants.PULLEY_CIRCUMFERENCE));
     }
   }
 
   @Override
   public void setNeutralMode(boolean coast) {
     if (coast) {
-      elevatorLeader.setNeutralMode(NeutralModeValue.Coast);
-      elevatorFollower.setNeutralMode(NeutralModeValue.Coast);
+      leader.setNeutralMode(NeutralModeValue.Coast);
+      follower.setNeutralMode(NeutralModeValue.Coast);
     } else {
-      elevatorLeader.setNeutralMode(NeutralModeValue.Brake);
-      elevatorFollower.setNeutralMode(NeutralModeValue.Brake);
+      leader.setNeutralMode(NeutralModeValue.Brake);
+      follower.setNeutralMode(NeutralModeValue.Brake);
     }
   }
 
   @Override
   public boolean home() {
     if (!isHomed && super.home()) {
-      elevatorLeader.setPosition(
-          ElevatorConstants.MIN_HEIGHT / ElevatorConstants.PULLEY_CIRCUMFERENCE);
+      leader.setPosition(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.PULLEY_CIRCUMFERENCE);
     }
     return isHomed;
   }
@@ -120,14 +120,14 @@ public class ElevatorReal extends Elevator {
     if (isLimitTripped && voltage < 0.0) {
       voltage = 0.0;
     }
-    elevatorLeader.setControl(voltageOut.withOutput(voltage));
+    leader.setControl(voltageOut.withOutput(voltage));
   }
 
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {
       super.targetMeters = Double.NaN;
-      elevatorLeader.setControl(neutralOut);
+      leader.setControl(neutralOut);
     }
     super.controlledLastCycle = false;
     super.meters = position.getValueAsDouble() * ElevatorConstants.PULLEY_CIRCUMFERENCE;
