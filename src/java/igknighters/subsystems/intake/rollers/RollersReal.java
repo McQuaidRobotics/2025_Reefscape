@@ -14,14 +14,17 @@ import com.ctre.phoenix6.signals.UpdateModeValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.intake.IntakeConstants;
+import igknighters.subsystems.intake.IntakeConstants.RollerConstants;
 import igknighters.util.can.CANSignalManager;
 
 public class RollersReal extends Rollers {
   private final TalonFX intakeMotor =
-      new TalonFX(RollerConstants.INTAKE_MOTOR_ID, RollerConstants.CANBUS);
+      new TalonFX(RollerConstants.INTAKE_MOTOR_ID, IntakeConstants.CANBUS);
   private final CANrange distanceSensor =
-      new CANrange(RollerConstants.DISTANCE_SENSOR_ID, RollerConstants.CANBUS);
+      new CANrange(RollerConstants.DISTANCE_SENSOR_ID, IntakeConstants.CANBUS);
 
   private final VoltageOut voltageReq =
       new VoltageOut(0.0).withUpdateFreqHz(0.0).withEnableFOC(true);
@@ -68,13 +71,14 @@ public class RollersReal extends Rollers {
     distanceSensor.getConfigurator().apply(intakeSensorConfiguration());
 
     CANSignalManager.registerSignals(
-        RollerConstants.CANBUS, coralSensor, current, volts, velocity, temperature);
+        IntakeConstants.CANBUS, coralSensor, current, volts, velocity, temperature);
 
     CANSignalManager.registerDevices(intakeMotor, distanceSensor);
   }
 
   @Override
-  public void setVoltage(double voltage) {
+  public void voltageOut(double voltage) {
+    super.controlledLastCycle = true;
     if (voltage >= 0.0) {
       algaeDebouncer.calculate(false);
     }
@@ -82,7 +86,8 @@ public class RollersReal extends Rollers {
   }
 
   @Override
-  public void setCurrent(double current) {
+  public void currentOut(double current) {
+    super.controlledLastCycle = true;
     if (current >= 0.0) {
       algaeDebouncer.calculate(false);
     }
@@ -95,7 +100,7 @@ public class RollersReal extends Rollers {
   }
 
   private boolean probablyHasAlgae() {
-    return super.current > RollerConstants.ALGAE_TRIP_VALUE && !hasCoral();
+    return super.amps > RollerConstants.ALGAE_TRIP_VALUE && !hasCoral();
   }
 
   @Override
@@ -105,7 +110,11 @@ public class RollersReal extends Rollers {
 
   @Override
   public void periodic() {
-    super.current = current.getValueAsDouble();
+    if (DriverStation.isDisabled() || !super.controlledLastCycle) {
+      voltageOut(0.0);
+    }
+    super.controlledLastCycle = false;
+    super.amps = current.getValueAsDouble();
     super.volts = volts.getValueAsDouble();
     super.hasAlgae = hasAlgae();
     super.hasCoral = hasCoral();

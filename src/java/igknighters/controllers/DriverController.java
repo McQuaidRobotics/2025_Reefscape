@@ -201,7 +201,7 @@ public class DriverController {
    * @return A supplier for the value of the left stick x axis
    */
   public DoubleSupplier leftStickX() {
-    return () -> -controller.getLeftX();
+    return controller::getLeftX;
   }
 
   /**
@@ -220,7 +220,7 @@ public class DriverController {
    * @return A supplier for the value of the left stick y axis
    */
   public DoubleSupplier leftStickY() {
-    return controller::getLeftY;
+    return () -> -controller.getLeftY();
   }
 
   /**

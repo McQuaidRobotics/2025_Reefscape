@@ -143,6 +143,7 @@ public class TwistyPoseEst {
    * @param weight the weight of the sample (0.0 to 1.0)
    */
   public void addVisionSample(Pose2d pose, double timestamp, double weight) {
+    weight = MathUtil.clamp(weight, 0.0, 1.0);
     if (timestamp < oldestTimestamp()) {
       return;
     }
@@ -165,6 +166,7 @@ public class TwistyPoseEst {
       Rotation2d gyroAngle,
       double timestamp,
       double weight) {
+    weight = MathUtil.clamp(weight, 0.0, 1.0);
     if (prevWheelPositions == null) {
       prevWheelPositions = wheelPositions;
       return;

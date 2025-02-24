@@ -17,15 +17,17 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.climber.ClimberConstants;
 import igknighters.subsystems.climber.ClimberConstants.PivotConstants;
 import igknighters.util.can.CANSignalManager;
 
 public class PivotReal extends Pivot {
 
-  private final TalonFX leader = new TalonFX(PivotConstants.LEADER_MOTOR_ID, PivotConstants.CANBUS);
+  private final TalonFX leader =
+      new TalonFX(PivotConstants.LEADER_MOTOR_ID, ClimberConstants.CANBUS);
   private final TalonFX follower =
-      new TalonFX(PivotConstants.FOLLOWER_MOTOR_ID, PivotConstants.CANBUS);
-  private final CANcoder encoder = new CANcoder(PivotConstants.ENCODER_ID, PivotConstants.CANBUS);
+      new TalonFX(PivotConstants.FOLLOWER_MOTOR_ID, ClimberConstants.CANBUS);
+  private final CANcoder encoder = new CANcoder(PivotConstants.ENCODER_ID, ClimberConstants.CANBUS);
 
   private final BaseStatusSignal position, velocity, amps, voltage;
 
@@ -47,7 +49,7 @@ public class PivotReal extends Pivot {
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
 
-    CANSignalManager.registerSignals(PivotConstants.CANBUS, position, velocity, amps, voltage);
+    CANSignalManager.registerSignals(ClimberConstants.CANBUS, position, velocity, amps, voltage);
 
     CANSignalManager.registerDevices(leader, encoder);
   }

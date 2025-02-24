@@ -16,9 +16,10 @@ import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.wpilibj.DriverStation;
-import igknighters.constants.ConstValues.kSwerve;
-import igknighters.constants.ConstValues.kSwerve.kDriveMotor;
-import igknighters.constants.ConstValues.kSwerve.kSteerMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kDriveMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kSteerMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.util.logging.BootupLogger;
 import sham.ShamSwerve;
@@ -29,8 +30,6 @@ import sham.shamController.unitSafeControl.UnitFeedforward.SimpleFeedforward;
 import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
 
 public class SwerveModuleSimSham extends SwerveModule {
-
-  private boolean gotDirectionsLastCycle = false;
 
   private final int moduleId;
 
@@ -61,7 +60,8 @@ public class SwerveModuleSimSham extends SwerveModule {
                 .withContinuousAngularInput(),
             SimpleFeedforward.forVoltage(Rotations, kSteerMotor.kS, 0.0, 0.0, sim.timing().dt()));
 
-    steerMotor.configSensorToMechanismRatio(kSwerve.STEER_GEAR_RATIO);
+    driveMotor.configSensorToMechanismRatio(kDriveMotor.GEAR_RATIO);
+    steerMotor.configSensorToMechanismRatio(kSteerMotor.GEAR_RATIO);
 
     sim.withSetModuleControllers(moduleId, driveMotor, steerMotor);
 
@@ -69,22 +69,20 @@ public class SwerveModuleSimSham extends SwerveModule {
   }
 
   public void setDesiredState(AdvancedSwerveModuleState desiredState) {
-    gotDirectionsLastCycle = true;
+    super.controlledLastCycle = true;
     setAngle(desiredState);
     setSpeed(desiredState);
   }
 
   public SwerveModulePosition getCurrentPosition() {
     return new SwerveModulePosition(
-        driveMotor.position().div(kSwerve.DRIVE_GEAR_RATIO).in(Rotations)
-            * kSwerve.WHEEL_CIRCUMFERENCE,
+        driveMotor.position().in(Rotations) * kWheel.CIRCUMFERENCE,
         new Rotation2d(steerMotor.position()));
   }
 
   public SwerveModuleState getCurrentState() {
     return new SwerveModuleState(
-        driveMotor.velocity().div(kSwerve.DRIVE_GEAR_RATIO).in(RotationsPerSecond)
-            * kSwerve.WHEEL_CIRCUMFERENCE,
+        driveMotor.velocity().in(RotationsPerSecond) * kWheel.CIRCUMFERENCE,
         new Rotation2d(steerMotor.position()));
   }
 
@@ -107,26 +105,19 @@ public class SwerveModuleSimSham extends SwerveModule {
     super.targetDriveVeloMPS = desiredState.speedMetersPerSecond;
     driveMotor.controlVoltage(
         driveLoop,
-        RotationsPerSecond.of(
-            (desiredState.speedMetersPerSecond / kSwerve.WHEEL_CIRCUMFERENCE)
-                * kSwerve.DRIVE_GEAR_RATIO),
+        RotationsPerSecond.of(desiredState.speedMetersPerSecond / kWheel.CIRCUMFERENCE),
         RadiansPerSecondPerSecond.of(desiredState.driveAcceleration));
   }
 
   @Override
   public void periodic() {
-    if (DriverStation.isDisabled() || !gotDirectionsLastCycle) {
-      targetDriveVeloMPS = 0.0;
+    if (DriverStation.isDisabled() || !super.controlledLastCycle) {
+      setVoltageOut(0.0, getCurrentState().angle);
     }
-    log("gotDirectionsLastCycle", gotDirectionsLastCycle);
-    gotDirectionsLastCycle = false;
+    controlledLastCycle = false;
 
-    super.drivePositionMeters =
-        driveMotor.position().div(kSwerve.DRIVE_GEAR_RATIO).in(Rotations)
-            * kSwerve.WHEEL_CIRCUMFERENCE;
-    super.driveVeloMPS =
-        driveMotor.velocity().div(kSwerve.DRIVE_GEAR_RATIO).in(RotationsPerSecond)
-            * kSwerve.WHEEL_CIRCUMFERENCE;
+    super.drivePositionMeters = driveMotor.position().in(Rotations) * kWheel.CIRCUMFERENCE;
+    super.driveVeloMPS = driveMotor.velocity().in(RotationsPerSecond) * kWheel.CIRCUMFERENCE;
 
     super.steerAbsoluteRads = MathUtil.angleModulus(steerMotor.position().in(Radians));
     super.steerVeloRadPS = steerMotor.velocity().in(RadiansPerSecond);
@@ -139,7 +130,9 @@ public class SwerveModuleSimSham extends SwerveModule {
 
   @Override
   public void setVoltageOut(double volts, Rotation2d angle) {
+    super.controlledLastCycle = true;
     super.targetSteerAbsoluteRads = angle.getRadians();
+    super.targetDriveVeloMPS = Double.NaN;
     driveMotor.controlVoltage(Volts.of(volts));
     steerMotor.controlVoltage(steerLoop, angle.getMeasure());
   }

@@ -3,9 +3,9 @@ package igknighters.subsystems.swerve.module;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import igknighters.constants.ConstValues.kSwerve;
 import igknighters.constants.RobotConfig;
 import igknighters.subsystems.Component;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants;
 import monologue.Annotations.Log;
 import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
 
@@ -20,6 +20,7 @@ public abstract class SwerveModule extends Component {
   @Log public double targetSteerAbsoluteRads = 0.0;
   @Log public double steerVolts = 0.0;
   @Log public double steerAmps = 0.0;
+  @Log protected boolean controlledLastCycle;
 
   public final String name;
 
@@ -48,8 +49,8 @@ public abstract class SwerveModule extends Component {
   protected double getOffset(int moduleId) {
     double[] offsetStore =
         switch (RobotConfig.getRobotID()) {
-          case Mk1 -> kSwerve.MK1_ROTATION_OFFSETS;
-          default -> kSwerve.MK2_ROTATION_OFFSETS;
+          case Mk1 -> ModuleConstants.kSteerEncoder.MK1_ENCODER_OFFSETS_ROTATIONS;
+          default -> ModuleConstants.kSteerEncoder.MK2_ENCODER_OFFSETS_ROTATIONS;
         };
 
     return offsetStore[moduleId];

@@ -1,7 +1,7 @@
 package igknighters.subsystems.superStructure;
 
 import igknighters.constants.ConstValues.Conv;
-import igknighters.constants.ConstValues.Motors.KrakenX60Foc;
+import igknighters.constants.ConstValues.kMotors.kKrakenX60Foc;
 
 public class SuperStructureConstants {
   public static final String CANBUS = "Super";
@@ -56,7 +56,7 @@ public class SuperStructureConstants {
     public static final double KG = 0.05;
     public static final double KS = 0.3;
     // public static final double KV = 0.0;
-    public static final double KV = (12.0 / KrakenX60Foc.FREE_SPEED) * GEAR_RATIO;
+    public static final double KV = (12.0 / kKrakenX60Foc.FREE_SPEED) * GEAR_RATIO;
     public static final double KA = 0.0;
 
     public static final double MAX_VELOCITY = ((12.0 - KS - KG) / KV) * 0.2;
@@ -85,7 +85,7 @@ public class SuperStructureConstants {
     public static final double KD = 0.0;
     public static final double KG = 0.0;
     public static final double KS = 0.3;
-    public static final double KV = (12.0 / KrakenX60Foc.FREE_SPEED) * GEAR_RATIO;
+    public static final double KV = (12.0 / kKrakenX60Foc.FREE_SPEED) * GEAR_RATIO;
     public static final double KA = 0.00;
 
     public static final double MAX_VELOCITY = (12.0 - KS - KG) / KV;
