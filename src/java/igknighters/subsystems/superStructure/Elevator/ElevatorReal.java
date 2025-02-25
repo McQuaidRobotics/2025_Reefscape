@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.SuperStructureConstants;
-import igknighters.subsystems.superStructure.SuperStructureConstants.ElevatorConstants;
+import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
 import igknighters.util.can.CANSignalManager;
 
 public class ElevatorReal extends Elevator {
@@ -28,54 +28,54 @@ public class ElevatorReal extends Elevator {
   private final DigitalInput limitSwitch;
 
   public ElevatorReal() {
-    leader = new TalonFX(ElevatorConstants.LEADER_ID, SuperStructureConstants.CANBUS);
-    follower = new TalonFX(ElevatorConstants.FOLLOWER_ID, SuperStructureConstants.CANBUS);
+    leader = new TalonFX(kElevator.LEADER_ID, SuperStructureConstants.CANBUS);
+    follower = new TalonFX(kElevator.FOLLOWER_ID, SuperStructureConstants.CANBUS);
     leader.getConfigurator().apply(elevatorConfiguration());
     follower.getConfigurator().apply(elevatorConfiguration());
-    follower.setControl(new Follower(ElevatorConstants.LEADER_ID, true));
+    follower.setControl(new Follower(kElevator.LEADER_ID, true));
 
     position = leader.getPosition();
     velocity = leader.getVelocity();
     voltage = leader.getMotorVoltage();
     current = leader.getTorqueCurrent();
 
-    limitSwitch = new DigitalInput(ElevatorConstants.LIMIT_SWITCH_ID);
+    limitSwitch = new DigitalInput(kElevator.LIMIT_SWITCH_ID);
 
     CANSignalManager.registerSignals(
         SuperStructureConstants.CANBUS, position, velocity, voltage, current);
 
     CANSignalManager.registerDevices(leader, follower);
 
-    leader.setPosition(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.PULLEY_CIRCUMFERENCE);
+    leader.setPosition(kElevator.MIN_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE);
   }
 
   private TalonFXConfiguration elevatorConfiguration() {
 
     var cfg = new TalonFXConfiguration();
 
-    cfg.Slot0.kP = ElevatorConstants.KP;
-    cfg.Slot0.kD = ElevatorConstants.KD;
-    cfg.Slot0.kS = ElevatorConstants.KS;
-    cfg.Slot0.kG = ElevatorConstants.KG;
-    cfg.Slot0.kV = ElevatorConstants.KV / Conv.RADIANS_TO_ROTATIONS;
+    cfg.Slot0.kP = kElevator.kP;
+    cfg.Slot0.kD = kElevator.kD;
+    cfg.Slot0.kS = kElevator.kS;
+    cfg.Slot0.kG = kElevator.kG;
+    cfg.Slot0.kV = kElevator.kV / Conv.RADIANS_TO_ROTATIONS;
 
-    cfg.Feedback.SensorToMechanismRatio = ElevatorConstants.GEAR_RATIO;
+    cfg.Feedback.SensorToMechanismRatio = kElevator.GEAR_RATIO;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        ElevatorConstants.MAX_HEIGHT / ElevatorConstants.PULLEY_CIRCUMFERENCE;
+        kElevator.MAX_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE;
 
     cfg.HardwareLimitSwitch.ReverseLimitEnable = true;
 
-    cfg.MotionMagic.MotionMagicCruiseVelocity = ElevatorConstants.MAX_VELOCITY;
-    cfg.MotionMagic.MotionMagicAcceleration = ElevatorConstants.MAX_ACCELERATION;
+    cfg.MotionMagic.MotionMagicCruiseVelocity = kElevator.MAX_VELOCITY;
+    cfg.MotionMagic.MotionMagicAcceleration = kElevator.MAX_ACCELERATION;
 
-    cfg.CurrentLimits.StatorCurrentLimit = ElevatorConstants.STATOR_CURRENT_LIMIT;
-    cfg.CurrentLimits.SupplyCurrentLimit = ElevatorConstants.SUPPLY_CURRENT_LIMIT;
+    cfg.CurrentLimits.StatorCurrentLimit = kElevator.STATOR_CURRENT_LIMIT;
+    cfg.CurrentLimits.SupplyCurrentLimit = kElevator.SUPPLY_CURRENT_LIMIT;
 
-    cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     cfg.MotorOutput.Inverted =
-        ElevatorConstants.INVERT_LEADER
+        kElevator.INVERT_LEADER
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
 
@@ -89,8 +89,7 @@ public class ElevatorReal extends Elevator {
     if (isLimitTripped && targetPosition < meters) {
       voltageOut(0.0);
     } else {
-      leader.setControl(
-          controlReq.withPosition(targetPosition / ElevatorConstants.PULLEY_CIRCUMFERENCE));
+      leader.setControl(controlReq.withPosition(targetPosition / kElevator.PULLEY_CIRCUMFERENCE));
     }
   }
 
@@ -108,7 +107,7 @@ public class ElevatorReal extends Elevator {
   @Override
   public boolean home() {
     if (!isHomed && super.home()) {
-      leader.setPosition(ElevatorConstants.MIN_HEIGHT / ElevatorConstants.PULLEY_CIRCUMFERENCE);
+      leader.setPosition(kElevator.MIN_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE);
     }
     return isHomed;
   }
@@ -130,8 +129,8 @@ public class ElevatorReal extends Elevator {
       leader.setControl(neutralOut);
     }
     super.controlledLastCycle = false;
-    super.meters = position.getValueAsDouble() * ElevatorConstants.PULLEY_CIRCUMFERENCE;
-    super.metersPerSecond = velocity.getValueAsDouble() * ElevatorConstants.PULLEY_CIRCUMFERENCE;
+    super.meters = position.getValueAsDouble() * kElevator.PULLEY_CIRCUMFERENCE;
+    super.metersPerSecond = velocity.getValueAsDouble() * kElevator.PULLEY_CIRCUMFERENCE;
     super.volts = voltage.getValueAsDouble();
     super.amps = current.getValueAsDouble();
     super.isLimitTripped = limitSwitch.get();

@@ -3,12 +3,15 @@ package igknighters.controllers;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
+import igknighters.commands.intake.IntakeCommands;
 import igknighters.commands.superStructure.StateManager;
 import igknighters.commands.swerve.SwerveCommands;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.util.logging.BootupLogger;
 import java.util.function.DoubleSupplier;
@@ -22,21 +25,26 @@ public class DriverController {
     final var led = subsystems.led;
     final var climber = subsystems.climber;
 
-    final StateManager stateManager = new StateManager(subsystems.superStructure);
+    final StateManager stateManager =
+        new StateManager(subsystems.superStructure, subsystems.intake.isHolding(Holding.ALGAE));
 
     /// FACE BUTTONS
-    this.A.onTrue(stateManager.holdAt(SuperStructureState.Stow));
+    this.A.onTrue(stateManager.holdAt(SuperStructureState.ScoreL2));
 
-    this.B.onTrue(stateManager.holdAt(SuperStructureState.ScoreL4));
+    this.B.onTrue(stateManager.holdAt(SuperStructureState.ScoreL3));
 
     this.X.onTrue(stateManager.holdAt(SuperStructureState.Processor));
 
-    this.Y.onTrue(stateManager.holdAt(SuperStructureState.TEST_BOTTOM));
+    this.Y.onTrue(stateManager.holdAt(SuperStructureState.ScoreL4));
 
     // BUMPER
-    this.RB.onTrue(climber.runOnce(() -> climber.setMagnetPower(true)));
+    this.RB.onTrue(
+        IntakeCommands.intakeCoral(subsystems.intake)
+            .alongWith(stateManager.holdAt(SuperStructureState.IntakeHp))
+            .until(subsystems.intake.isHolding(Holding.CORAL))
+            .andThen(new ScheduleCommand(stateManager.holdAt(SuperStructureState.Stow))));
 
-    this.LB.onTrue(climber.runOnce(() -> climber.setMagnetPower(false)));
+    this.LB.onTrue(IntakeCommands.runVoltage(subsystems.intake, 4.0).withTimeout(0.45));
 
     // CENTER BUTTONS
     this.Back.onTrue(Commands.none());
@@ -60,7 +68,7 @@ public class DriverController {
     this.DPD.whileTrue(
         climber.run(() -> climber.voltageOut(-6.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    this.DPL.onTrue(Commands.none());
+    this.DPL.onTrue(stateManager.home());
 
     this.DPU.whileTrue(
         climber.run(() -> climber.voltageOut(6.0)).finallyDo(() -> climber.voltageOut(0.0)));

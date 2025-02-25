@@ -5,7 +5,7 @@ import static edu.wpi.first.units.Units.Radians;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -17,20 +17,17 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.SuperStructureConstants;
-import igknighters.subsystems.superStructure.SuperStructureConstants.WristConstants;
+import igknighters.subsystems.superStructure.SuperStructureConstants.kWrist;
 import igknighters.util.can.CANSignalManager;
 
 public class WristReal extends Wrist {
 
-  private final TalonFX wrist =
-      new TalonFX(WristConstants.MOTOR_ID, SuperStructureConstants.CANBUS);
-  private final CANcoder encoder =
-      new CANcoder(WristConstants.CANCODER_ID, SuperStructureConstants.CANBUS);
+  private final TalonFX wrist = new TalonFX(kWrist.MOTOR_ID, SuperStructureConstants.CANBUS);
+  private final CANcoder encoder = new CANcoder(kWrist.CANCODER_ID, SuperStructureConstants.CANBUS);
 
   private final BaseStatusSignal position, velocity, amps, voltage;
 
-  private final MotionMagicTorqueCurrentFOC controlReq =
-      new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
+  private final MotionMagicVoltage controlReq = new MotionMagicVoltage(0.0).withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut =
       new VoltageOut(0.0).withUpdateFreqHz(0.0).withEnableFOC(true);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
@@ -55,31 +52,38 @@ public class WristReal extends Wrist {
   private final TalonFXConfiguration wristConfiguration() {
     var cfg = new TalonFXConfiguration();
 
-    cfg.Slot0.kP = WristConstants.KP;
-    cfg.Slot0.kD = WristConstants.KD;
-    cfg.Slot0.kS = WristConstants.KS;
-    cfg.Slot0.kG = WristConstants.KG;
-    cfg.Slot0.kV = WristConstants.KV * Conv.RADIANS_TO_ROTATIONS;
-    cfg.Slot0.kA = WristConstants.KA;
+    cfg.MotorOutput.Inverted =
+        kWrist.INVERT_MOTOR
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
 
-    cfg.Feedback.RotorToSensorRatio = WristConstants.GEAR_RATIO;
+    cfg.Slot0.kP = kWrist.KP;
+    cfg.Slot0.kD = kWrist.KD;
+    cfg.Slot0.kS = kWrist.KS;
+    cfg.Slot0.kG = kWrist.KG;
+    cfg.Slot0.kV = kWrist.KV * Conv.RADIANS_TO_ROTATIONS;
+    cfg.Slot0.kA = kWrist.KA;
+
+    cfg.Feedback.RotorToSensorRatio = kWrist.GEAR_RATIO;
     cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-    cfg.Feedback.FeedbackRemoteSensorID = WristConstants.CANCODER_ID;
+    cfg.Feedback.FeedbackRemoteSensorID = kWrist.CANCODER_ID;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.MAX_ANGLE;
+    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        kWrist.MIN_ANGLE * Conv.RADIANS_TO_ROTATIONS;
     cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.MIN_ANGLE;
+    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+        kWrist.MAX_ANGLE * Conv.RADIANS_TO_ROTATIONS;
 
-    cfg.MotionMagic.MotionMagicCruiseVelocity = WristConstants.MAX_VELOCITY;
-    cfg.MotionMagic.MotionMagicAcceleration = WristConstants.MAX_ACCELERATION;
+    cfg.MotionMagic.MotionMagicCruiseVelocity = kWrist.MAX_VELOCITY * Conv.RADIANS_TO_ROTATIONS;
+    cfg.MotionMagic.MotionMagicAcceleration = kWrist.MAX_ACCELERATION * Conv.RADIANS_TO_ROTATIONS;
 
-    cfg.CurrentLimits.StatorCurrentLimit = WristConstants.STATOR_CURRENT_LIMIT;
-    cfg.CurrentLimits.SupplyCurrentLimit = WristConstants.SUPPLY_CURRENT_LIMIT;
+    cfg.CurrentLimits.StatorCurrentLimit = kWrist.STATOR_CURRENT_LIMIT;
+    cfg.CurrentLimits.SupplyCurrentLimit = kWrist.SUPPLY_CURRENT_LIMIT;
 
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     cfg.MotorOutput.Inverted =
-        WristConstants.INVERT_MOTOR
+        kWrist.INVERT_MOTOR
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
 
@@ -89,10 +93,10 @@ public class WristReal extends Wrist {
   private final CANcoderConfiguration wristCaNcoderConfiguration() {
     var cfg = new CANcoderConfiguration();
 
-    cfg.MagnetSensor.MagnetOffset = WristConstants.ANGLE_OFFSET;
+    cfg.MagnetSensor.MagnetOffset = kWrist.ANGLE_OFFSET;
     cfg.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
     cfg.MagnetSensor.SensorDirection =
-        WristConstants.INVERT_ENCODER
+        kWrist.INVERT_ENCODER
             ? SensorDirectionValue.Clockwise_Positive
             : SensorDirectionValue.CounterClockwise_Positive;
 
@@ -104,6 +108,7 @@ public class WristReal extends Wrist {
     super.targetRadians = targetPosition;
     super.controlledLastCycle = true;
     wrist.setControl(controlReq.withPosition(Conv.RADIANS_TO_ROTATIONS * targetPosition));
+    log("targetDegrees", targetRadians * Conv.RADIANS_TO_DEGREES);
   }
 
   @Override
@@ -133,5 +138,6 @@ public class WristReal extends Wrist {
     super.volts = voltage.getValueAsDouble();
     super.radians = position.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
+    log("degrees", radians * Conv.RADIANS_TO_DEGREES);
   }
 }

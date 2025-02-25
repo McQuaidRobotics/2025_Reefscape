@@ -1,6 +1,6 @@
 package igknighters.subsystems.superStructure;
 
-import static igknighters.subsystems.superStructure.SuperStructureConstants.ElevatorConstants.*;
+import static igknighters.subsystems.superStructure.SuperStructureConstants.kElevator.*;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import igknighters.constants.ConstValues.Conv;
-import igknighters.subsystems.superStructure.SuperStructureConstants.ElevatorConstants.Stage;
+import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator.Stage;
 
 public class SuperStructureVisualizer {
   private final Mechanism2d mechanism;

@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
@@ -43,6 +44,8 @@ public class RollersReal extends Rollers {
     cfg.HardwareLimitSwitch.ReverseLimitEnable = false;
     cfg.HardwareLimitSwitch.ReverseLimitSource = ReverseLimitSourceValue.RemoteCANrange;
     cfg.HardwareLimitSwitch.ReverseLimitRemoteSensorID = distanceSensor.getDeviceID();
+
+    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     return cfg;
   }

@@ -9,7 +9,7 @@ public class ClimberConstants {
     public static final double GEAR_RATIO = 50.0;
     public static final int LEADER_MOTOR_ID = 14;
     public static final int FOLLOWER_MOTOR_ID = 15;
-    public static final int ENCODER_ID = 26;
+    public static final int ENCODER_ID = LEADER_MOTOR_ID;
     public static final double KP = 1.0;
     public static final double KI = 0.0;
     public static final double KD = 0.0;

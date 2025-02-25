@@ -6,7 +6,7 @@ import igknighters.constants.ConstValues.kMotors.kKrakenX60Foc;
 public class SuperStructureConstants {
   public static final String CANBUS = "Super";
 
-  public class ElevatorConstants {
+  public class kElevator {
     /** Wire run side */
     public static final int LEADER_ID = 9;
 
@@ -47,44 +47,42 @@ public class SuperStructureConstants {
             * (STAGES[0].mass + STAGES[1].mass + STAGES[2].mass + STAGES[3].mass);
 
     public static final double MIN_HEIGHT = 12.75 * Conv.INCHES_TO_METERS;
-    public static final double MAX_HEIGHT = 79.5 * Conv.INCHES_TO_METERS;
-    // public static final double MAX_HEIGHT = MIN_HEIGHT + TOTAL_RANGE_OF_MOTION;
-    public static final double DEFAULT_TOLERANCE = 0.0 * Conv.INCHES_TO_METERS;
+    public static final double MAX_HEIGHT = 80.25 * Conv.INCHES_TO_METERS;
+    public static final double DEFAULT_TOLERANCE = 0.75 * Conv.INCHES_TO_METERS;
 
-    public static final double KP = 6.0;
-    public static final double KD = 0.0;
-    public static final double KG = 0.05;
-    public static final double KS = 0.3;
-    // public static final double KV = 0.0;
-    public static final double KV = (12.0 / kKrakenX60Foc.FREE_SPEED) * GEAR_RATIO;
-    public static final double KA = 0.0;
+    public static final double kP = 6.0;
+    public static final double kD = 0.0;
+    public static final double kG = 0.05;
+    public static final double kS = 0.3;
+    public static final double kV = kKrakenX60Foc.kV * GEAR_RATIO;
+    public static final double kA = 0.0;
 
-    public static final double MAX_VELOCITY = ((12.0 - KS - KG) / KV) * 0.2;
+    public static final double MAX_VELOCITY = ((12.0 - kS - kG) / kV) * 0.2;
     public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.2;
 
-    public static final double HOMING_VOLTAGE = -KS * 2.0;
+    public static final double HOMING_VOLTAGE = -kS - 2.0;
 
     public static final double STATOR_CURRENT_LIMIT = 80.0;
-    public static final double SUPPLY_CURRENT_LIMIT = 50.0;
+    public static final double SUPPLY_CURRENT_LIMIT = 40.0;
   }
 
-  public class WristConstants {
-    public static final double LENGTH = 13.0 * Conv.INCHES_TO_METERS;
-    public static final double MAX_ANGLE = 87.0 * Conv.DEGREES_TO_RADIANS;
-    public static final double MAX_ANGLE_ALGAE = 87.0 * Conv.DEGREES_TO_RADIANS;
-    public static final double MIN_ANGLE = -87.0 * Conv.DEGREES_TO_RADIANS;
+  public class kWrist {
+    public static final double LENGTH = 9.0 * Conv.INCHES_TO_METERS;
+    public static final double MAX_ANGLE = -0.23 * Conv.ROTATIONS_TO_RADIANS;
+    public static final double MAX_ANGLE_ALGAE = -0.07 * Conv.ROTATIONS_TO_RADIANS;
+    public static final double MIN_ANGLE = 0.127 * Conv.ROTATIONS_TO_RADIANS;
 
     public static final int MOTOR_ID = 11;
     public static final int CANCODER_ID = 11;
 
-    public static final boolean INVERT_MOTOR = false;
+    public static final boolean INVERT_MOTOR = true;
     public static final boolean INVERT_ENCODER = false;
     public static final double GEAR_RATIO = (5.0 / 1.0) * (5.0 / 1.0) * (60.0 / 30.0);
 
     public static final double KP = 110.0;
     public static final double KD = 0.0;
-    public static final double KG = 0.0;
-    public static final double KS = 0.3;
+    public static final double KG = 0.1;
+    public static final double KS = 0.2;
     public static final double KV = (12.0 / kKrakenX60Foc.FREE_SPEED) * GEAR_RATIO;
     public static final double KA = 0.00;
 
@@ -92,16 +90,14 @@ public class SuperStructureConstants {
     public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.5;
 
     public static final double DEFAULT_TOLERANCE = 1.0 * Conv.DEGREES_TO_RADIANS;
-    public static final double ANGLE_OFFSET = -0.215087890625;
+    public static final double ANGLE_OFFSET = -0.100341796875;
 
     public static final double STATOR_CURRENT_LIMIT = 50.0;
-    public static final double SUPPLY_CURRENT_LIMIT = 50.0;
+    public static final double SUPPLY_CURRENT_LIMIT = 40.0;
 
     public static final double WRIST_AXEL_LOWER_LIMIT =
-        COLLISION_HEIGHT - (WristConstants.LENGTH * Math.sin(WristConstants.MAX_ANGLE));
-
-    public static final class Motor {}
+        COLLISION_HEIGHT - (kWrist.LENGTH * Math.sin(kWrist.MAX_ANGLE));
   }
 
-  public static final double COLLISION_HEIGHT = 24.0 * Conv.INCHES_TO_METERS;
+  public static final double COLLISION_HEIGHT = 8.0 * Conv.INCHES_TO_METERS;
 }

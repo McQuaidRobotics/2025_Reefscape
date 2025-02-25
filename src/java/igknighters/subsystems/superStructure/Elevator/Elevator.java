@@ -2,7 +2,7 @@ package igknighters.subsystems.superStructure.Elevator;
 
 import edu.wpi.first.math.MathUtil;
 import igknighters.subsystems.Component;
-import igknighters.subsystems.superStructure.SuperStructureConstants.ElevatorConstants;
+import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
 import monologue.Annotations.Log;
 
 public abstract class Elevator extends Component {
@@ -36,7 +36,7 @@ public abstract class Elevator extends Component {
    *
    * @param position The position of the elevator in meters.
    * @param tolerance The tolerance of the elevator in meters, use {@link
-   *     ElevatorConstants#DEFAULT_TOLERANCE} if you are unsure.
+   *     kElevator#DEFAULT_TOLERANCE} if you are unsure.
    * @return True if the elevator is at the desired position, false otherwise.
    */
   public boolean isAtPosition(double position, double tolerance) {
@@ -59,8 +59,12 @@ public abstract class Elevator extends Component {
     if (isLimitTripped || isHomed) {
       isHomed = true;
     } else {
-      voltageOut(ElevatorConstants.HOMING_VOLTAGE);
+      voltageOut(kElevator.HOMING_VOLTAGE);
     }
+    return isHomed;
+  }
+
+  public boolean isHomed() {
     return isHomed;
   }
 

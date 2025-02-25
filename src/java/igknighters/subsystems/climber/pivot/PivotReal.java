@@ -49,6 +49,10 @@ public class PivotReal extends Pivot {
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
 
+    encoder.getAbsolutePosition(false).setUpdateFrequency(125);
+    encoder.getPosition(false).setUpdateFrequency(125);
+    encoder.getVelocity(false).setUpdateFrequency(125);
+
     CANSignalManager.registerSignals(ClimberConstants.CANBUS, position, velocity, amps, voltage);
 
     CANSignalManager.registerDevices(leader, encoder);
@@ -62,7 +66,7 @@ public class PivotReal extends Pivot {
     cfg.Slot0.kD = PivotConstants.KD;
 
     cfg.Feedback.RotorToSensorRatio = PivotConstants.GEAR_RATIO;
-    cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+    cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
     cfg.Feedback.FeedbackRemoteSensorID = PivotConstants.ENCODER_ID;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;

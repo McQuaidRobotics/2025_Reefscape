@@ -1,7 +1,5 @@
 package igknighters.subsystems.vision;
 
-import java.util.HashMap;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -10,6 +8,7 @@ import igknighters.constants.RobotConfig;
 import igknighters.constants.RobotConfig.RobotID;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.util.LerpTable;
+import java.util.HashMap;
 
 public class VisionConstants {
   public static final class kVision {
@@ -81,34 +80,34 @@ public class VisionConstants {
             new LerpTable.LerpTableEntry(1.5, 1.0),
             new LerpTable.LerpTableEntry(2.5, 0.8),
             new LerpTable.LerpTableEntry(5.0, 0.5),
-            new LerpTable.LerpTableEntry(8.0, 0.0)
-        );
+            new LerpTable.LerpTableEntry(8.0, 0.0));
 
-    public static final HashMap<Integer, Double> TAG_RANKINGS = new HashMap<>(){
-      {
-        put(1, 1.0); // CORAL STATION
-        put(2, 1.0); // CORAL STATION
-        put(3, 1.0); // PROCESSOR
-        put(4, 0.4); // BARGE
-        put(5, 0.4); // BARGE
-        put(6, 1.25); // REEF
-        put(7, 1.25); // REEF
-        put(8, 1.25); // REEF
-        put(9, 1.25); // REEF
-        put(10, 1.25); // REEF
-        put(11, 1.25); // REEF
-        put(12, 1.0); // CORAL STATION
-        put(13, 1.0); // CORAL STATION
-        put(14, 0.4); // BARGE
-        put(15, 0.4); // BARGE
-        put(16, 1.0); // PROCESSOR
-        put(17, 1.25); // REEF
-        put(18, 1.25); // REEF
-        put(19, 1.25); // REEF
-        put(20, 1.25); // REEF
-        put(21, 1.25); // REEF
-        put(22, 1.25); // REEF
-      }
-    };
+    public static final HashMap<Integer, Double> TAG_RANKINGS =
+        new HashMap<>() {
+          {
+            put(1, 1.0); // CORAL STATION
+            put(2, 1.0); // CORAL STATION
+            put(3, 1.0); // PROCESSOR
+            put(4, 0.4); // BARGE
+            put(5, 0.4); // BARGE
+            put(6, 1.25); // REEF
+            put(7, 1.25); // REEF
+            put(8, 1.25); // REEF
+            put(9, 1.25); // REEF
+            put(10, 1.25); // REEF
+            put(11, 1.25); // REEF
+            put(12, 1.0); // CORAL STATION
+            put(13, 1.0); // CORAL STATION
+            put(14, 0.4); // BARGE
+            put(15, 0.4); // BARGE
+            put(16, 1.0); // PROCESSOR
+            put(17, 1.25); // REEF
+            put(18, 1.25); // REEF
+            put(19, 1.25); // REEF
+            put(20, 1.25); // REEF
+            put(21, 1.25); // REEF
+            put(22, 1.25); // REEF
+          }
+        };
   }
 }
