@@ -4,8 +4,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import igknighters.constants.ConstValues.Conv;
-import igknighters.constants.RobotConfig;
-import igknighters.constants.RobotConfig.RobotID;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.util.LerpTable;
 import java.util.HashMap;
@@ -17,62 +15,45 @@ public class VisionConstants {
     public static final double MAX_Z_DELTA = 0.2;
     public static final double MAX_ANGLE_DELTA = 5.0 * Conv.DEGREES_TO_RADIANS;
 
-    public static enum CameraConfigs {
-      Mk1(
-          new CameraConfig[] {
-            new CameraConfig(
-                "photon_front_forward_1",
-                new Pose3d(
-                    new Translation3d(
-                        6.0 * Conv.INCHES_TO_METERS,
-                        -13.0 * Conv.INCHES_TO_METERS,
-                        8.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(
-                        0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
-            new CameraConfig(
-                "photon_front_forward_2",
-                new Pose3d(
-                    new Translation3d(
-                        6.0 * Conv.INCHES_TO_METERS,
-                        13.0 * Conv.INCHES_TO_METERS,
-                        8.0 * Conv.INCHES_TO_METERS),
-                    new Rotation3d(
-                        0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
-            // new CameraConfig(
-            //     "photon_climber_1",
-            //     new Pose3d(
-            //         new Translation3d(
-            //             kSwerve.MODULE_CHASSIS_OFFSETS[1].getX(),
-            //             kSwerve.MODULE_CHASSIS_OFFSETS[1].getY(),
-            //             8.0 * Conv.INCHES_TO_METERS),
-            //         new Rotation3d(
-            //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 145.0 * Conv.DEGREES_TO_RADIANS))),
-            // new CameraConfig(
-            //     "photon_climber_2",
-            //     new Pose3d(
-            //         new Translation3d(
-            //             kSwerve.MODULE_CHASSIS_OFFSETS[2].getX(),
-            //             kSwerve.MODULE_CHASSIS_OFFSETS[2].getY(),
-            //             8.0 * Conv.INCHES_TO_METERS),
-            //         new Rotation3d(
-            //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -145.0 *
-            // Conv.DEGREES_TO_RADIANS))),
-          }),
-      Mk2(new CameraConfig[] {});
-
-      public final CameraConfig[] cameras;
-
-      private CameraConfigs(CameraConfig[] cameras) {
-        this.cameras = cameras;
-      }
-
-      public static CameraConfig[] forRobot(RobotID id) {
-        return switch (RobotConfig.getRobotID()) {
-          case Mk1 -> CameraConfigs.Mk1.cameras;
-          default -> CameraConfigs.Mk2.cameras;
-        };
-      }
-    }
+    public static final CameraConfig[] CONFIGS = new CameraConfig[] {
+      new CameraConfig(
+          "photon_front_forward_1",
+          new Pose3d(
+              new Translation3d(
+                  6.0 * Conv.INCHES_TO_METERS,
+                  -13.0 * Conv.INCHES_TO_METERS,
+                  8.0 * Conv.INCHES_TO_METERS),
+              new Rotation3d(
+                  0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
+      new CameraConfig(
+          "photon_front_forward_2",
+          new Pose3d(
+              new Translation3d(
+                  6.0 * Conv.INCHES_TO_METERS,
+                  13.0 * Conv.INCHES_TO_METERS,
+                  8.0 * Conv.INCHES_TO_METERS),
+              new Rotation3d(
+                  0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
+      // new CameraConfig(
+      //     "photon_climber_1",
+      //     new Pose3d(
+      //         new Translation3d(
+      //             kSwerve.MODULE_CHASSIS_OFFSETS[1].getX(),
+      //             kSwerve.MODULE_CHASSIS_OFFSETS[1].getY(),
+      //             8.0 * Conv.INCHES_TO_METERS),
+      //         new Rotation3d(
+      //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 145.0 * Conv.DEGREES_TO_RADIANS))),
+      // new CameraConfig(
+      //     "photon_climber_2",
+      //     new Pose3d(
+      //         new Translation3d(
+      //             kSwerve.MODULE_CHASSIS_OFFSETS[2].getX(),
+      //             kSwerve.MODULE_CHASSIS_OFFSETS[2].getY(),
+      //             8.0 * Conv.INCHES_TO_METERS),
+      //         new Rotation3d(
+      //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -145.0 *
+      // Conv.DEGREES_TO_RADIANS))),
+    };
 
     public static final LerpTable DISTANCE_TRUST_COEFFICIENT =
         new LerpTable(

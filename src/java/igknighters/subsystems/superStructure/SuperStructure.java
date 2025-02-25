@@ -70,7 +70,7 @@ public class SuperStructure implements ExclusiveSubsystem {
     } else {
       wristRads = MathUtil.clamp(wristRads, kWrist.MAX_ANGLE, kWrist.MIN_ANGLE);
     }
-    // wristRads = avoid(elevatorMeters, wristRads);
+    wristRads = avoid(elevatorMeters, wristRads);
     elevator.gotoPosition(elevatorMeters);
     wrist.goToPosition(wristRads);
     visualizer.updateSetpoint(elevatorMeters, wristRads);

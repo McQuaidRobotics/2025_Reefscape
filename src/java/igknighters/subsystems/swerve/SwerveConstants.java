@@ -75,10 +75,8 @@ public class SwerveConstants {
     public static final class kSteerEncoder {
       public static final boolean INVERT = false;
 
-      public static final double[] MK1_ENCODER_OFFSETS_ROTATIONS =
+      public static final double[] ENCODER_OFFSETS_ROTATIONS =
           new double[] {-0.2055, -0.39453, 0.35766, -0.192383};
-      public static final double[] MK2_ENCODER_OFFSETS_ROTATIONS =
-          new double[] {0.0, 0.0, 0.0, 0.0};
     }
   }
 

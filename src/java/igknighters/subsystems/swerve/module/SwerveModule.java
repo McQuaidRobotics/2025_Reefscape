@@ -3,7 +3,6 @@ package igknighters.subsystems.swerve.module;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import igknighters.constants.RobotConfig;
 import igknighters.subsystems.Component;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants;
 import monologue.Annotations.Log;
@@ -47,12 +46,6 @@ public abstract class SwerveModule extends Component {
   public abstract void setVoltageOut(double volts, Rotation2d angle);
 
   protected double getOffset(int moduleId) {
-    double[] offsetStore =
-        switch (RobotConfig.getRobotID()) {
-          case Mk1 -> ModuleConstants.kSteerEncoder.MK1_ENCODER_OFFSETS_ROTATIONS;
-          default -> ModuleConstants.kSteerEncoder.MK2_ENCODER_OFFSETS_ROTATIONS;
-        };
-
-    return offsetStore[moduleId];
+    return ModuleConstants.kSteerEncoder.ENCODER_OFFSETS_ROTATIONS[moduleId];
   }
 }

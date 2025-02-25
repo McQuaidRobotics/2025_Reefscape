@@ -4,8 +4,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volt;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -42,10 +41,10 @@ public class WristSim extends Wrist {
             shamMCX,
             KilogramSquareMeters.of(.3),
             GearRatio.reduction(kWrist.GEAR_RATIO),
-            Friction.of(DCMotor.getKrakenX60Foc(1), Volt.of(kWrist.KS)),
+            Friction.of(DCMotor.getKrakenX60Foc(1), Volt.of(kWrist.KS * 1.3)),
             // MechanismDynamics.forArm(Pound.of(9.0), Inches.of(6)),
             MechanismDynamics.zero(),
-            HardLimits.of(Radians.of(kWrist.MIN_ANGLE), Radians.of(kWrist.MAX_ANGLE + 0.02)),
+            HardLimits.of(Radians.of(kWrist.MAX_ANGLE), Radians.of(kWrist.MIN_ANGLE)),
             0,
             simCtx.robot().timing());
     simCtx.robot().addMechanism(wristMechanism);
@@ -56,8 +55,8 @@ public class WristSim extends Wrist {
             SimpleFeedforward.forVoltage(
                 Radians, kWrist.KS, kWrist.KV, kWrist.KA, simCtx.robot().timing().dt()),
             UnitTrapezoidProfile.forAngle(
-                RotationsPerSecond.of(kWrist.MAX_VELOCITY),
-                RotationsPerSecondPerSecond.of(kWrist.MAX_ACCELERATION)));
+                RadiansPerSecond.of(kWrist.MAX_VELOCITY),
+                RadiansPerSecondPerSecond.of(kWrist.MAX_ACCELERATION)));
     shamMCX.setBrakeMode(false); // do not enable, this feature is broken
     shamMCX.configSensorToMechanismRatio(kWrist.GEAR_RATIO);
     shamMCX.configureCurrentLimit(

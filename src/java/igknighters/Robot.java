@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import igknighters.commands.SubsystemTriggers;
 import igknighters.commands.autos.AutoController;
 import igknighters.commands.autos.AutoRoutines;
 import igknighters.commands.swerve.teleop.TeleopSwerveTraditionalCmd;
@@ -89,6 +90,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     driverController.bind(localizer, subsystems);
     operatorController = new OperatorController(1);
     operatorController.bind(localizer, subsystems);
+    SubsystemTriggers.setupTriggers(subsystems);
 
     subsystems.swerve.setDefaultCommand(
         new TeleopSwerveTraditionalCmd(subsystems.swerve, driverController));

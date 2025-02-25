@@ -13,7 +13,6 @@ import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.constants.FieldConstants;
-import igknighters.constants.RobotConfig;
 import igknighters.subsystems.Subsystems.SharedSubsystem;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.vision.VisionConstants.kVision;
@@ -140,7 +139,7 @@ public class Vision implements SharedSubsystem {
 
   public Vision(final Localizer localizer, final SimCtx simCtx) {
     this.localizer = localizer;
-    final var configs = kVision.CameraConfigs.forRobot(RobotConfig.getRobotID());
+    final var configs = kVision.CONFIGS;
     this.cameras = new Camera[configs.length];
     for (int i = 0; i < configs.length; i++) {
       this.cameras[i] = makeCamera(configs[i], simCtx);
