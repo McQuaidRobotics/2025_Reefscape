@@ -35,6 +35,10 @@ public class IntakeCommands {
   }
 
   public static Command intakeAlgae(Intake intake) {
-    return runVoltage(intake, -12.0).until(intake.isHolding(Holding.CORAL));
+    return runVoltage(intake, -10.0).until(intake.isHolding(Holding.CORAL));
+  }
+
+  public static Command expel(Intake intake) {
+    return runVoltage(intake, 3.0).withTimeout(0.3);
   }
 }

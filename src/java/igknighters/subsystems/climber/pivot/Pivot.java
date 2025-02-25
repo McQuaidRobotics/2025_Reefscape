@@ -22,4 +22,6 @@ public abstract class Pivot extends Component {
   }
 
   public abstract void setNeutralMode(boolean coast);
+
+  public abstract void voltageOut(double voltage);
 }

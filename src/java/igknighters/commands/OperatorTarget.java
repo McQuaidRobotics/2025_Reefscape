@@ -11,9 +11,9 @@ import igknighters.Localizer;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
-import igknighters.subsystems.superStructure.SuperStructure;
+import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
-import igknighters.subsystems.swerve.Swerve;
 import java.util.Set;
 import java.util.function.Supplier;
 import monologue.GlobalField;
@@ -39,9 +39,11 @@ public class OperatorTarget implements StructSerializable {
   private SuperStructureState superStructureState = SuperStructureState.Stow;
 
   @IgnoreStructField private final Logged loggingNode;
+  @IgnoreStructField private final Subsystems subsystems;
 
-  public OperatorTarget(Logged logger) {
+  public OperatorTarget(Subsystems subsystems, Logged logger) {
     this.loggingNode = logger;
+    this.subsystems = subsystems;
     logThis();
   }
 
@@ -58,19 +60,17 @@ public class OperatorTarget implements StructSerializable {
     return new Trigger(() -> hasTarget);
   }
 
-  public Trigger superStructureAtSetpoint(SuperStructure superStructure) {
-    return new Trigger(
-        () ->
-            !superStructureState.equals(SuperStructureState.Stow)
-                && superStructure.isAt(superStructureState));
+  public Trigger superStructureAtSetpoint() {
+    return new Trigger(() -> !superStructureState.equals(SuperStructureState.Stow))
+        .and(SuperStructureCommands.isAt(subsystems.superStructure, superStructureState));
   }
 
   public Pose2d targetLocation() {
     var ret =
         switch (faceSubLocation) {
-          case LEFT -> side.scoreLeft(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
-          case RIGHT -> side.scoreRight(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
-          case CENTER -> side.scoreCenter(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
+          case LEFT -> side.alignScoreLeft(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
+          case RIGHT -> side.alignScoreRight(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
+          case CENTER -> side.alignScoreCenter(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
         };
     if (AllianceFlipper.isBlue()) {
       return ret;
@@ -107,20 +107,31 @@ public class OperatorTarget implements StructSerializable {
             .unless(hasTarget().negate()));
   }
 
-  public Command gotoTargetCmd(
-      Swerve swerve, SuperStructureManager superStructureStateManager, Localizer localizer) {
+  public Command gotoTargetCmd(Localizer localizer) {
     Supplier<Command> c =
         () ->
             Commands.deadline(
                 SwerveCommands.moveToReef(
-                    swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side), 0.013),
-                superStructureStateManager.holdAt(superStructureState));
-    return makeRefreshableCmd(c, swerve, superStructureStateManager.superStructure);
+                    subsystems.swerve,
+                    localizer,
+                    targetLocation(),
+                    PathObstacles.fromReefSide(side),
+                    0.013),
+                SuperStructureCommands.holdAt(
+                    subsystems.superStructure,
+                    superStructureState,
+                    subsystems.intake.isHolding(Holding.ALGAE)));
+    return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure);
   }
 
-  public Command gotoSuperStructureTargetCmd(SuperStructureManager superStructureStateManager) {
-    Supplier<Command> c = () -> superStructureStateManager.holdAt(superStructureState);
-    return makeRefreshableCmd(c, superStructureStateManager.superStructure);
+  public Command gotoSuperStructureTargetCmd() {
+    Supplier<Command> c =
+        () ->
+            SuperStructureCommands.holdAt(
+                subsystems.superStructure,
+                superStructureState,
+                subsystems.intake.isHolding(Holding.ALGAE));
+    return makeRefreshableCmd(c, subsystems.superStructure);
   }
 
   public Command updateTargetCmd(

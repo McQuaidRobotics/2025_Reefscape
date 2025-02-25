@@ -12,15 +12,13 @@ import edu.wpi.first.wpilibj.Timer;
 import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.SimCtx;
-import igknighters.constants.ConstValues.kSwerve;
-import igknighters.constants.ConstValues.kVision;
 import igknighters.constants.FieldConstants;
-import igknighters.constants.RobotConfig;
 import igknighters.subsystems.Subsystems.SharedSubsystem;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
+import igknighters.subsystems.vision.VisionConstants.kVision;
 import igknighters.subsystems.vision.camera.Camera;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.subsystems.vision.camera.CameraDisabled;
-import igknighters.subsystems.vision.camera.CameraRealPhoton;
 import igknighters.subsystems.vision.camera.CameraSimPhoton;
 import igknighters.util.plumbing.Channel.Sender;
 import igknighters.util.plumbing.TunableValues;
@@ -129,7 +127,8 @@ public class Vision implements SharedSubsystem {
       if (Robot.isSimulation()) {
         return new CameraSimPhoton(config, simCtx, this::rotationAtTimestamp);
       } else {
-        return new CameraRealPhoton(config, this::rotationAtTimestamp);
+        // return new CameraRealPhoton(config, this::rotationAtTimestamp);
+        return new CameraDisabled(config.cameraName(), config.cameraTransform());
       }
     } catch (Exception e) {
       // if the camera fails to initialize, return a disabled camera to not crash the code
@@ -140,7 +139,7 @@ public class Vision implements SharedSubsystem {
 
   public Vision(final Localizer localizer, final SimCtx simCtx) {
     this.localizer = localizer;
-    final var configs = kVision.CameraConfigs.forRobot(RobotConfig.getRobotID());
+    final var configs = kVision.CONFIGS;
     this.cameras = new Camera[configs.length];
     for (int i = 0; i < configs.length; i++) {
       this.cameras[i] = makeCamera(configs[i], simCtx);

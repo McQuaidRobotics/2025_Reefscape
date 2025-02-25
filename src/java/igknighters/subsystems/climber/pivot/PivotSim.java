@@ -16,6 +16,7 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.climber.ClimberConstants.PivotConstants;
 import sham.ShamMechanism;
 import sham.ShamMechanism.Friction;
 import sham.ShamMechanism.HardLimits;
@@ -43,7 +44,7 @@ public class PivotSim extends Pivot {
             shamMCX,
             KilogramSquareMeters.of(.3),
             GearRatio.reduction(PivotConstants.GEAR_RATIO),
-            Friction.of(DCMotor.getKrakenX60Foc(1), Volt.of(PivotConstants.KS)),
+            Friction.of(DCMotor.getKrakenX60Foc(1), Volt.of(1.0)),
             // MechanismDynamics.forArm(Pound.of(9.0), Inches.of(6)),
             MechanismDynamics.zero(),
             HardLimits.of(
@@ -55,13 +56,8 @@ public class PivotSim extends Pivot {
 
     controlLoop =
         ClosedLoop.forVoltageAngle(
-            PIDFeedback.forAngular(Volts, Rotations, PivotConstants.KP, PivotConstants.KD),
-            SimpleFeedforward.forVoltage(
-                Rotations,
-                PivotConstants.KS,
-                PivotConstants.KV,
-                PivotConstants.KA,
-                simCtx.robot().timing().dt()),
+            PIDFeedback.forAngular(Volts, PivotConstants.KP, PivotConstants.KD),
+            SimpleFeedforward.forVoltage(Rotations, 0.0, 0.0, 0.0, simCtx.robot().timing().dt()),
             UnitTrapezoidProfile.forAngle(
                 RotationsPerSecond.of(PivotConstants.MAX_VELOCITY),
                 RotationsPerSecondPerSecond.of(PivotConstants.MAX_ACCELERATION)));
@@ -92,6 +88,13 @@ public class PivotSim extends Pivot {
   @Override
   public void setNeutralMode(boolean coast) {
     shamMCX.setBrakeMode(!coast);
+  }
+
+  @Override
+  public void voltageOut(double voltage) {
+    super.targetRads = Double.NaN;
+    super.controlledLastCycle = true;
+    shamMCX.controlVoltage(Volts.of(voltage));
   }
 
   @Override

@@ -34,10 +34,10 @@ public class Intake implements ExclusiveSubsystem {
 
   public void control(ControlType controlType, double value) {
     switch (controlType) {
-      case VOLTAGE -> rollers.setVoltage(value);
-      case CURRENT -> rollers.setCurrent(value);
-      case TORQUE -> rollers.setTorque(value);
-      case VELOCITY -> rollers.setVelocity(value);
+      case VOLTAGE -> rollers.voltageOut(value);
+      case CURRENT -> rollers.currentOut(value);
+      case TORQUE -> rollers.torqueOut(value);
+      case VELOCITY -> rollers.velocityOut(value);
     }
   }
 

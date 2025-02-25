@@ -5,8 +5,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import igknighters.constants.ConstValues.kSwerve;
 import igknighters.constants.FieldConstants;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.swerve.odometryThread.SwerveDriveSample;
 import igknighters.subsystems.vision.Vision.VisionSample;
 import igknighters.util.plumbing.Channel;
@@ -45,7 +45,7 @@ public class Localizer implements Logged {
   private final Sender<Pose2d> poseResetsSender = poseResetsChannel.sender();
 
   private final SwerveDriveKinematics kinematics =
-      new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_OFFSETS);
+      new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_LOCATIONS);
 
   public Localizer() {
     poseEstimator = new TwistyPoseEst();

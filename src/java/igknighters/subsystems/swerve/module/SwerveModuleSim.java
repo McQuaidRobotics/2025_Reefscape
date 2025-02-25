@@ -12,9 +12,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import igknighters.constants.ConstValues;
-import igknighters.constants.ConstValues.kSwerve;
-import igknighters.constants.ConstValues.kSwerve.kDriveMotor;
-import igknighters.constants.ConstValues.kSwerve.kSteerMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kDriveMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kSteerMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.util.logging.BootupLogger;
 import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
@@ -23,12 +24,10 @@ public class SwerveModuleSim extends SwerveModule {
   private static final DCMotor MOTOR = DCMotor.getFalcon500(1);
   private final FlywheelSim driveSim =
       new FlywheelSim(
-          LinearSystemId.createFlywheelSystem(MOTOR, 0.025, kSwerve.DRIVE_GEAR_RATIO), MOTOR);
+          LinearSystemId.createFlywheelSystem(MOTOR, 0.025, kDriveMotor.GEAR_RATIO), MOTOR);
   private final FlywheelSim angleSim =
       new FlywheelSim(
-          LinearSystemId.createFlywheelSystem(MOTOR, 0.004, kSwerve.STEER_GEAR_RATIO), MOTOR);
-
-  private boolean gotDirectionsLastCycle = false;
+          LinearSystemId.createFlywheelSystem(MOTOR, 0.004, kSteerMotor.GEAR_RATIO), MOTOR);
 
   private final PIDController driveFeedback =
       new PIDController(kDriveMotor.kP, kDriveMotor.kI, kDriveMotor.kD, ConstValues.PERIODIC_TIME);
@@ -51,7 +50,7 @@ public class SwerveModuleSim extends SwerveModule {
   }
 
   private double driveRotationsToMeters(double rotations) {
-    return rotations * kSwerve.WHEEL_CIRCUMFERENCE;
+    return rotations * kWheel.CIRCUMFERENCE;
   }
 
   private double driveRadiansToMeters(double radians) {
@@ -59,7 +58,7 @@ public class SwerveModuleSim extends SwerveModule {
   }
 
   public void setDesiredState(AdvancedSwerveModuleState desiredState) {
-    gotDirectionsLastCycle = true;
+    super.controlledLastCycle = true;
     desiredState.optimize(getAngle());
     setAngle(desiredState);
     setSpeed(desiredState);
@@ -105,7 +104,7 @@ public class SwerveModuleSim extends SwerveModule {
 
     desiredState.speedMetersPerSecond *= Math.cos(angleFeedback.getError());
 
-    double velocityRadPerSec = desiredState.speedMetersPerSecond / (kSwerve.WHEEL_DIAMETER / 2);
+    double velocityRadPerSec = desiredState.speedMetersPerSecond / kWheel.RADIUS;
     var driveAppliedVolts =
         MathUtil.clamp(
             driveFeedback.calculate(driveSim.getAngularVelocityRadPerSec(), velocityRadPerSec),
@@ -118,12 +117,10 @@ public class SwerveModuleSim extends SwerveModule {
 
   @Override
   public void periodic() {
-    if (DriverStation.isDisabled() || !gotDirectionsLastCycle) {
-      this.driveSim.setInputVoltage(0.0);
-      this.angleSim.setInputVoltage(0.0);
+    if (DriverStation.isDisabled() || !super.controlledLastCycle) {
+      setVoltageOut(0.0, getAngle());
     }
-    log("gotDirectionsLastCycle", gotDirectionsLastCycle);
-    gotDirectionsLastCycle = false;
+    super.controlledLastCycle = false;
 
     driveSim.update(ConstValues.PERIODIC_TIME);
     angleSim.update(ConstValues.PERIODIC_TIME);
@@ -150,6 +147,7 @@ public class SwerveModuleSim extends SwerveModule {
 
   @Override
   public void setVoltageOut(double volts, Rotation2d angle) {
+    super.controlledLastCycle = true;
     super.driveVolts = volts;
     super.steerAbsoluteRads = angle.getRadians();
     super.targetSteerAbsoluteRads = angle.getRadians();
