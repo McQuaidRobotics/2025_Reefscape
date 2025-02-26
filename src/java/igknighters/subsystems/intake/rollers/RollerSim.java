@@ -70,16 +70,6 @@ public class RollerSim extends Rollers {
   }
 
   @Override
-  public boolean hasAlgae() {
-    return indexer.peekGamePiece().map(gp -> gp.isOfVariant(Reefscape.ALGAE)).orElse(false);
-  }
-
-  @Override
-  public boolean hasCoral() {
-    return indexer.peekGamePiece().map(gp -> gp.isOfVariant(Reefscape.CORAL)).orElse(false);
-  }
-
-  @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !super.controlledLastCycle) {
       voltageOut(0.0);
@@ -88,9 +78,12 @@ public class RollerSim extends Rollers {
     super.volts = intakeMotor.voltage().in(Volts);
     super.amps = intakeMotor.statorCurrent().in(Amps);
     super.radiansPerSecond = intakeMotor.velocity().in(RadiansPerSecond);
-    super.hasAlgae = hasAlgae();
-    super.hasCoral = hasCoral();
-    if (volts < 0.0 && !hasCoral() && !hasAlgae()) {
+    super.laserTripped =
+        indexer
+            .peekGamePiece()
+            .map(gp -> gp.isOfVariant(Reefscape.CORAL) || gp.isOfVariant(Reefscape.ALGAE))
+            .orElse(false);
+    if (volts < 0.0 && !isLaserTripped()) {
       intake.startIntake();
     } else {
       intake.stopIntake();

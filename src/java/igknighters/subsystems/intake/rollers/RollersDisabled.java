@@ -9,16 +9,6 @@ public class RollersDisabled extends Rollers {
   }
 
   @Override
-  public boolean hasAlgae() {
-    return false;
-  }
-
-  @Override
-  public boolean hasCoral() {
-    return false;
-  }
-
-  @Override
   public void voltageOut(double voltage) {}
 
   @Override

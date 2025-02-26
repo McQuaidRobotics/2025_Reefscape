@@ -12,7 +12,6 @@ import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
-import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
@@ -39,13 +38,14 @@ public class DriverController {
             SuperStructureCommands.holdAt(
                     superStructure, SuperStructureState.IntakeHp, holdingAlgae)
                 .alongWith(
+                    IntakeCommands.intakeCoral(subsystems.intake),
                     new TeleopSwerveHeadingCmd(
                         swerve,
                         this,
                         localizer,
                         () -> {
                           final double angle = 54.0;
-                          if (localizer.pose().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
+                          if (false) {
                             return AllianceFlipper.isBlue()
                                 ? Rotation2d.fromDegrees(180 - angle)
                                 : Rotation2d.fromDegrees(angle);
@@ -55,7 +55,8 @@ public class DriverController {
                                 : Rotation2d.fromDegrees(-angle);
                           }
                         },
-                        kSwerve.CONSTRAINTS)))
+                        kSwerve.CONSTRAINTS))
+                .until(subsystems.intake.isHolding(Holding.CORAL)))
         .onFalse(
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
@@ -88,7 +89,7 @@ public class DriverController {
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
     // BUMPER
-    this.RB.onTrue(IntakeCommands.runVoltage(intake, 12.0).withTimeout(0.4));
+    this.RB.onTrue(IntakeCommands.expel(intake).withTimeout(0.4));
 
     this.LB
         .whileTrue(operatorTarget.gotoSuperStructureTargetCmd())
@@ -105,17 +106,18 @@ public class DriverController {
 
     this.RS.onTrue(Commands.none());
 
-    // TRIGGERS
-    this.LT
-        .and(operatorTarget.hasTarget())
-        .whileTrue(operatorTarget.gotoTargetCmd(localizer))
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
+    // // TRIGGERS
+    // this.LT
+    //     .and(operatorTarget.hasTarget())
+    //     .whileTrue(operatorTarget.gotoTargetCmd(localizer))
+    //     .onFalse(
+    //         SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow,
+    // holdingAlgae));
 
     this.RT
         .and(operatorTarget.superStructureAtSetpoint())
         .and(new Trigger(intake.isHolding(Holding.NONE)).negate())
-        .onTrue(IntakeCommands.runVoltage(intake, 12.0).until(intake.isHolding(Holding.NONE)));
+        .onTrue(IntakeCommands.expel(intake).until(intake.isHolding(Holding.NONE)));
 
     // DPAD
     this.DPR.whileTrue(

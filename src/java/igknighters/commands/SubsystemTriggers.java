@@ -18,15 +18,23 @@ public class SubsystemTriggers {
     final var superStructure = subsystems.superStructure;
     final var intake = subsystems.intake;
 
+    final Trigger atAlgaeState =
+        SuperStructureCommands.isAt(superStructure, SuperStructureState.AlgaeL3)
+            .or(SuperStructureCommands.isAt(superStructure, SuperStructureState.AlgaeL2));
+
     subsystemIdle(intake)
         .and(intake.isHolding(Holding.ALGAE))
-        .onTrue(IntakeCommands.runCurrent(intake, 65.0));
+        .onTrue(
+            IntakeCommands.runCurrent(intake, -80.0)
+                .until(intake.isHolding(Holding.NONE))
+                .withName("HoldAlgae"));
     subsystemIdle(intake)
         .and(intake.isHolding(Holding.CORAL))
-        .onTrue(IntakeCommands.runCurrent(intake, 20.0));
-    subsystemIdle(intake)
-        .and(intake.isHolding(Holding.NONE))
-        .onTrue(IntakeCommands.runCurrent(intake, 0.0));
+        .onTrue(
+            IntakeCommands.runCurrent(intake, -20.0)
+                .until(intake.isHolding(Holding.NONE))
+                .withName("HoldCoral"));
+
     new Trigger(
             () -> {
               final Rotation3d robotRotation = swerve.getRotation();
@@ -37,5 +45,9 @@ public class SubsystemTriggers {
         .onTrue(
             SuperStructureCommands.holdAt(
                 superStructure, SuperStructureState.AntiTilt, intake.isHolding(Holding.ALGAE)));
+
+    atAlgaeState
+        .and(subsystemIdle(intake))
+        .onTrue(IntakeCommands.intakeAlgae(intake).until(atAlgaeState.negate()));
   }
 }

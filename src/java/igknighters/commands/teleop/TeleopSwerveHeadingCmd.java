@@ -32,7 +32,7 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
     addRequirements(swerve);
     this.localizer = localizer;
     this.headingSupplier = heading;
-    this.rotController = new RotationalController(3.0, 0.03, false);
+    this.rotController = new RotationalController(5.0, 0.02, false);
     this.constraints = constraints;
   }
 

@@ -9,8 +9,7 @@ public abstract class Rollers extends Component {
 
   @Log protected double amps;
   @Log protected double volts;
-  @Log protected boolean hasAlgae;
-  @Log protected boolean hasCoral;
+  @Log protected boolean laserTripped;
   @Log protected double radiansPerSecond;
   @Log protected boolean controlledLastCycle;
 
@@ -51,23 +50,11 @@ public abstract class Rollers extends Component {
     voltageOut(velocity / kv);
   }
 
-  /**
-   * Returns true if the rollers have coral.
-   *
-   * <p>This returning true in a given cycle should be mutually exclusive with {@link #hasAlgae()}
-   * returning true in the same cycle.
-   *
-   * @return true if the rollers have coral
-   */
-  public abstract boolean hasCoral();
+  public boolean isLaserTripped() {
+    return false;
+  }
 
-  /**
-   * Returns true if the rollers have algae.
-   *
-   * <p>This returning true in a given cycle should be mutually exclusive with {@link #hasCoral()}
-   * returning true in the same cycle.
-   *
-   * @return true if the rollers have algae
-   */
-  public abstract boolean hasAlgae();
+  public double currentDraw() {
+    return amps;
+  }
 }
