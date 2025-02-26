@@ -5,9 +5,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import igknighters.Localizer;
 import igknighters.constants.ConstValues;
 import igknighters.constants.ConstValues.Conv;
-import igknighters.constants.ConstValues.kSwerve;
 import igknighters.controllers.DriverController;
 import igknighters.subsystems.swerve.Swerve;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import java.util.function.Supplier;
 import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.Types.ChassisConstraints;
@@ -32,7 +32,7 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
     addRequirements(swerve);
     this.localizer = localizer;
     this.headingSupplier = heading;
-    this.rotController = new RotationalController(3.0, 0.03, false);
+    this.rotController = new RotationalController(5.0, 0.02, false);
     this.constraints = constraints;
   }
 
@@ -48,8 +48,9 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
 
   @Override
   public void execute() {
+    super.execute();
 
-    Translation2d vt = orientForUser(getTranslation()).times(kSwerve.MAX_DRIVE_VELOCITY);
+    Translation2d vt = translationStick().times(kSwerve.MAX_DRIVE_VELOCITY);
 
     Rotation2d heading = this.headingSupplier.get();
     if (!lastHeading.equals(heading)) {

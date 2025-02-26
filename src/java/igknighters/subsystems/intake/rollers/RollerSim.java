@@ -9,8 +9,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.intake.IntakeConstants.RollerConstants;
 import sham.ShamIndexer;
 import sham.ShamIntake;
 import sham.ShamMechanism;
@@ -57,37 +59,36 @@ public class RollerSim extends Rollers {
     indexer = simCtx.robot().getIndexer();
   }
 
-  public void setVoltage(double voltage) {
+  public void voltageOut(double voltage) {
+    super.controlledLastCycle = true;
     intakeMotor.controlVoltage(Volts.of(voltage));
   }
 
-  public void setCurrent(double current) {
+  public void currentOut(double current) {
+    super.controlledLastCycle = true;
     intakeMotor.controlCurrent(Amps.of(current));
   }
 
   @Override
-  public boolean hasAlgae() {
-    return indexer.peekGamePiece().map(gp -> gp.isOfVariant(Reefscape.ALGAE)).orElse(false);
-  }
-
-  @Override
-  public boolean hasCoral() {
-    return indexer.peekGamePiece().map(gp -> gp.isOfVariant(Reefscape.CORAL)).orElse(false);
-  }
-
-  @Override
   public void periodic() {
+    if (DriverStation.isDisabled() || !super.controlledLastCycle) {
+      voltageOut(0.0);
+    }
+    super.controlledLastCycle = false;
     super.volts = intakeMotor.voltage().in(Volts);
-    super.current = intakeMotor.statorCurrent().in(Amps);
+    super.amps = intakeMotor.statorCurrent().in(Amps);
     super.radiansPerSecond = intakeMotor.velocity().in(RadiansPerSecond);
-    super.hasAlgae = hasAlgae();
-    super.hasCoral = hasCoral();
-    if (volts < 0.0 && !hasCoral() && !hasAlgae()) {
+    super.laserTripped =
+        indexer
+            .peekGamePiece()
+            .map(gp -> gp.isOfVariant(Reefscape.CORAL) || gp.isOfVariant(Reefscape.ALGAE))
+            .orElse(false);
+    if (volts < 0.0 && !isLaserTripped()) {
       intake.startIntake();
     } else {
       intake.stopIntake();
     }
-    if (volts > 0.0) {
+    if (volts > -0.01) {
       indexer.removeGamePiece();
     }
   }

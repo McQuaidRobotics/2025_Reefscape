@@ -13,16 +13,17 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import igknighters.commands.OperatorTarget;
+import igknighters.commands.SubsystemTriggers;
 import igknighters.commands.autos.AutoController;
 import igknighters.commands.autos.AutoRoutines;
 import igknighters.commands.teleop.TeleopSwerveTraditionalCmd;
-import igknighters.commands.tests.Characterizers;
 import igknighters.commands.tests.TestManager;
 import igknighters.constants.ConstValues;
 import igknighters.constants.FieldConstants;
 import igknighters.controllers.DriverController;
 import igknighters.controllers.OperatorController;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.climber.Climber;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
 import igknighters.subsystems.superStructure.SuperStructure;
@@ -79,15 +80,17 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             new Vision(localizer, simCtx),
             new Led(),
             new SuperStructure(simCtx),
-            new Intake(simCtx));
+            new Intake(simCtx),
+            new Climber(simCtx));
 
     localizer.reset(FieldConstants.POSE2D_CENTER);
 
-    final var operatorTarget = new OperatorTarget(this);
+    final var operatorTarget = new OperatorTarget(subsystems, this);
     driverController = new DriverController(0);
     driverController.bind(localizer, subsystems, operatorTarget);
     operatorController = new OperatorController(1);
     operatorController.bind(localizer, subsystems, operatorTarget);
+    SubsystemTriggers.setupTriggers(subsystems);
 
     subsystems.swerve.setDefaultCommand(
         new TeleopSwerveTraditionalCmd(subsystems.swerve, driverController));
@@ -116,8 +119,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     setupAutoChooser();
 
     testManager = new TestManager();
-    testManager.addTestRoutine(
-        "Characterize Swerve", Characterizers.characterizeSwerve(subsystems.swerve));
 
     System.gc();
   }

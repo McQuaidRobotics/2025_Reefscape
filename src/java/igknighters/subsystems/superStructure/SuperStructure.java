@@ -1,55 +1,106 @@
 package igknighters.subsystems.superStructure;
 
+import edu.wpi.first.math.MathUtil;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.superStructure.Elevator.Elevator;
-import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
 import igknighters.subsystems.superStructure.Elevator.ElevatorReal;
 import igknighters.subsystems.superStructure.Elevator.ElevatorSim;
+import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
+import igknighters.subsystems.superStructure.SuperStructureConstants.kWrist;
 import igknighters.subsystems.superStructure.Wrist.Wrist;
-import igknighters.subsystems.superStructure.Wrist.WristConstants;
 import igknighters.subsystems.superStructure.Wrist.WristReal;
 import igknighters.subsystems.superStructure.Wrist.WristSim;
+import monologue.Annotations.Log;
 
 public class SuperStructure implements ExclusiveSubsystem {
   private final SuperStructureVisualizer visualizer;
+
+  @Log(key = "Wrist")
   private final Wrist wrist;
+
+  @Log(key = "Elevator")
   private final Elevator elevator;
+
+  /**
+   * Checks for potential collisions
+   *
+   * @param elevHeight The height of the elevator in meters
+   * @param theta
+   * @return position the wrist should be at in rads
+   */
+  private static double avoid(double elevHeight, double theta) {
+    double wristY = elevHeight - kWrist.LENGTH * Math.sin(theta);
+    if (wristY < SuperStructureConstants.COLLISION_HEIGHT) {
+      return Math.asin((elevHeight - SuperStructureConstants.COLLISION_HEIGHT) / kWrist.LENGTH);
+    }
+    return theta;
+  }
 
   public SuperStructure(SimCtx simCtx) {
     visualizer = new SuperStructureVisualizer();
     if (Robot.isReal()) {
       wrist = new WristReal();
+      // elevator = new ElevatorDisabled();
       elevator = new ElevatorReal();
+      // wrist = new WristDisabled();
     } else {
       wrist = new WristSim(simCtx);
       elevator = new ElevatorSim(simCtx);
     }
   }
 
-  public void goTo(double elevatorMeters, double wristRads) {
+  /**
+   * Moves the superstructure to the desired position, needs to be called every cycle otherwise the
+   * superstructure will not move
+   *
+   * @param elevatorMeters The height of the elevator in meters
+   * @param wristRads The angle of the wrist in rads
+   */
+  public void goTo(double elevatorMeters, double wristRads, boolean holdingAlgae) {
+    wrist.log("initialTargetRads", wristRads);
+    elevator.log("initialTargetMeters", elevatorMeters);
+    if (!isHomed()) {
+      return;
+    }
+    elevatorMeters = MathUtil.clamp(elevatorMeters, kElevator.MIN_HEIGHT, kElevator.MAX_HEIGHT);
+    if (holdingAlgae) {
+      wristRads = MathUtil.clamp(wristRads, kWrist.MAX_ANGLE_ALGAE, kWrist.MIN_ANGLE);
+    } else {
+      wristRads = MathUtil.clamp(wristRads, kWrist.MAX_ANGLE, kWrist.MIN_ANGLE);
+    }
+    wristRads = avoid(elevatorMeters, wristRads);
     elevator.gotoPosition(elevatorMeters);
     wrist.goToPosition(wristRads);
     visualizer.updateSetpoint(elevatorMeters, wristRads);
   }
 
-  public void goTo(SuperStructureState state) {
-    goTo(state.elevatorMeters, state.wristRads);
-  }
-
+  /**
+   * Checks if the superstructure is at the desired position
+   *
+   * @param height The height of the elevator in meters
+   * @param wristAngle The angle of the wrist in rads
+   * @param elevatorTolerance The tolerance of the elevator in meters
+   * @param wristTolerance The tolerance of the wrist in rads
+   * @return True if the superstructure is at the desired position, false otherwise
+   */
   public boolean isAt(
       double height, double wristAngle, double elevatorTolerance, double wristTolerance) {
     return (elevator.isAtPosition(height, elevatorTolerance)
         && wrist.isAtPosition(wristAngle, wristTolerance));
   }
 
-  public boolean isAt(SuperStructureState state) {
-    return isAt(
-        state.elevatorMeters,
-        state.wristRads,
-        ElevatorConstants.DEFAULT_TOLERANCE * state.toleranceScalar,
-        WristConstants.DEFAULT_TOLERANCE * state.toleranceScalar);
+  public void home(double wristAngle, double wristTolerance) {
+    wrist.goToPosition(wristAngle);
+    if (wrist.isAtPosition(wristAngle, wristTolerance)) {
+      elevator.home();
+    }
+    visualizer.updateSetpoint(kElevator.MIN_HEIGHT, wristAngle);
+  }
+
+  public boolean isHomed() {
+    return elevator.isHomed();
   }
 
   @Override

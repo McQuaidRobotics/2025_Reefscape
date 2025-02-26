@@ -1,5 +1,7 @@
 package igknighters.subsystems.intake;
 
+import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.util.struct.StructSerializable;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
@@ -7,12 +9,18 @@ import igknighters.subsystems.intake.rollers.RollerSim;
 import igknighters.subsystems.intake.rollers.Rollers;
 import igknighters.subsystems.intake.rollers.RollersReal;
 import java.util.function.BooleanSupplier;
+import monologue.ProceduralStructGenerator;
 
 public class Intake implements ExclusiveSubsystem {
-  public enum Holding {
+  private Holding currentlyHolding = Holding.NONE;
+  private Holding tryingToHold = Holding.NONE;
+
+  public enum Holding implements StructSerializable {
     CORAL,
     ALGAE,
-    NONE
+    NONE;
+
+    public static final Struct<Holding> struct = ProceduralStructGenerator.genEnum(Holding.class);
   }
 
   public enum ControlType {
@@ -33,29 +41,35 @@ public class Intake implements ExclusiveSubsystem {
   }
 
   public void control(ControlType controlType, double value) {
+    if (value > -0.01) {
+      currentlyHolding = Holding.NONE;
+    }
     switch (controlType) {
-      case VOLTAGE -> rollers.setVoltage(value);
-      case CURRENT -> rollers.setCurrent(value);
-      case TORQUE -> rollers.setTorque(value);
-      case VELOCITY -> rollers.setVelocity(value);
+      case VOLTAGE -> rollers.voltageOut(value);
+      case CURRENT -> rollers.currentOut(value);
+      case TORQUE -> rollers.torqueOut(value);
+      case VELOCITY -> rollers.velocityOut(value);
     }
   }
 
   public Holding getHolding() {
-    if (rollers.hasCoral()) {
-      return Holding.CORAL;
-    } else if (rollers.hasAlgae()) {
-      return Holding.ALGAE;
-    } else {
-      return Holding.NONE;
-    }
+    return currentlyHolding;
   }
 
   public BooleanSupplier isHolding(Holding holding) {
     return () -> getHolding() == holding;
   }
 
+  public void setTryingToHold(Holding holding) {
+    tryingToHold = holding;
+  }
+
   public void periodic() {
     rollers.periodic();
+
+    if (tryingToHold != Holding.NONE && rollers.isLaserTripped()) {
+      currentlyHolding = tryingToHold;
+      tryingToHold = Holding.NONE;
+    }
   }
 }

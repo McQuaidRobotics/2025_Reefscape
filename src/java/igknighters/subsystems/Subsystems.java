@@ -2,6 +2,7 @@ package igknighters.subsystems;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import igknighters.subsystems.climber.Climber;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
 import igknighters.subsystems.superStructure.SuperStructure;
@@ -26,15 +27,24 @@ public class Subsystems implements Logged {
   @Log(key = "SuperStructure")
   public final SuperStructure superStructure;
 
+  @Log(key = "Climber")
+  public final Climber climber;
+
   public Subsystems(
-      Swerve swerve, Vision vision, Led led, SuperStructure superStructure, Intake intake) {
+      Swerve swerve,
+      Vision vision,
+      Led led,
+      SuperStructure superStructure,
+      Intake intake,
+      Climber climber) {
     this.swerve = swerve;
     this.led = led;
     this.vision = vision;
     this.superStructure = superStructure;
     this.intake = intake;
+    this.climber = climber;
 
-    ExclusiveSubsystem[] lockedResources = {swerve, superStructure, intake};
+    ExclusiveSubsystem[] lockedResources = {swerve, superStructure, intake, climber};
     SharedSubsystem[] locklessResources = {led, vision};
 
     CommandScheduler.getInstance().registerSubsystem(lockedResources);

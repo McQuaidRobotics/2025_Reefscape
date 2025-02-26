@@ -8,28 +8,28 @@ import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.intake.IntakeConstants;
+import igknighters.subsystems.intake.IntakeConstants.RollerConstants;
 import igknighters.util.can.CANSignalManager;
 
 public class RollersReal extends Rollers {
   private final TalonFX intakeMotor =
-      new TalonFX(RollerConstants.INTAKE_MOTOR_ID, RollerConstants.CANBUS);
+      new TalonFX(RollerConstants.INTAKE_MOTOR_ID, IntakeConstants.CANBUS);
   private final CANrange distanceSensor =
-      new CANrange(RollerConstants.DISTANCE_SENSOR_ID, RollerConstants.CANBUS);
+      new CANrange(RollerConstants.DISTANCE_SENSOR_ID, IntakeConstants.CANBUS);
 
   private final VoltageOut voltageReq =
       new VoltageOut(0.0).withUpdateFreqHz(0.0).withEnableFOC(true);
   private final TorqueCurrentFOC currentReq = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
-  private final Debouncer algaeDebouncer = new Debouncer(0.1, DebounceType.kRising);
-
-  private final StatusSignal<ReverseLimitValue> coralSensor;
+  private final StatusSignal<ReverseLimitValue> laserTrippedSignal;
   private final BaseStatusSignal current, volts, velocity, temperature;
 
   private TalonFXConfiguration intakeConfiguration() {
@@ -40,6 +40,8 @@ public class RollersReal extends Rollers {
     cfg.HardwareLimitSwitch.ReverseLimitEnable = false;
     cfg.HardwareLimitSwitch.ReverseLimitSource = ReverseLimitSourceValue.RemoteCANrange;
     cfg.HardwareLimitSwitch.ReverseLimitRemoteSensorID = distanceSensor.getDeviceID();
+
+    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     return cfg;
   }
@@ -59,7 +61,7 @@ public class RollersReal extends Rollers {
 
   public RollersReal() {
     super(DCMotor.getKrakenX60(1).withReduction(RollerConstants.GEAR_RATIO));
-    coralSensor = intakeMotor.getReverseLimit();
+    laserTrippedSignal = intakeMotor.getReverseLimit();
     current = intakeMotor.getTorqueCurrent();
     volts = intakeMotor.getMotorVoltage();
     velocity = intakeMotor.getVelocity();
@@ -68,47 +70,32 @@ public class RollersReal extends Rollers {
     distanceSensor.getConfigurator().apply(intakeSensorConfiguration());
 
     CANSignalManager.registerSignals(
-        RollerConstants.CANBUS, coralSensor, current, volts, velocity, temperature);
+        IntakeConstants.CANBUS, laserTrippedSignal, current, volts, velocity, temperature);
 
     CANSignalManager.registerDevices(intakeMotor, distanceSensor);
   }
 
   @Override
-  public void setVoltage(double voltage) {
-    if (voltage >= 0.0) {
-      algaeDebouncer.calculate(false);
-    }
+  public void voltageOut(double voltage) {
+    super.controlledLastCycle = true;
     intakeMotor.setControl(voltageReq.withOutput(voltage));
   }
 
   @Override
-  public void setCurrent(double current) {
-    if (current >= 0.0) {
-      algaeDebouncer.calculate(false);
-    }
+  public void currentOut(double current) {
+    super.controlledLastCycle = true;
     intakeMotor.setControl(currentReq.withOutput(current));
   }
 
   @Override
-  public boolean hasCoral() {
-    return coralSensor.getValue() == ReverseLimitValue.ClosedToGround;
-  }
-
-  private boolean probablyHasAlgae() {
-    return super.current > RollerConstants.ALGAE_TRIP_VALUE && !hasCoral();
-  }
-
-  @Override
-  public boolean hasAlgae() {
-    return algaeDebouncer.calculate(probablyHasAlgae());
-  }
-
-  @Override
   public void periodic() {
-    super.current = current.getValueAsDouble();
+    if (DriverStation.isDisabled() || !super.controlledLastCycle) {
+      voltageOut(0.0);
+    }
+    super.controlledLastCycle = false;
+    super.amps = current.getValueAsDouble();
     super.volts = volts.getValueAsDouble();
-    super.hasAlgae = hasAlgae();
-    super.hasCoral = hasCoral();
+    super.laserTripped = laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround;
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
     log("rpm", velocity.getValueAsDouble() * 60.0);
     log("temp", temperature.getValueAsDouble());

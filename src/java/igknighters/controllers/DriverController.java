@@ -7,17 +7,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
-import igknighters.commands.Experiments;
 import igknighters.commands.IntakeCommands;
 import igknighters.commands.OperatorTarget;
-import igknighters.commands.SuperStructureManager;
+import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
-import igknighters.constants.ConstValues.kSwerve;
-import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
 import java.util.function.DoubleSupplier;
 import wpilibExt.AllianceFlipper;
@@ -32,21 +30,22 @@ public class DriverController {
     final var superStructure = subsystems.superStructure;
     final var vision = subsystems.vision;
     final var led = subsystems.led;
-
-    final SuperStructureManager stateManager = new SuperStructureManager(superStructure);
+    final var climber = subsystems.climber;
+    final var holdingAlgae = intake.isHolding(Holding.ALGAE);
 
     /// FACE BUTTONS
     this.A.whileTrue(
-            stateManager
-                .holdAt(SuperStructureState.IntakeHp)
+            SuperStructureCommands.holdAt(
+                    superStructure, SuperStructureState.IntakeHp, holdingAlgae)
                 .alongWith(
+                    IntakeCommands.intakeCoral(subsystems.intake),
                     new TeleopSwerveHeadingCmd(
                         swerve,
                         this,
                         localizer,
                         () -> {
                           final double angle = 54.0;
-                          if (localizer.pose().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
+                          if (false) {
                             return AllianceFlipper.isBlue()
                                 ? Rotation2d.fromDegrees(180 - angle)
                                 : Rotation2d.fromDegrees(angle);
@@ -56,12 +55,14 @@ public class DriverController {
                                 : Rotation2d.fromDegrees(-angle);
                           }
                         },
-                        kSwerve.CONSTRAINTS)))
-        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
+                        kSwerve.CONSTRAINTS))
+                .until(subsystems.intake.isHolding(Holding.CORAL)))
+        .onFalse(
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
     this.B.whileTrue(
-            stateManager
-                .holdAt(SuperStructureState.Processor)
+            SuperStructureCommands.holdAt(
+                    superStructure, SuperStructureState.Processor, holdingAlgae)
                 .alongWith(
                     new TeleopSwerveHeadingCmd(
                         swerve,
@@ -69,13 +70,14 @@ public class DriverController {
                         localizer,
                         () -> AllianceFlipper.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
                         kSwerve.CONSTRAINTS)))
-        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
+        .onFalse(
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
-    this.X.onTrue(stateManager.holdAt(SuperStructureState.Stow));
+    this.X.onTrue(
+        SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
     this.Y.whileTrue(
-            stateManager
-                .holdAt(SuperStructureState.Net)
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net, holdingAlgae)
                 .alongWith(
                     new TeleopSwerveHeadingCmd(
                         swerve,
@@ -83,14 +85,16 @@ public class DriverController {
                         localizer,
                         () -> AllianceFlipper.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
                         kSwerve.CONSTRAINTS)))
-        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
+        .onFalse(
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
     // BUMPER
-    this.RB.onTrue(IntakeCommands.runVoltage(intake, 12.0).withTimeout(0.4));
+    this.RB.onTrue(IntakeCommands.expel(intake).withTimeout(0.4));
 
     this.LB
-        .whileTrue(operatorTarget.gotoSuperStructureTargetCmd(stateManager))
-        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
+        .whileTrue(operatorTarget.gotoSuperStructureTargetCmd())
+        .onFalse(
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
     // CENTER BUTTONS
     this.Back.onTrue(Commands.none());
@@ -102,25 +106,30 @@ public class DriverController {
 
     this.RS.onTrue(Commands.none());
 
-    // TRIGGERS
-    this.LT
-        .and(operatorTarget.hasTarget())
-        .whileTrue(operatorTarget.gotoTargetCmd(subsystems.swerve, stateManager, localizer))
-        .onFalse(stateManager.holdAt(SuperStructureState.Stow));
+    // // TRIGGERS
+    // this.LT
+    //     .and(operatorTarget.hasTarget())
+    //     .whileTrue(operatorTarget.gotoTargetCmd(localizer))
+    //     .onFalse(
+    //         SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow,
+    // holdingAlgae));
 
     this.RT
-        .and(operatorTarget.superStructureAtSetpoint(superStructure))
+        .and(operatorTarget.superStructureAtSetpoint())
         .and(new Trigger(intake.isHolding(Holding.NONE)).negate())
-        .onTrue(IntakeCommands.runVoltage(intake, 12.0).until(intake.isHolding(Holding.NONE)));
+        .onTrue(IntakeCommands.expel(intake).until(intake.isHolding(Holding.NONE)));
 
     // DPAD
-    this.DPR.onTrue(Commands.none());
+    this.DPR.whileTrue(
+        climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    this.DPD.onTrue(Experiments.testScoringTime(stateManager));
+    this.DPD.whileTrue(
+        climber.run(() -> climber.voltageOut(-6.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    this.DPL.onTrue(Commands.none());
+    this.DPL.onTrue(SuperStructureCommands.home(superStructure));
 
-    this.DPU.onTrue(Commands.none());
+    this.DPU.whileTrue(
+        climber.run(() -> climber.voltageOut(6.0)).finallyDo(() -> climber.voltageOut(0.0)));
   }
 
   // Define the buttons on the controller
@@ -258,7 +267,7 @@ public class DriverController {
    * @return A supplier for the value of the left stick x axis
    */
   public DoubleSupplier leftStickX() {
-    return () -> -controller.getLeftX();
+    return controller::getLeftX;
   }
 
   /**
@@ -277,7 +286,7 @@ public class DriverController {
    * @return A supplier for the value of the left stick y axis
    */
   public DoubleSupplier leftStickY() {
-    return controller::getLeftY;
+    return () -> -controller.getLeftY();
   }
 
   /**

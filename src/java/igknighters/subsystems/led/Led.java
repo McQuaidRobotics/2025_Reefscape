@@ -5,7 +5,6 @@ import igknighters.Robot;
 import igknighters.constants.ConstValues.kLed;
 import igknighters.subsystems.Subsystems.SharedSubsystem;
 import igknighters.subsystems.led.LedAnimations.PartialAnimation;
-import igknighters.subsystems.led.driver.CandleDriver;
 import igknighters.subsystems.led.driver.Driver;
 import igknighters.subsystems.led.driver.SimDriver;
 import wpilibExt.Tracer;
@@ -18,7 +17,8 @@ public class Led implements SharedSubsystem {
 
   public Led() {
     if (Robot.isReal()) {
-      driver = new CandleDriver();
+      // driver = new CandleDriver();
+      driver = new SimDriver();
     } else {
       driver = new SimDriver();
     }
