@@ -51,7 +51,7 @@ public abstract class Rollers extends Component {
   }
 
   public boolean isLaserTripped() {
-    return false;
+    return laserTripped;
   }
 
   public double currentDraw() {

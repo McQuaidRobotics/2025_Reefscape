@@ -3,9 +3,9 @@ package igknighters.commands.autos;
 import static igknighters.commands.autos.Waypoints.*;
 
 import choreo.auto.AutoFactory;
-import choreo.auto.AutoRoutine;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
@@ -14,11 +14,8 @@ import igknighters.subsystems.Subsystems;
 
 public class AutoRoutines extends AutoCommands {
 
-  private final AutoFactory factory;
-
   public AutoRoutines(Subsystems subsystems, Localizer localizer, AutoFactory factory) {
-    super(subsystems, localizer);
-    this.factory = factory;
+    super(factory, subsystems, localizer);
 
     if (Robot.isSimulation()) {
       new Trigger(DriverStation::isAutonomousEnabled)
@@ -29,13 +26,9 @@ public class AutoRoutines extends AutoCommands {
     }
   }
 
-  public AutoRoutine test() {
-    final AutoRoutine routine = factory.newRoutine("rah");
-
-    var t = routine.trajectory(StartingOutside.to(FarLeft_L));
-
-    routine.active().onTrue(Commands.sequence(t.resetOdometry(), t.cmd()));
-
-    return routine;
+  public Command test() {
+    return newAuto("test")
+        .addTrajectories(StartingOutside, FarLeft_L, Intake, FarLeft_R, Intake, CloseLeft_R, Intake)
+        .build();
   }
 }

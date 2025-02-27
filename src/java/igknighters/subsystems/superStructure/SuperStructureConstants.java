@@ -58,7 +58,7 @@ public class SuperStructureConstants {
     public static final double kA = 0.01;
 
     public static final double MAX_VELOCITY = (12.0 - kS) / kV;
-    public static final double MAX_ACCELERATION = MAX_VELOCITY / 1.0;
+    public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.8;
 
     public static final double HOMING_VOLTAGE = -kS - 2.0;
 

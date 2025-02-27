@@ -75,6 +75,10 @@ public class AutoRoutine {
     this.allianceCtx = allianceHelper;
   }
 
+  public String name() {
+    return name;
+  }
+
   /**
    * Returns a {@link Trigger} that is true while this autonomous routine is being polled.
    *

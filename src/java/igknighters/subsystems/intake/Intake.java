@@ -9,11 +9,12 @@ import igknighters.subsystems.intake.rollers.RollerSim;
 import igknighters.subsystems.intake.rollers.Rollers;
 import igknighters.subsystems.intake.rollers.RollersReal;
 import java.util.function.BooleanSupplier;
+import monologue.Annotations.Log;
 import monologue.ProceduralStructGenerator;
 
 public class Intake implements ExclusiveSubsystem {
-  private Holding currentlyHolding = Holding.NONE;
-  private Holding tryingToHold = Holding.NONE;
+  @Log private Holding currentlyHolding = Holding.NONE;
+  @Log private Holding tryingToHold = Holding.NONE;
 
   public enum Holding implements StructSerializable {
     CORAL,
@@ -23,11 +24,14 @@ public class Intake implements ExclusiveSubsystem {
     public static final Struct<Holding> struct = ProceduralStructGenerator.genEnum(Holding.class);
   }
 
-  public enum ControlType {
+  public enum ControlType implements StructSerializable {
     VOLTAGE,
     CURRENT,
     TORQUE,
-    VELOCITY
+    VELOCITY;
+
+    public static final Struct<ControlType> struct =
+        ProceduralStructGenerator.genEnum(ControlType.class);
   }
 
   private final Rollers rollers;
@@ -44,6 +48,8 @@ public class Intake implements ExclusiveSubsystem {
     if (value > -0.01) {
       currentlyHolding = Holding.NONE;
     }
+    log("ControlType", controlType);
+    log("Value", value);
     switch (controlType) {
       case VOLTAGE -> rollers.voltageOut(value);
       case CURRENT -> rollers.currentOut(value);
@@ -70,6 +76,10 @@ public class Intake implements ExclusiveSubsystem {
     if (tryingToHold != Holding.NONE && rollers.isLaserTripped()) {
       currentlyHolding = tryingToHold;
       tryingToHold = Holding.NONE;
+    } else if (tryingToHold == Holding.NONE
+        && currentlyHolding == Holding.NONE
+        && rollers.isLaserTripped()) {
+      currentlyHolding = Holding.CORAL;
     }
   }
 }

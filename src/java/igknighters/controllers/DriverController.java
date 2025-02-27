@@ -68,7 +68,8 @@ public class DriverController {
                         swerve,
                         this,
                         localizer,
-                        () -> AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
+                        () ->
+                            AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
                         kSwerve.CONSTRAINTS)))
         .onFalse(
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));

@@ -1,13 +1,12 @@
 package wpilibExt;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A utility to standardize flipping of coordinate data based on the current alliance across
@@ -145,9 +144,10 @@ public final class AllianceSymmetry {
           Map.of(
               2022, new YearInfo(SymmetryStrategy.ROTATIONAL, 16.4592, 8.2296),
               2023, new YearInfo(SymmetryStrategy.VERTICAL, 16.54175, 8.0137),
-              2024, new YearInfo(SymmetryStrategy.VERTICAL, 16.54175, 8.211)));
+              2024, new YearInfo(SymmetryStrategy.VERTICAL, 16.54175, 8.211),
+              2025, new YearInfo(SymmetryStrategy.ROTATIONAL, 17.548, 8.052)));
 
-  private static YearInfo activeYear = flipperMap.get(2024);
+  private static YearInfo activeYear = flipperMap.get(2025);
 
   /**
    * Get the flipper that is currently active for flipping coordinates. It's reccomended not to
@@ -232,18 +232,19 @@ public final class AllianceSymmetry {
 
   /**
    * Flips a {@link Translation2d}.
-   * 
+   *
    * @param translation The translation to flip.
    * @param strategy The type of symmetry to use for flipping.
    * @return The flipped translation.
    */
   public static Translation2d flip(Translation2d translation, SymmetryStrategy strategy) {
-    return new Translation2d(flipX(translation.getX(), strategy), flipY(translation.getY(), strategy));
+    return new Translation2d(
+        flipX(translation.getX(), strategy), flipY(translation.getY(), strategy));
   }
 
   /**
    * Flips a {@link Translation2d}.
-   * 
+   *
    * @param translation The translation to flip.
    * @return The flipped translation.
    */
@@ -253,7 +254,7 @@ public final class AllianceSymmetry {
 
   /**
    * Flips a {@link Rotation2d}.
-   * 
+   *
    * @param rotation The rotation to flip.
    * @param strategy The type of symmetry to use for flipping.
    * @return The flipped rotation.
@@ -268,7 +269,7 @@ public final class AllianceSymmetry {
 
   /**
    * Flips a {@link Rotation2d}.
-   * 
+   *
    * @param rotation The rotation to flip.
    * @return The flipped rotation.
    */
@@ -278,7 +279,7 @@ public final class AllianceSymmetry {
 
   /**
    * Flips a {@link Pose2d}.
-   * 
+   *
    * @param pose The pose to flip.
    * @param strategy The type of symmetry to use for flipping.
    * @return The flipped pose.
@@ -289,7 +290,7 @@ public final class AllianceSymmetry {
 
   /**
    * Flips a {@link Pose2d}.
-   * 
+   *
    * @param pose The pose to flip.
    * @return The flipped pose.
    */

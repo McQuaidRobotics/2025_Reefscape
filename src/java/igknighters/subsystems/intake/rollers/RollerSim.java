@@ -27,11 +27,12 @@ import sham.seasonspecific.Reefscape;
 import sham.shamController.ShamMCX;
 import sham.utils.GearRatio;
 import wpilibExt.AllianceSymmetry;
-import wpilibExt.DCMotorExt;
 import wpilibExt.AllianceSymmetry.SymmetryStrategy;
+import wpilibExt.DCMotorExt;
 
 public class RollerSim extends Rollers {
   private static final Translation2d[] intakePositions;
+
   static {
     final Translation2d[] intakePositionsCore = {
       new Translation2d(0.56, 6.7),
@@ -43,29 +44,28 @@ public class RollerSim extends Rollers {
       AllianceSymmetry.flip(new Translation2d(0.56, 6.7), SymmetryStrategy.ROTATIONAL),
       AllianceSymmetry.flip(new Translation2d(1.65, 7.5), SymmetryStrategy.ROTATIONAL),
     };
-    intakePositions = new Translation2d[intakePositionsCore.length * 3];
+    intakePositions = new Translation2d[20];
     for (int i = 0; i < 4; i++) {
-      int positionsOffset = i * 6;
+      int positionsOffset = i * 5;
       Translation2d interpStart = intakePositionsCore[i * 2];
       Translation2d interpEnd = intakePositionsCore[i * 2 + 1];
       intakePositions[positionsOffset] = interpStart;
-      intakePositions[positionsOffset + 5] = interpEnd;
-      for (int j = 0; j < 3; j++) {
+      intakePositions[positionsOffset + 4] = interpEnd;
+      for (int j = 0; j < 4; j++) {
         double t = 0.2 + (0.2 * j);
         intakePositions[positionsOffset + j + 1] = interpStart.interpolate(interpEnd, t);
       }
     }
-    System.err.println(intakePositions);
   }
+
   private final Debouncer intakeDebouncer = new Debouncer(0.6, DebounceType.kRising);
+  private boolean lastAutoEnabled = false;
 
   private final ShamMechanism intakeMechanism;
   private final ShamMCX intakeMotor;
   private final SimCtx sim;
   private final ShamIntake intake;
   private final ShamIndexer indexer;
-
-
 
   public RollerSim(SimCtx simCtx) {
     super(DCMotor.getKrakenX60(1).withReduction(RollerConstants.GEAR_RATIO));
@@ -139,8 +139,14 @@ public class RollerSim extends Rollers {
         break;
       }
     }
-    if (intakeDebouncer.calculate(nearCoralStation && !isLaserTripped() && intake.isIntakeRunning())) {
+    if (intakeDebouncer.calculate(
+        nearCoralStation && !isLaserTripped() && intake.isIntakeRunning())) {
       indexer.insertGamePiece(new ShamGamePiece(Reefscape.CORAL, sim.arena()));
     }
+    if (!lastAutoEnabled && DriverStation.isAutonomousEnabled()) {
+      System.out.println("Auto enabled");
+      indexer.insertGamePiece(new ShamGamePiece(Reefscape.CORAL, sim.arena()));
+    }
+    lastAutoEnabled = DriverStation.isAutonomousEnabled();
   }
 }
