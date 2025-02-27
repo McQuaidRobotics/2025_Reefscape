@@ -39,7 +39,7 @@ public class CandleDriver extends Driver {
       newAnimations = true;
     } else {
       for (int i = 0; i < animations.length; i++) {
-        if (animations[i] != lastAnimations[i]) {
+        if (!animations[i].equals(lastAnimations[i])) {
           newAnimations = true;
           break;
         }
@@ -73,17 +73,6 @@ public class CandleDriver extends Driver {
       candle.animate(
           new RainbowAnimation(
               rainbow.brightness(), rainbow.speed(), leds, rainbow.backward(), offset),
-          index);
-    } else if (partialAnim.anim().pattern instanceof LedPattern.Fire fire) {
-      candle.animate(
-          new FireAnimation(
-              fire.brightness(),
-              fire.speed(),
-              leds,
-              fire.sparking(),
-              fire.cooling(),
-              fire.backward(),
-              offset),
           index);
     } else {
       DriverStation.reportError(
