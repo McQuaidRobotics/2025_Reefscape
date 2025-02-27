@@ -90,6 +90,7 @@ public class TwistyPoseEst {
   private final TreeMap<Double, TimestampedTwist2d> samples = new TreeMap<>();
   private Pose2d rootPose = Pose2d.kZero;
   private Object prevWheelPositions;
+  private Rotation2d prevGyroAngle;
 
   public void resetPose(Pose2d pose) {
     rootPose = pose;
@@ -109,11 +110,6 @@ public class TwistyPoseEst {
 
   private Pose2d poseAtTimestamp(double timestamp) {
     return poseAtTimestampPrimitive(timestamp).toPose2d();
-  }
-
-  private Rotation2d rotationAtTimestamp(double timestamp) {
-    var pp = poseAtTimestampPrimitive(timestamp);
-    return new Rotation2d(Math.atan2(pp.sin, pp.cos));
   }
 
   public void prune(double maxAge) {
@@ -167,8 +163,9 @@ public class TwistyPoseEst {
       double timestamp,
       double weight) {
     weight = MathUtil.clamp(weight, 0.0, 1.0);
-    if (prevWheelPositions == null) {
+    if (prevWheelPositions == null || prevGyroAngle == null) {
       prevWheelPositions = wheelPositions;
+      prevGyroAngle = gyroAngle;
       return;
     }
     Twist2d twist = kinematics.toTwist2d((T) prevWheelPositions, wheelPositions);
@@ -177,9 +174,10 @@ public class TwistyPoseEst {
         new TimestampedTwist2d(
             twist.dx * weight,
             twist.dy * weight,
-            gyroAngle.minus(rotationAtTimestamp(Timer.getFPGATimestamp())).getRadians(),
+            gyroAngle.minus(prevGyroAngle).getRadians(),
             timestamp));
     prevWheelPositions = wheelPositions;
+    prevGyroAngle = gyroAngle;
   }
 
   public Pose2d getEstimatedPose() {

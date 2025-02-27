@@ -44,11 +44,20 @@ public abstract class TeleopSwerveBaseCmd extends Command {
     }
   }
 
+  private double solveJoystickDiagonalDelta(double x, double y) {
+    double absX = Math.abs(x);
+    double absY = Math.abs(y);
+    double diffPercent = 1.0 - (Math.abs(absX - absY) / Math.max(absX, absY));
+    double out = Math.max(Math.hypot(x, y) - (0.12 * diffPercent), 0.0);
+    if (!Double.isFinite(out)) return 0.0;
+    return out;
+  }
+
   protected Translation2d translationStick() {
     double rawX = rawTranslationXSup.getAsDouble();
     double rawY = rawTranslationYSup.getAsDouble();
     double angle = Math.atan2(rawY, rawX);
-    double rawMagnitude = Math.hypot(rawX, rawY);
+    double rawMagnitude = solveJoystickDiagonalDelta(rawX, rawY);
     rawMagnitude = MathUtil.clamp(rawMagnitude, -1, 1);
     double magnitude = kSwerve.TELEOP_TRANSLATION_AXIS_CURVE.lerpKeepSign(rawMagnitude);
     if (Robot.isDemo()) magnitude *= translationMod.value();
