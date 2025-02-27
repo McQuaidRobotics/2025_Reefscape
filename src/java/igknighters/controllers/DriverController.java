@@ -18,7 +18,7 @@ import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
 import java.util.function.DoubleSupplier;
-import wpilibExt.AllianceFlipper;
+import wpilibExt.AllianceSymmetry;
 
 public class DriverController {
   // Define the bindings for the controller
@@ -46,11 +46,11 @@ public class DriverController {
                         () -> {
                           final double angle = 54.0;
                           if (false) {
-                            return AllianceFlipper.isBlue()
+                            return AllianceSymmetry.isBlue()
                                 ? Rotation2d.fromDegrees(180 - angle)
                                 : Rotation2d.fromDegrees(angle);
                           } else {
-                            return AllianceFlipper.isBlue()
+                            return AllianceSymmetry.isBlue()
                                 ? Rotation2d.fromDegrees(-(180 - angle))
                                 : Rotation2d.fromDegrees(-angle);
                           }
@@ -68,7 +68,7 @@ public class DriverController {
                         swerve,
                         this,
                         localizer,
-                        () -> AllianceFlipper.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
+                        () -> AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
                         kSwerve.CONSTRAINTS)))
         .onFalse(
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
@@ -83,7 +83,7 @@ public class DriverController {
                         swerve,
                         this,
                         localizer,
-                        () -> AllianceFlipper.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+                        () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
                         kSwerve.CONSTRAINTS)))
         .onFalse(
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));

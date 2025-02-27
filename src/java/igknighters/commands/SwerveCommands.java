@@ -22,7 +22,7 @@ import wayfinder.controllers.TranslationController;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
 import wayfinder.repulsorField.RepulsorFieldPlanner;
-import wpilibExt.AllianceFlipper;
+import wpilibExt.AllianceSymmetry;
 import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Speeds.RobotSpeeds;
@@ -49,7 +49,7 @@ public class SwerveCommands {
   public static Command orientGyro(Swerve swerve, Localizer localizer) {
     return swerve.runOnce(
         () -> {
-          if (AllianceFlipper.isBlue()) {
+          if (AllianceSymmetry.isBlue()) {
             swerve.setYaw(Rotation2d.kZero);
             var pose = new Pose2d(localizer.pose().getTranslation(), Rotation2d.kZero);
             localizer.reset(pose);
@@ -164,7 +164,7 @@ public class SwerveCommands {
                   roughPlanner.calculate(
                       ConstValues.PERIODIC_TIME, localizer.pose(), measuredSpeeds, target, c);
               Translation2d reefCenter =
-                  AllianceFlipper.isBlue() ? Reef.CENTER : AllianceFlipper.flip(Reef.CENTER);
+                  AllianceSymmetry.isBlue() ? Reef.CENTER : AllianceSymmetry.flip(Reef.CENTER);
               double rotSpeeds =
                   rotController.calculate(
                       ConstValues.PERIODIC_TIME,

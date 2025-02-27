@@ -20,7 +20,7 @@ import monologue.GlobalField;
 import monologue.Logged;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
-import wpilibExt.AllianceFlipper;
+import wpilibExt.AllianceSymmetry;
 
 public class OperatorTarget implements StructSerializable {
   public enum FaceSubLocation implements StructSerializable {
@@ -72,10 +72,10 @@ public class OperatorTarget implements StructSerializable {
           case RIGHT -> side.alignScoreRight(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
           case CENTER -> side.alignScoreCenter(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
         };
-    if (AllianceFlipper.isBlue()) {
+    if (AllianceSymmetry.isBlue()) {
       return ret;
     } else {
-      return AllianceFlipper.flip(ret);
+      return AllianceSymmetry.flip(ret);
     }
   }
 

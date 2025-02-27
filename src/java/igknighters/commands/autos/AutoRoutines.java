@@ -30,6 +30,12 @@ public class AutoRoutines extends AutoCommands {
   }
 
   public AutoRoutine test() {
-    return factory.newRoutine(C1.to(C1));
+    final AutoRoutine routine = factory.newRoutine("rah");
+
+    var t = routine.trajectory(StartingOutside.to(FarLeft_L));
+
+    routine.active().onTrue(Commands.sequence(t.resetOdometry(), t.cmd()));
+
+    return routine;
   }
 }

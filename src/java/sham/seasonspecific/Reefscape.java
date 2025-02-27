@@ -15,7 +15,7 @@ import org.dyn4j.geometry.Geometry;
 import sham.ShamArena;
 import sham.ShamGamePiece.GamePieceTarget;
 import sham.ShamGamePiece.GamePieceVariant;
-import wpilibExt.AllianceFlipper;
+import wpilibExt.AllianceSymmetry;
 
 public class Reefscape {
   public static final GamePieceVariant CORAL =
@@ -88,7 +88,7 @@ public class Reefscape {
         // red reef
         final Translation2d[] reefVorticesRed =
             Arrays.stream(reefVorticesBlue)
-                .map(pointAtBlue -> AllianceFlipper.flip(pointAtBlue))
+                .map(pointAtBlue -> AllianceSymmetry.flip(pointAtBlue))
                 .toArray(Translation2d[]::new);
         for (int i = 0; i < 6; i++) {
           super.addBorderLine(reefVorticesRed[i], reefVorticesRed[(i + 1) % 6]);

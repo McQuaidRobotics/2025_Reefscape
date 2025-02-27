@@ -12,7 +12,7 @@ import igknighters.constants.FieldConstants.Reef;
 import wayfinder.repulsorField.Obstacle;
 import wayfinder.repulsorField.Obstacle.HorizontalObstacle;
 import wayfinder.repulsorField.Obstacle.VerticalObstacle;
-import wpilibExt.AllianceFlipper;
+import wpilibExt.AllianceSymmetry;
 
 public class Pathing {
 
@@ -130,7 +130,7 @@ public class Pathing {
 
     PathObstacles(Rectangle2d hitBox, Obstacle[]... obstacles) {
       this.blueHitBox = hitBox;
-      this.redHitBox = faceHitBox(AllianceFlipper.flip(hitBox.getCenter()));
+      this.redHitBox = faceHitBox(AllianceSymmetry.flip(hitBox.getCenter()));
       int totalLength = 0;
       for (var obstacleSet : obstacles) {
         totalLength += obstacleSet.length;
@@ -159,8 +159,8 @@ public class Pathing {
     }
 
     public boolean insideHitBox(Translation2d position) {
-      return (blueHitBox.contains(position) && AllianceFlipper.isBlue())
-          || (redHitBox.contains(position) && AllianceFlipper.isRed());
+      return (blueHitBox.contains(position) && AllianceSymmetry.isBlue())
+          || (redHitBox.contains(position) && AllianceSymmetry.isRed());
     }
   }
 }

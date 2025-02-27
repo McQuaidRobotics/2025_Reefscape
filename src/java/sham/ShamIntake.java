@@ -79,6 +79,10 @@ public class ShamIntake {
     driveTrainSimulation.chassis.removeFixture(fixture);
   }
 
+  public boolean isIntakeRunning() {
+    return intakeRunning.get();
+  }
+
   /**
    *
    *

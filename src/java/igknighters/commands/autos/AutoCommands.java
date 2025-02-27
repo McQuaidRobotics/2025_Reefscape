@@ -31,7 +31,7 @@ public class AutoCommands {
 
   static {
     final TrapezoidProfile profile =
-        new TrapezoidProfile(new TrapezoidProfile.Constraints(1.8, 73.8));
+        new TrapezoidProfile(new TrapezoidProfile.Constraints(1.8, 65.8));
     final var stowState = new TrapezoidProfile.State(SuperStructureState.Stow.elevatorMeters, 0.0);
     final var intakeStake =
         new TrapezoidProfile.State(SuperStructureState.IntakeHp.elevatorMeters, 0.0);
