@@ -48,7 +48,9 @@ public abstract class TeleopSwerveBaseCmd extends Command {
     double absX = Math.abs(x);
     double absY = Math.abs(y);
     double diffPercent = 1.0 - (Math.abs(absX - absY) / Math.max(absX, absY));
-    return Math.max(Math.hypot(x, y) - (0.12 * diffPercent), 0.0);
+    double out = Math.max(Math.hypot(x, y) - (0.12 * diffPercent), 0.0);
+    if (!Double.isFinite(out)) return 0.0;
+    return out;
   }
 
   protected Translation2d translationStick() {
