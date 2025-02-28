@@ -54,8 +54,8 @@ public abstract class TeleopSwerveBaseCmd extends Command {
   }
 
   protected Translation2d translationStick() {
-    double rawX = rawTranslationXSup.getAsDouble() * 0.5;
-    double rawY = rawTranslationYSup.getAsDouble() * 0.5;
+    double rawX = rawTranslationXSup.getAsDouble();
+    double rawY = rawTranslationYSup.getAsDouble();
     double angle = Math.atan2(rawY, rawX);
     double rawMagnitude = solveJoystickDiagonalDelta(rawX, rawY);
     rawMagnitude = MathUtil.clamp(rawMagnitude, -1, 1);

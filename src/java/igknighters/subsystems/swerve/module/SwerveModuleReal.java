@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kDriveMotor;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kSteerMotor;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
@@ -112,7 +113,7 @@ public class SwerveModuleReal extends SwerveModule {
     cfg.Slot0.kP = kDriveMotor.kP;
     cfg.Slot0.kI = kDriveMotor.kI;
     cfg.Slot0.kD = kDriveMotor.kD;
-    cfg.Slot0.kV = kDriveMotor.kV;
+    cfg.Slot0.kV = kDriveMotor.kV / Conv.RADIANS_TO_ROTATIONS;
     cfg.Slot0.kS = kDriveMotor.kS;
 
     cfg.CurrentLimits.StatorCurrentLimitEnable = true;

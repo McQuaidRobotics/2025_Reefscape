@@ -30,7 +30,7 @@ public class RollersReal extends Rollers {
   private final TorqueCurrentFOC currentReq = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
   private final StatusSignal<ReverseLimitValue> laserTrippedSignal;
-  private final BaseStatusSignal current, volts, velocity, temperature;
+  private final BaseStatusSignal current, volts, velocity, temperature, distance;
 
   private TalonFXConfiguration intakeConfiguration() {
     var cfg = new TalonFXConfiguration();
@@ -66,11 +66,18 @@ public class RollersReal extends Rollers {
     volts = intakeMotor.getMotorVoltage();
     velocity = intakeMotor.getVelocity();
     temperature = intakeMotor.getDeviceTemp();
+    distance = distanceSensor.getDistance();
     intakeMotor.getConfigurator().apply(intakeConfiguration());
     distanceSensor.getConfigurator().apply(intakeSensorConfiguration());
 
     CANSignalManager.registerSignals(
-        IntakeConstants.CANBUS, laserTrippedSignal, current, volts, velocity, temperature);
+        IntakeConstants.CANBUS,
+        laserTrippedSignal,
+        current,
+        volts,
+        velocity,
+        temperature,
+        distance);
 
     CANSignalManager.registerDevices(intakeMotor, distanceSensor);
   }
@@ -96,6 +103,7 @@ public class RollersReal extends Rollers {
     super.amps = current.getValueAsDouble();
     super.volts = volts.getValueAsDouble();
     super.laserTripped = laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround;
+    super.gamepieceDistance = distance.getValueAsDouble();
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
     log("rpm", velocity.getValueAsDouble() * 60.0);
     log("temp", temperature.getValueAsDouble());

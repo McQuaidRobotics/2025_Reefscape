@@ -9,11 +9,12 @@ import igknighters.subsystems.intake.rollers.RollerSim;
 import igknighters.subsystems.intake.rollers.Rollers;
 import igknighters.subsystems.intake.rollers.RollersReal;
 import java.util.function.BooleanSupplier;
+import monologue.Annotations.Log;
 import monologue.ProceduralStructGenerator;
 
 public class Intake implements ExclusiveSubsystem {
-  private Holding currentlyHolding = Holding.NONE;
-  private Holding tryingToHold = Holding.NONE;
+  @Log private Holding currentlyHolding = Holding.NONE;
+  @Log private Holding tryingToHold = Holding.NONE;
 
   public enum Holding implements StructSerializable {
     CORAL,
@@ -71,5 +72,6 @@ public class Intake implements ExclusiveSubsystem {
       currentlyHolding = tryingToHold;
       tryingToHold = Holding.NONE;
     }
+    
   }
 }

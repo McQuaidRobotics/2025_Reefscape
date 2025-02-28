@@ -114,6 +114,8 @@ public class DriverController {
     //         SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow,
     // holdingAlgae));
 
+    this.LT.onTrue(IntakeCommands.intakeAlgae(intake));
+
     this.RT
         .and(operatorTarget.superStructureAtSetpoint())
         .and(new Trigger(intake.isHolding(Holding.NONE)).negate())

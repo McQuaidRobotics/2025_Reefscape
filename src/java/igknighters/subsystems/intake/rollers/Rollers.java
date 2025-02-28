@@ -9,8 +9,9 @@ public abstract class Rollers extends Component {
 
   @Log protected double amps;
   @Log protected double volts;
-  @Log protected boolean laserTripped;
   @Log protected double radiansPerSecond;
+  @Log protected boolean laserTripped;
+  @Log protected double gamepieceDistance;
   @Log protected boolean controlledLastCycle;
 
   protected Rollers(DCMotor motor) {
@@ -51,10 +52,14 @@ public abstract class Rollers extends Component {
   }
 
   public boolean isLaserTripped() {
-    return false;
+    return laserTripped;
   }
 
   public double currentDraw() {
     return amps;
+  }
+
+  public double gamepieceDistance() {
+    return gamepieceDistance;
   }
 }
