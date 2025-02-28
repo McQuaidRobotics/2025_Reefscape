@@ -19,6 +19,17 @@ public class SuperStructureCommands {
                 kWrist.DEFAULT_TOLERANCE * state.toleranceScalar));
   }
 
+  public static Trigger isAt(
+      SuperStructure superStructure, SuperStructureState state, double scalar) {
+    return new Trigger(
+        () ->
+            superStructure.isAt(
+                state.elevatorMeters,
+                state.wristRads,
+                kElevator.DEFAULT_TOLERANCE * state.toleranceScalar * scalar,
+                kWrist.DEFAULT_TOLERANCE * state.toleranceScalar * scalar));
+  }
+
   public static Command holdAt(
       SuperStructure superStructure, SuperStructureState state, BooleanSupplier holdingAlgae) {
     return superStructure

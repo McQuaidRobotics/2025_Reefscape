@@ -47,7 +47,7 @@ public class SuperStructureConstants {
             * (STAGES[0].mass + STAGES[1].mass + STAGES[2].mass + STAGES[3].mass);
 
     public static final double MIN_HEIGHT = 12.75 * Conv.INCHES_TO_METERS;
-    public static final double MAX_HEIGHT = 80.25 * Conv.INCHES_TO_METERS;
+    public static final double MAX_HEIGHT = 80.5 * Conv.INCHES_TO_METERS;
     public static final double DEFAULT_TOLERANCE = 0.75 * Conv.INCHES_TO_METERS;
 
     public static final double kP = 6.0;
@@ -68,7 +68,7 @@ public class SuperStructureConstants {
 
   public class kWrist {
     public static final double LENGTH = 9.0 * Conv.INCHES_TO_METERS;
-    public static final double MAX_ANGLE = -0.23 * Conv.ROTATIONS_TO_RADIANS;
+    public static final double MAX_ANGLE = -0.22 * Conv.ROTATIONS_TO_RADIANS;
     public static final double MAX_ANGLE_ALGAE = -0.07 * Conv.ROTATIONS_TO_RADIANS;
     public static final double MIN_ANGLE = 0.127 * Conv.ROTATIONS_TO_RADIANS;
 

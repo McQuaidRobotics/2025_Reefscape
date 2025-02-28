@@ -71,7 +71,10 @@ public class Intake implements ExclusiveSubsystem {
     if (tryingToHold != Holding.NONE && rollers.isLaserTripped()) {
       currentlyHolding = tryingToHold;
       tryingToHold = Holding.NONE;
+    } else if (tryingToHold == Holding.NONE
+        && currentlyHolding == Holding.NONE
+        && rollers.isLaserTripped()) {
+      currentlyHolding = Holding.CORAL;
     }
-    
   }
 }

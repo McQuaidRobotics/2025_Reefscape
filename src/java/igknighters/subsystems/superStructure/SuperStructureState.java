@@ -10,10 +10,10 @@ import edu.wpi.first.util.struct.StructSerializable;
 import monologue.ProceduralStructGenerator;
 
 public enum SuperStructureState implements StructSerializable {
-  ScoreL4(MAX_HEIGHT - 1.0 * INCHES_TO_METERS, 25.0 * DEGREES_TO_RADIANS, 0.75),
+  ScoreL4(MAX_HEIGHT, 31.0 * DEGREES_TO_RADIANS, 0.75),
   ScoreL3(L3.height + 0.25, -L3.pitch, 1.0),
   ScoreL2(L2.height + 0.25, -L2.pitch, 1.0),
-  ScoreL1(L1.height, 10.0 * DEGREES_TO_RADIANS, 1.5),
+  ScoreL1(0.33, -0.352816, 1.5),
   AlgaeL3(L3.height + 0.23, 30.0 * DEGREES_TO_RADIANS, 1.2),
   AlgaeL2(L2.height + 0.23, 30.0 * DEGREES_TO_RADIANS, 1.2),
   Stow(MIN_HEIGHT + STAGES[2].rangeOfMotion() - 3.0 * INCHES_TO_METERS, MAX_ANGLE, 2.0),
