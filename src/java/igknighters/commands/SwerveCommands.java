@@ -91,7 +91,7 @@ public class SwerveCommands {
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
     final PositionalController preciseController =
         new PositionalController(
-            new TranslationController(3.0, 0.02, 0.13, ControllerMode.STRICT),
+            new TranslationController(3.0, 0.09, 0.13, ControllerMode.STRICT),
             new RotationalController(10.0, 0.2, ControllerMode.STRICT));
     final PositionalController roughController =
         new PositionalController(
@@ -102,15 +102,15 @@ public class SwerveCommands {
         new RepulsorFieldPlanner(preciseController, obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
         new RepulsorFieldPlanner(roughController, PathObstacles.Other.obstacles);
+
     return Commands.sequence(
-            swerve.runOnce(
-                () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
-            followRepulsor(roughPlanner, swerve, localizer, target, () -> constraints)
-                .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
-            swerve.runOnce(
-                () -> preciseController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
-            followRepulsor(precisePlanner, swerve, localizer, target, () -> constraints))
-        .until(() -> localizer.pose().getTranslation().getDistance(target.getTranslation()) < 0.05);
+        swerve.runOnce(
+            () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
+        followRepulsor(roughPlanner, swerve, localizer, target, () -> constraints)
+            .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
+        swerve.runOnce(
+            () -> preciseController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
+        followRepulsor(precisePlanner, swerve, localizer, target, () -> constraints));
   }
 
   public static Command moveToSimple(Swerve swerve, Localizer localizer, Pose2d target) {
