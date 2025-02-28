@@ -31,12 +31,10 @@ public class DriverController {
     final var vision = subsystems.vision;
     final var led = subsystems.led;
     final var climber = subsystems.climber;
-    final var holdingAlgae = intake.isHolding(Holding.ALGAE);
 
     /// FACE BUTTONS
     this.A.whileTrue(
-            SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.IntakeHp, holdingAlgae)
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHp)
                 .alongWith(
                     IntakeCommands.intakeCoral(subsystems.intake),
                     new TeleopSwerveHeadingCmd(
@@ -57,12 +55,10 @@ public class DriverController {
                         },
                         kSwerve.CONSTRAINTS))
                 .until(subsystems.intake.isHolding(Holding.CORAL)))
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.B.whileTrue(
-            SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.Processor, holdingAlgae)
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor)
                 .alongWith(
                     new TeleopSwerveHeadingCmd(
                         swerve,
@@ -71,14 +67,12 @@ public class DriverController {
                         () ->
                             AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
                         kSwerve.CONSTRAINTS)))
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
-    this.X.onTrue(
-        SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
+    this.X.onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.Y.whileTrue(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net, holdingAlgae)
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net)
                 .alongWith(
                     new TeleopSwerveHeadingCmd(
                         swerve,
@@ -86,16 +80,14 @@ public class DriverController {
                         localizer,
                         () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
                         kSwerve.CONSTRAINTS)))
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
     this.RB.onTrue(IntakeCommands.expel(intake).withTimeout(0.4));
 
     this.LB
         .whileTrue(operatorTarget.gotoSuperStructureTargetCmd())
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // CENTER BUTTONS
     this.Back.onTrue(Commands.none());
@@ -108,12 +100,10 @@ public class DriverController {
     this.RS.onTrue(Commands.none());
 
     // // TRIGGERS
-    // this.LT
-    //     .and(operatorTarget.hasTarget())
-    //     .whileTrue(operatorTarget.gotoTargetCmd(localizer))
-    //     .onFalse(
-    //         SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow,
-    // holdingAlgae));
+    this.LT
+        .and(operatorTarget.hasTarget())
+        .whileTrue(operatorTarget.gotoTargetCmd(localizer))
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.RT
         .and(operatorTarget.superStructureAtSetpoint())

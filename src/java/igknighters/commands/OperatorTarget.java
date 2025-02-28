@@ -1,6 +1,7 @@
 package igknighters.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -12,12 +13,12 @@ import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
-import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import java.util.Set;
 import java.util.function.Supplier;
 import monologue.GlobalField;
 import monologue.Logged;
+import monologue.Monologue;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
@@ -107,30 +108,34 @@ public class OperatorTarget implements StructSerializable {
             .unless(hasTarget().negate()));
   }
 
+  private Trigger isNearPose(Localizer localizer, Translation2d translation, double dist) {
+    return new Trigger(
+        () -> Monologue.log("offset", localizer.translation().getDistance(translation)) < dist);
+  }
+
   public Command gotoTargetCmd(Localizer localizer) {
     Supplier<Command> c =
         () ->
-            Commands.deadline(
-                SwerveCommands.moveToReef(
+            Commands.parallel(
+                SwerveCommands.moveTo(
                     subsystems.swerve,
                     localizer,
                     targetLocation(),
-                    PathObstacles.fromReefSide(side),
-                    0.013),
-                SuperStructureCommands.holdAt(
-                    subsystems.superStructure,
-                    superStructureState,
-                    subsystems.intake.isHolding(Holding.ALGAE)));
+                    PathObstacles.fromReefSide(side)),
+                Commands.sequence(
+                    Commands.waitUntil(
+                        isNearPose(localizer, targetLocation().getTranslation(), 2.0)),
+                    SuperStructureCommands.holdAt(
+                            subsystems.superStructure,
+                            superStructureState.minHeight(SuperStructureState.ScoreL3))
+                        .until(isNearPose(localizer, targetLocation().getTranslation(), 0.1)),
+                    SuperStructureCommands.holdAt(subsystems.superStructure, superStructureState)));
     return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure);
   }
 
   public Command gotoSuperStructureTargetCmd() {
     Supplier<Command> c =
-        () ->
-            SuperStructureCommands.holdAt(
-                subsystems.superStructure,
-                superStructureState,
-                subsystems.intake.isHolding(Holding.ALGAE));
+        () -> SuperStructureCommands.holdAt(subsystems.superStructure, superStructureState);
     return makeRefreshableCmd(c, subsystems.superStructure);
   }
 

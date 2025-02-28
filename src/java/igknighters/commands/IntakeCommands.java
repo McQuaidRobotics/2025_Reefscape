@@ -40,7 +40,8 @@ public class IntakeCommands {
   public static Command intakeAlgae(Intake intake) {
     return runVoltage(intake, -10.0)
         .alongWith(Commands.run(() -> intake.setTryingToHold(Holding.ALGAE)))
-        .until(intake.isHolding(Holding.ALGAE));
+        .until(intake.isHolding(Holding.ALGAE))
+        .ignoringDisable(true);
   }
 
   public static Command expel(Intake intake) {

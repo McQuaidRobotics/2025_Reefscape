@@ -2,29 +2,27 @@ package igknighters.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import igknighters.Localizer;
 import igknighters.constants.ConstValues;
-import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.plumbing.TunableValues;
 import java.util.function.Supplier;
 import monologue.GlobalField;
-import monologue.Monologue;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.TranslationController;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
+import wayfinder.controllers.Types.ControllerMode;
 import wayfinder.repulsorField.RepulsorFieldPlanner;
 import wpilibExt.AllianceSymmetry;
 import wpilibExt.Speeds;
-import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Speeds.RobotSpeeds;
 
 public class SwerveCommands {
@@ -61,59 +59,6 @@ public class SwerveCommands {
         });
   }
 
-  // private abstract static class PointTowardsCommand extends Command {
-  //   private final Swerve swerve;
-  //   private final RotationalController rotController;
-  //   private double velo = 0.0;
-
-  //   public PointTowardsCommand(Swerve swerve) {
-  //     this.swerve = swerve;
-  //     this.rotController = new RotationalController(swerve);
-  //     addRequirements(swerve);
-  //   }
-
-  //   abstract Rotation2d getTarget();
-
-  //   @Override
-  //   public void initialize() {
-  //     rotController.reset();
-  //   }
-
-  //   @Override
-  //   public void execute() {
-  //     velo = rotController.calculate(getTarget().getRadians(), 0.0);
-  //     swerve.drive(Speeds.fromFieldRelative(0.0, 0.0, velo));
-  //   }
-
-  //   @Override
-  //   public boolean isFinished() {
-  //     return Math.abs(velo) < 0.05;
-  //   }
-
-  //   @Override
-  //   public String getName() {
-  //     return "PointTowards";
-  //   }
-  // }
-
-  // public static Command pointTowards(Swerve swerve, Translation2d target) {
-  //   return new PointTowardsCommand(swerve) {
-  //     @Override
-  //     Rotation2d getTarget() {
-  //       return rotationRelativeToPose(Translation2d.kZero, target);
-  //     }
-  //   };
-  // }
-
-  // public static Command pointTowards(Swerve swerve, Rotation2d target) {
-  //   return new PointTowardsCommand(swerve) {
-  //     @Override
-  //     Rotation2d getTarget() {
-  //       return target;
-  //     }
-  //   };
-  // }
-
   public static Command drive(Swerve swerve, final Speeds speeds) {
     return Commands.run(() -> swerve.drive(speeds), swerve);
   }
@@ -137,66 +82,61 @@ public class SwerveCommands {
         });
   }
 
-  public static Command moveToReef(
-      Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles, double endDist) {
+  public static Command moveTo(
+      Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
     final ChassisConstraints constraints =
         new ChassisConstraints(
-            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.8, kSwerve.MAX_DRIVE_VELOCITY * 1.2),
-            new Constraints(kSwerve.MAX_ANGULAR_VELOCITY, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
-
-    final RotationalController rotController = new RotationalController(10.0, 0.2, true);
-    final PositionalController controller =
+            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.8, kSwerve.MAX_DRIVE_VELOCITY),
+            new Constraints(
+                kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
+    final PositionalController preciseController =
         new PositionalController(
-            new TranslationController(3.0, 0.09, 0.19, false),
-            new RotationalController(10.0, 0.2, false));
-
+            new TranslationController(3.0, 0.09, 0.13, ControllerMode.STRICT),
+            new RotationalController(10.0, 0.2, ControllerMode.STRICT));
+    final PositionalController roughController =
+        new PositionalController(
+            new TranslationController(
+                kSwerve.MAX_DRIVE_VELOCITY, 0.0, 0.0, ControllerMode.UNPROFILED),
+            new RotationalController(7.0, 0.2, ControllerMode.STRICT));
     final RepulsorFieldPlanner precisePlanner =
-        new RepulsorFieldPlanner(controller, obstacles.obstacles);
+        new RepulsorFieldPlanner(preciseController, obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
-        new RepulsorFieldPlanner(controller, PathObstacles.Other.obstacles);
-
-    final Command moveRough =
-        swerve.run(
-            () -> {
-              var c = constraints;
-              FieldSpeeds measuredSpeeds = swerve.getFieldSpeeds();
-              FieldSpeeds speeds =
-                  roughPlanner.calculate(
-                      ConstValues.PERIODIC_TIME, localizer.pose(), measuredSpeeds, target, c);
-              Translation2d reefCenter =
-                  AllianceSymmetry.isBlue() ? Reef.CENTER : AllianceSymmetry.flip(Reef.CENTER);
-              double rotSpeeds =
-                  rotController.calculate(
-                      ConstValues.PERIODIC_TIME,
-                      localizer.pose().getRotation().getRadians(),
-                      measuredSpeeds.omega(),
-                      Monologue.log(
-                          "targetAngle",
-                          localizer
-                              .pose()
-                              .getTranslation()
-                              .minus(reefCenter)
-                              .getAngle()
-                              .rotateBy(Rotation2d.k180deg)
-                              .getRadians()),
-                      Units.degreesToRadians(1.0),
-                      c.rotation());
-              FieldSpeeds newSpeeds = new FieldSpeeds(speeds.vx(), speeds.vy(), rotSpeeds);
-              swerve.drive(newSpeeds, c);
-            });
+        new RepulsorFieldPlanner(roughController, PathObstacles.Other.obstacles);
 
     return Commands.sequence(
-            swerve.runOnce(
-                () -> {
-                  roughPlanner.reset(localizer.pose(), swerve.getFieldSpeeds(), target);
-                  rotController.reset(
-                      localizer.pose().getRotation().getRadians(), swerve.getFieldSpeeds().omega());
-                }),
-            moveRough.until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
-            swerve.runOnce(
-                () -> precisePlanner.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
-            followRepulsor(precisePlanner, swerve, localizer, target, () -> constraints))
-        .until(
-            () -> localizer.pose().getTranslation().getDistance(target.getTranslation()) < endDist);
+        swerve.runOnce(
+            () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
+        followRepulsor(roughPlanner, swerve, localizer, target, () -> constraints)
+            .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
+        swerve.runOnce(
+            () -> preciseController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
+        followRepulsor(precisePlanner, swerve, localizer, target, () -> constraints));
+  }
+
+  public static Command moveToSimple(Swerve swerve, Localizer localizer, Pose2d target) {
+    final ChassisConstraints constraints =
+        new ChassisConstraints(
+            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.8, kSwerve.MAX_DRIVE_VELOCITY),
+            new Constraints(
+                kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
+    final PositionalController roughController =
+        new PositionalController(
+            new TranslationController(2.0, 0.0, 0.0, ControllerMode.UNPROFILED),
+            new RotationalController(2.0, 0.0, ControllerMode.UNPROFILED));
+    return Commands.sequence(
+        swerve.runOnce(
+            () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
+        swerve.run(
+            () -> {
+              var speeds =
+                  roughController.calculate(
+                      ConstValues.PERIODIC_TIME,
+                      localizer.pose(),
+                      swerve.getFieldSpeeds(),
+                      target,
+                      new Transform2d(),
+                      constraints);
+              swerve.drive(speeds, constraints);
+            }));
   }
 }

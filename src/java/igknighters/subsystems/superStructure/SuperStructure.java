@@ -3,6 +3,7 @@ package igknighters.subsystems.superStructure;
 import edu.wpi.first.math.MathUtil;
 import igknighters.Robot;
 import igknighters.SimCtx;
+import igknighters.subsystems.SharedState;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.superStructure.Elevator.Elevator;
 import igknighters.subsystems.superStructure.Elevator.ElevatorReal;
@@ -15,6 +16,7 @@ import igknighters.subsystems.superStructure.Wrist.WristSim;
 import monologue.Annotations.Log;
 
 public class SuperStructure implements ExclusiveSubsystem {
+  private final SharedState shared;
   private final SuperStructureVisualizer visualizer;
 
   @Log(key = "Wrist")
@@ -38,7 +40,8 @@ public class SuperStructure implements ExclusiveSubsystem {
     return theta;
   }
 
-  public SuperStructure(SimCtx simCtx) {
+  public SuperStructure(SharedState shared, SimCtx simCtx) {
+    this.shared = shared;
     visualizer = new SuperStructureVisualizer();
     if (Robot.isReal()) {
       wrist = new WristReal();
@@ -58,14 +61,14 @@ public class SuperStructure implements ExclusiveSubsystem {
    * @param elevatorMeters The height of the elevator in meters
    * @param wristRads The angle of the wrist in rads
    */
-  public void goTo(double elevatorMeters, double wristRads, boolean holdingAlgae) {
+  public void goTo(double elevatorMeters, double wristRads) {
     wrist.log("initialTargetRads", wristRads);
     elevator.log("initialTargetMeters", elevatorMeters);
     if (!isHomed()) {
       return;
     }
     elevatorMeters = MathUtil.clamp(elevatorMeters, kElevator.MIN_HEIGHT, kElevator.MAX_HEIGHT);
-    if (holdingAlgae) {
+    if (shared.holdingAlgae) {
       wristRads = MathUtil.clamp(wristRads, kWrist.MAX_ANGLE_ALGAE, kWrist.MIN_ANGLE);
     } else {
       wristRads = MathUtil.clamp(wristRads, kWrist.MAX_ANGLE, kWrist.MIN_ANGLE);
@@ -103,10 +106,19 @@ public class SuperStructure implements ExclusiveSubsystem {
     return elevator.isHomed();
   }
 
+  public double elevatorHeight() {
+    return elevator.position();
+  }
+
+  public double wristAngle() {
+    return wrist.position();
+  }
+
   @Override
   public void periodic() {
     elevator.periodic();
     wrist.periodic();
     visualizer.updatePosition(elevator.position(), wrist.position());
+    shared.elevatorHeight = elevator.position();
   }
 }

@@ -13,6 +13,7 @@ import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.constants.ConstValues;
+import igknighters.subsystems.SharedState;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
@@ -32,6 +33,7 @@ import igknighters.util.plumbing.TunableValues;
 import java.util.Optional;
 import sham.ShamSwerve;
 import wayfinder.controllers.Types.ChassisConstraints;
+import wayfinder.controllers.Types.Constraints;
 import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
 import wayfinder.setpointGenerator.SwerveSetpoint;
 import wayfinder.setpointGenerator.SwerveSetpointGenerator;
@@ -56,6 +58,8 @@ import wpilibExt.Tracer;
  * <p>The coordinate system used in this code is the field coordinate system.
  */
 public class Swerve implements ExclusiveSubsystem {
+  private final SharedState sharedState;
+
   private final Gyro gyro;
   private final SwerveModule[] swerveMods;
   private final SwerveOdometryThread odometryThread;
@@ -77,6 +81,12 @@ public class Swerve implements ExclusiveSubsystem {
           kWheel.DIAMETER,
           kWheel.COF,
           0.0);
+  private final ChassisConstraints defaultConstraints =
+      new ChassisConstraints(
+          new Constraints(kSwerve.MAX_DRIVE_VELOCITY, kSwerve.MAX_DRIVE_ACCELERATION),
+          new Constraints(
+              kSwerve.MAX_ANGULAR_VELOCITY * kSwerve.TELEOP_ROTATION_AXIS_CURVE.lerp(1.0),
+              kSwerve.MAX_ANGULAR_VELOCITY));
 
   private final SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_LOCATIONS);
@@ -85,7 +95,8 @@ public class Swerve implements ExclusiveSubsystem {
 
   private SwerveSetpoint setpoint = SwerveSetpoint.zeroed();
 
-  public Swerve(final Localizer localizer, final SimCtx simCtx) {
+  public Swerve(SharedState shared, Localizer localizer, SimCtx simCtx) {
+    sharedState = shared;
     final boolean useSham = true;
     if (Robot.isSimulation()) {
       sim = Optional.of((ShamSwerve) simCtx.robot().getDriveTrain());
@@ -131,6 +142,14 @@ public class Swerve implements ExclusiveSubsystem {
     odometryThread.start();
   }
 
+  private ChassisConstraints calcConstraints() {
+    double velocityAccelProportion = kSwerve.MAX_DRIVE_VELOCITY / kSwerve.MAX_DRIVE_ACCELERATION;
+    double tippingAccelLimit = sharedState.maximumAcceleration();
+    return new ChassisConstraints(
+        new Constraints(tippingAccelLimit / velocityAccelProportion, tippingAccelLimit),
+        defaultConstraints.rotation());
+  }
+
   public void drive(Speeds speeds, ChassisConstraints constraints) {
     RobotSpeeds robotSpeeds = speeds.asRobotRelative(getYaw());
     log("targetSpeed", robotSpeeds);
@@ -141,6 +160,12 @@ public class Swerve implements ExclusiveSubsystem {
       DriverStation.reportError("Drivetrain driven at NAN", false);
       drive(FieldSpeeds.kZero, constraints);
       return;
+    }
+
+    if (constraints == null) {
+      constraints = calcConstraints();
+    } else {
+      constraints = constraints.min(calcConstraints());
     }
 
     if (TunableValues.getBoolean("setpointGenerator", true).value()) {
@@ -160,7 +185,7 @@ public class Swerve implements ExclusiveSubsystem {
   }
 
   public void drive(Speeds speeds) {
-    drive(speeds, null);
+    drive(speeds, defaultConstraints);
   }
 
   /**

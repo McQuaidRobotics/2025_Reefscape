@@ -43,7 +43,7 @@ public class ElevatorSim extends Elevator {
             shamMCX,
             KilogramSquareMeters.of(kElevator.MOI),
             GearRatio.reduction(kElevator.GEAR_RATIO),
-            Friction.of(DCMotor.getKrakenX60Foc(2), Volts.of(kElevator.kS)),
+            Friction.of(DCMotor.getKrakenX60Foc(2), Volts.of(kElevator.kS * 1.1)),
             // MechanismDynamics.forElevator(
             //     Pounds.of(22.0), Meters.of(ElevatorConstants.PULLEY_RADIUS * 2.0)),
             MechanismDynamics.zero(),
@@ -63,12 +63,7 @@ public class ElevatorSim extends Elevator {
         ClosedLoop.forVoltageAngle(
             PIDFeedback.forAngular(Volts, kElevator.kP, kElevator.kD),
             ElevatorFeedforward.forVoltage(
-                Radians,
-                kElevator.kS,
-                kElevator.kG,
-                kElevator.kV,
-                kElevator.kA,
-                simCtx.timing().dt()),
+                Radians, kElevator.kS, 0.0, kElevator.kV, kElevator.kA, simCtx.timing().dt()),
             UnitTrapezoidProfile.forAngle(
                 RotationsPerSecond.of(kElevator.MAX_VELOCITY),
                 RotationsPerSecondPerSecond.of(kElevator.MAX_ACCELERATION)));

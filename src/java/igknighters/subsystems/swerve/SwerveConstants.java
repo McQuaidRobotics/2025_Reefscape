@@ -90,20 +90,21 @@ public class SwerveConstants {
         Math.hypot(DRIVEBASE_WIDTH / 2.0, DRIVEBASE_WIDTH / 2.0);
 
     public static final double MAX_DRIVE_VELOCITY = kDriveMotor.MAX_VELOCITY * kWheel.RADIUS;
-    public static final double MAX_ANGULAR_VELOCITY = MAX_DRIVE_VELOCITY / DRIVEBASE_RADIUS;
+    public static final double MAX_DRIVE_ACCELERATION = MAX_DRIVE_VELOCITY / 0.8;
+    public static final double MAX_ANGULAR_VELOCITY = (MAX_DRIVE_VELOCITY / DRIVEBASE_RADIUS);
     public static final double MAX_STEERING_VELOCITY = ModuleConstants.kSteerMotor.MAX_VELOCITY;
 
     public static final LerpTable TELEOP_TRANSLATION_AXIS_CURVE =
         new LerpTable(
             new LerpTableEntry(0.0, 0.0),
-            new LerpTableEntry(0.15, 0.0), // deadzone
-            new LerpTableEntry(0.7, 0.4),
+            new LerpTableEntry(0.05, 0.0), // deadzone
+            new LerpTableEntry(0.7, 0.55),
             new LerpTableEntry(1.0, 1.0));
 
     public static final LerpTable TELEOP_ROTATION_AXIS_CURVE =
         new LerpTable(
             new LerpTableEntry(0.0, 0.0),
-            new LerpTableEntry(0.15, 0.0), // deadzone
+            new LerpTableEntry(0.05, 0.0), // deadzone
             new LerpTableEntry(0.5, 0.2),
             new LerpTableEntry(0.7, 0.4),
             new LerpTableEntry(1.0, 0.6));

@@ -4,6 +4,7 @@ import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import igknighters.Robot;
 import igknighters.SimCtx;
+import igknighters.subsystems.SharedState;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.intake.rollers.RollerSim;
 import igknighters.subsystems.intake.rollers.Rollers;
@@ -13,6 +14,8 @@ import monologue.Annotations.Log;
 import monologue.ProceduralStructGenerator;
 
 public class Intake implements ExclusiveSubsystem {
+  private final SharedState shared;
+
   @Log private Holding currentlyHolding = Holding.NONE;
   @Log private Holding tryingToHold = Holding.NONE;
 
@@ -36,7 +39,8 @@ public class Intake implements ExclusiveSubsystem {
 
   private final Rollers rollers;
 
-  public Intake(SimCtx simCtx) {
+  public Intake(SharedState shared, SimCtx simCtx) {
+    this.shared = shared;
     if (Robot.isReal()) {
       rollers = new RollersReal();
     } else {
@@ -81,5 +85,6 @@ public class Intake implements ExclusiveSubsystem {
         && rollers.isLaserTripped()) {
       currentlyHolding = Holding.CORAL;
     }
+    shared.holdingAlgae = getHolding() == Holding.ALGAE;
   }
 }

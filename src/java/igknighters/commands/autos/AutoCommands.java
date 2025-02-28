@@ -23,7 +23,6 @@ import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
-import java.util.function.BooleanSupplier;
 import monologue.Monologue;
 
 public class AutoCommands {
@@ -103,31 +102,29 @@ public class AutoCommands {
   }
 
   public void orchestrateSuperstructure(AutoTrajectory traj) {
-    final BooleanSupplier holdingAlgae = intake.isHolding(Holding.ALGAE);
     traj.active()
         .onTrue(
             loggedCmd(
                 SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.Stow, holdingAlgae)));
+                    superStructure, SuperStructureState.Stow)));
     traj.atTimeBeforeEnd(timeBeforeL4Move)
         .onTrue(
             loggedCmd(
                 SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.ScoreL4, holdingAlgae)));
+                    superStructure, SuperStructureState.ScoreL4)));
   }
 
   public void orchestrateIntake(AutoTrajectory traj) {
-    final BooleanSupplier holdingAlgae = intake.isHolding(Holding.ALGAE);
     traj.active()
         .onTrue(
             loggedCmd(
                 SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.Stow, holdingAlgae)));
+                    superStructure, SuperStructureState.Stow)));
     traj.atTimeBeforeEnd(timeBeforeIntakeMove * 1.2)
         .onTrue(
             loggedCmd(
                 SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.IntakeHp, holdingAlgae)));
+                    superStructure, SuperStructureState.IntakeHp)));
   }
 
   protected class ReefscapeAuto {

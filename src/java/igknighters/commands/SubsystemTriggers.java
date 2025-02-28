@@ -19,21 +19,15 @@ public class SubsystemTriggers {
     final var intake = subsystems.intake;
 
     final Trigger atAlgaeState =
-        SuperStructureCommands.isAt(superStructure, SuperStructureState.AlgaeL3)
-            .or(SuperStructureCommands.isAt(superStructure, SuperStructureState.AlgaeL2));
+        SuperStructureCommands.isAt(superStructure, SuperStructureState.AlgaeL3, 1.45)
+            .or(SuperStructureCommands.isAt(superStructure, SuperStructureState.AlgaeL2, 1.45));
 
     subsystemIdle(intake)
         .and(intake.isHolding(Holding.ALGAE))
-        .onTrue(
-            IntakeCommands.runCurrent(intake, -80.0)
-                .until(intake.isHolding(Holding.NONE))
-                .withName("HoldAlgae"));
+        .onTrue(IntakeCommands.runCurrent(intake, -80.0).withName("HoldAlgae"));
     subsystemIdle(intake)
         .and(intake.isHolding(Holding.CORAL))
-        .onTrue(
-            IntakeCommands.runCurrent(intake, -20.0)
-                .until(intake.isHolding(Holding.NONE))
-                .withName("HoldCoral"));
+        .onTrue(IntakeCommands.runCurrent(intake, -20.0).withName("HoldCoral"));
 
     new Trigger(
             () -> {
@@ -42,9 +36,7 @@ public class SubsystemTriggers {
               return Math.abs(robotRotation.getX()) > tiltLimit
                   || Math.abs(robotRotation.getY()) > tiltLimit;
             })
-        .onTrue(
-            SuperStructureCommands.holdAt(
-                superStructure, SuperStructureState.AntiTilt, intake.isHolding(Holding.ALGAE)));
+        .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
 
     atAlgaeState
         .and(subsystemIdle(intake))
