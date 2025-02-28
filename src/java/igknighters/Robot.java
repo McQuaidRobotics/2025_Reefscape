@@ -22,6 +22,7 @@ import igknighters.constants.ConstValues;
 import igknighters.constants.FieldConstants;
 import igknighters.controllers.DriverController;
 import igknighters.controllers.OperatorController;
+import igknighters.subsystems.SharedState;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.climber.Climber;
 import igknighters.subsystems.intake.Intake;
@@ -74,13 +75,14 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
     setupLogging();
 
+    final SharedState sharedState = new SharedState();
     subsystems =
         new Subsystems(
-            new Swerve(localizer, simCtx),
+            new Swerve(sharedState, localizer, simCtx),
             new Vision(localizer, simCtx),
             new Led(),
-            new SuperStructure(simCtx),
-            new Intake(simCtx),
+            new SuperStructure(sharedState, simCtx),
+            new Intake(sharedState, simCtx),
             new Climber(simCtx));
 
     localizer.reset(FieldConstants.POSE2D_CENTER);

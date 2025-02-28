@@ -12,7 +12,6 @@ import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
-import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -118,8 +117,7 @@ public class OperatorTarget implements StructSerializable {
                     PathObstacles.fromReefSide(side)),
                 SuperStructureCommands.holdAt(
                     subsystems.superStructure,
-                    superStructureState,
-                    subsystems.intake.isHolding(Holding.ALGAE)));
+                    superStructureState));
     return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure);
   }
 
@@ -128,8 +126,7 @@ public class OperatorTarget implements StructSerializable {
         () ->
             SuperStructureCommands.holdAt(
                 subsystems.superStructure,
-                superStructureState,
-                subsystems.intake.isHolding(Holding.ALGAE));
+                superStructureState);
     return makeRefreshableCmd(c, subsystems.superStructure);
   }
 
