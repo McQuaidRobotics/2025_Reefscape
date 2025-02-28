@@ -69,6 +69,10 @@ public class Intake implements ExclusiveSubsystem {
     tryingToHold = holding;
   }
 
+  public double gamepieceYOffset() {
+    return rollers.gamepieceDistance();
+  }
+
   public void periodic() {
     rollers.periodic();
 
