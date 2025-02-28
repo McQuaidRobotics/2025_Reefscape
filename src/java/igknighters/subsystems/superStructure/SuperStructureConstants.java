@@ -55,7 +55,7 @@ public class SuperStructureConstants {
     public static final double kG = 0.05;
     public static final double kS = 0.3;
     public static final double kV = kKrakenX60Foc.kV * GEAR_RATIO;
-    public static final double kA = 0.01;
+    public static final double kA = 0.00;
 
     public static final double MAX_VELOCITY = (12.0 - kS) / kV;
     public static final double MAX_ACCELERATION = MAX_VELOCITY / 1.0;

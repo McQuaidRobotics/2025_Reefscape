@@ -81,10 +81,12 @@ public class Swerve implements ExclusiveSubsystem {
           kWheel.DIAMETER,
           kWheel.COF,
           0.0);
-  private final ChassisConstraints defaultConstraints = new ChassisConstraints(
-    new Constraints(kSwerve.MAX_DRIVE_VELOCITY, kSwerve.MAX_DRIVE_ACCELERATION),
-    new Constraints(kSwerve.MAX_ANGULAR_VELOCITY * kSwerve.TELEOP_ROTATION_AXIS_CURVE.lerp(1.0), kSwerve.MAX_ANGULAR_VELOCITY)
-  );
+  private final ChassisConstraints defaultConstraints =
+      new ChassisConstraints(
+          new Constraints(kSwerve.MAX_DRIVE_VELOCITY, kSwerve.MAX_DRIVE_ACCELERATION),
+          new Constraints(
+              kSwerve.MAX_ANGULAR_VELOCITY * kSwerve.TELEOP_ROTATION_AXIS_CURVE.lerp(1.0),
+              kSwerve.MAX_ANGULAR_VELOCITY));
 
   private final SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_LOCATIONS);
@@ -144,9 +146,8 @@ public class Swerve implements ExclusiveSubsystem {
     double velocityAccelProportion = kSwerve.MAX_DRIVE_VELOCITY / kSwerve.MAX_DRIVE_ACCELERATION;
     double tippingAccelLimit = sharedState.maximumAcceleration();
     return new ChassisConstraints(
-      new Constraints(tippingAccelLimit / velocityAccelProportion, tippingAccelLimit),
-      defaultConstraints.rotation()
-    );
+        new Constraints(tippingAccelLimit / velocityAccelProportion, tippingAccelLimit),
+        defaultConstraints.rotation());
   }
 
   public void drive(Speeds speeds, ChassisConstraints constraints) {

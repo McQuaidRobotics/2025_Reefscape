@@ -19,7 +19,8 @@ public class Types {
 
     public Constraints min(Constraints other) {
       return new Constraints(
-          Math.min(maxVelocity, other.maxVelocity), Math.min(maxAcceleration, other.maxAcceleration));
+          Math.min(maxVelocity, other.maxVelocity),
+          Math.min(maxAcceleration, other.maxAcceleration));
     }
   }
 

@@ -22,8 +22,7 @@ public class StateManager {
 
   private Command basicHoldAt(
       SuperStructure superStructure, double elevatorMeters, double wristRads) {
-    return superStructure.run(
-        () -> superStructure.goTo(elevatorMeters, wristRads));
+    return superStructure.run(() -> superStructure.goTo(elevatorMeters, wristRads));
   }
 
   @FunctionalInterface
