@@ -119,16 +119,16 @@ public class FieldConstants {
         return new Pose2d(t, this.face.getRotation().rotateBy(Rotation2d.kPi));
       }
 
-      public Pose2d alignScoreLeft(double distFromFace) {
-        return scorePose(distFromFace, -BRANCH_OFFSET);
+      public Pose2d alignScoreLeft(double distFromFace, double yOffset) {
+        return scorePose(distFromFace, -BRANCH_OFFSET + yOffset);
       }
 
-      public Pose2d alignScoreRight(double distFromFace) {
-        return scorePose(distFromFace, BRANCH_OFFSET);
+      public Pose2d alignScoreRight(double distFromFace, double yOffset) {
+        return scorePose(distFromFace, BRANCH_OFFSET + yOffset);
       }
 
-      public Pose2d alignScoreCenter(double distFromFace) {
-        return scorePose(distFromFace, 0.0);
+      public Pose2d alignScoreCenter(double distFromFace, double yOffset) {
+        return scorePose(distFromFace, yOffset);
       }
 
       public static final Struct<Side> struct = ProceduralStructGenerator.genEnum(Side.class);

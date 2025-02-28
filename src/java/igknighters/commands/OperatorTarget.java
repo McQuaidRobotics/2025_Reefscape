@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
+import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
@@ -67,11 +68,13 @@ public class OperatorTarget implements StructSerializable {
   }
 
   public Pose2d targetLocation() {
+    double backoffDist = (kRobotIntrinsics.CHASSIS_WIDTH / 2.0)
+      + (5.0 * Conv.INCHES_TO_METERS);
     var ret =
         switch (faceSubLocation) {
-          case LEFT -> side.alignScoreLeft(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
-          case RIGHT -> side.alignScoreRight(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
-          case CENTER -> side.alignScoreCenter(kRobotIntrinsics.CHASSIS_WIDTH / 1.9);
+          case LEFT -> side.alignScoreLeft(backoffDist, subsystems.intake.gamepieceYOffset());
+          case RIGHT -> side.alignScoreRight(backoffDist, subsystems.intake.gamepieceYOffset());
+          case CENTER -> side.alignScoreCenter(backoffDist, subsystems.intake.gamepieceYOffset());
         };
     if (AllianceSymmetry.isBlue()) {
       return ret;
