@@ -8,7 +8,6 @@ import igknighters.subsystems.superStructure.SuperStructureConstants.kWrist;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import java.util.EnumMap;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
 
 public class StateManager {
 
@@ -16,17 +15,15 @@ public class StateManager {
   private SuperStructureState lastState = SuperStructureState.Stow;
   private final EnumMap<SuperStructureState, EnumMap<SuperStructureState, Transition>> transitions =
       new EnumMap<>(SuperStructureState.class);
-  private final BooleanSupplier holdingAlgae;
 
-  public StateManager(SuperStructure superStructure, BooleanSupplier holdingAlgae) {
+  public StateManager(SuperStructure superStructure) {
     this.superStructure = superStructure;
-    this.holdingAlgae = holdingAlgae;
   }
 
   private Command basicHoldAt(
       SuperStructure superStructure, double elevatorMeters, double wristRads) {
     return superStructure.run(
-        () -> superStructure.goTo(elevatorMeters, wristRads, holdingAlgae.getAsBoolean()));
+        () -> superStructure.goTo(elevatorMeters, wristRads));
   }
 
   @FunctionalInterface

@@ -39,6 +39,9 @@ public final class ConstValues {
 
     /** With bumpers */
     public static final double CHASSIS_WIDTH = 32.5 * Conv.INCHES_TO_METERS;
+
+    public static final double MAX_CG = 17.5 * Conv.INCHES_TO_METERS;
+    public static final double MIN_CG = 7.0 * Conv.INCHES_TO_METERS;
   }
 
   public static final class kCharacterization {

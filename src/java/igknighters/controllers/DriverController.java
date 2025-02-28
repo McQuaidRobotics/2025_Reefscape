@@ -25,8 +25,7 @@ public class DriverController {
     final var led = subsystems.led;
     final var climber = subsystems.climber;
 
-    final StateManager stateManager =
-        new StateManager(subsystems.superStructure, subsystems.intake.isHolding(Holding.ALGAE));
+    final StateManager stateManager = new StateManager(subsystems.superStructure);
 
     /// FACE BUTTONS
     this.A.onTrue(stateManager.holdAt(SuperStructureState.ScoreL2));

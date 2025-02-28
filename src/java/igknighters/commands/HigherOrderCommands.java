@@ -1,4 +1,3 @@
 package igknighters.commands;
 
-public class HigherOrderCommands {
-}
+public class HigherOrderCommands {}

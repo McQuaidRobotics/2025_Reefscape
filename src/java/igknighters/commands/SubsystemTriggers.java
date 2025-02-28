@@ -20,8 +20,7 @@ public class SubsystemTriggers {
     final var superStructure = subsystems.superStructure;
     final var intake = subsystems.intake;
 
-    final StateManager stateManager =
-        new StateManager(superStructure, intake.isHolding(Holding.ALGAE));
+    final StateManager stateManager = new StateManager(superStructure);
 
     subsystemIdle(intake)
         .and(intake.isHolding(Holding.ALGAE))
