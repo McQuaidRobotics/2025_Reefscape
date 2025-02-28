@@ -123,8 +123,6 @@ public class TranslationController {
     prevError = 0;
     final Rotation2d direction = target.minus(measurement).getAngle();
     final double distance = measurement.getDistance(target);
-    prevSetpoint =
-        new State(
-            -distance, veloInDirection(measurementVelo, direction));
+    prevSetpoint = new State(-distance, veloInDirection(measurementVelo, direction));
   }
 }

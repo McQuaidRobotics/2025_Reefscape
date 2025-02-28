@@ -109,24 +109,19 @@ public class OperatorTarget implements StructSerializable {
   public Command gotoTargetCmd(Localizer localizer) {
     Supplier<Command> c =
         () ->
-            Commands.deadline(
+            Commands.parallel(
                 SwerveCommands.moveTo(
                     subsystems.swerve,
                     localizer,
                     targetLocation(),
                     PathObstacles.fromReefSide(side)),
-                SuperStructureCommands.holdAt(
-                    subsystems.superStructure,
-                    superStructureState));
+                SuperStructureCommands.holdAt(subsystems.superStructure, superStructureState));
     return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure);
   }
 
   public Command gotoSuperStructureTargetCmd() {
     Supplier<Command> c =
-        () ->
-            SuperStructureCommands.holdAt(
-                subsystems.superStructure,
-                superStructureState);
+        () -> SuperStructureCommands.holdAt(subsystems.superStructure, superStructureState);
     return makeRefreshableCmd(c, subsystems.superStructure);
   }
 

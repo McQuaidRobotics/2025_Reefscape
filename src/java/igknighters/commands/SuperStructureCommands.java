@@ -29,18 +29,13 @@ public class SuperStructureCommands {
                 kWrist.DEFAULT_TOLERANCE * state.toleranceScalar * scalar));
   }
 
-  public static Command holdAt(
-      SuperStructure superStructure, SuperStructureState state) {
+  public static Command holdAt(SuperStructure superStructure, SuperStructureState state) {
     return superStructure
-        .run(
-            () ->
-                superStructure.goTo(
-                    state.elevatorMeters, state.wristRads))
+        .run(() -> superStructure.goTo(state.elevatorMeters, state.wristRads))
         .withName("HoldAt(" + state.name() + ")");
   }
 
-  public static Command moveTo(
-      SuperStructure superStructure, SuperStructureState state) {
+  public static Command moveTo(SuperStructure superStructure, SuperStructureState state) {
     return holdAt(superStructure, state)
         .until(isAt(superStructure, state))
         .withName("MoveTo(" + state.name() + ")");

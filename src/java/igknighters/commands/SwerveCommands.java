@@ -95,7 +95,8 @@ public class SwerveCommands {
             new RotationalController(10.0, 0.2, ControllerMode.STRICT));
     final PositionalController roughController =
         new PositionalController(
-            new TranslationController(kSwerve.MAX_DRIVE_VELOCITY, 0.0, 0.0, ControllerMode.UNPROFILED),
+            new TranslationController(
+                kSwerve.MAX_DRIVE_VELOCITY, 0.0, 0.0, ControllerMode.UNPROFILED),
             new RotationalController(7.0, 0.2, ControllerMode.STRICT));
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(preciseController, obstacles.obstacles);

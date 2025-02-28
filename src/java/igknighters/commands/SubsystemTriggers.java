@@ -36,8 +36,7 @@ public class SubsystemTriggers {
               return Math.abs(robotRotation.getX()) > tiltLimit
                   || Math.abs(robotRotation.getY()) > tiltLimit;
             })
-        .onTrue(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
+        .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
 
     atAlgaeState
         .and(subsystemIdle(intake))

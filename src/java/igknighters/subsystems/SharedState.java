@@ -9,7 +9,8 @@ public class SharedState {
   public boolean holdingAlgae = false;
 
   public double calcCgHeight() {
-    double t = (elevatorHeight - kElevator.MIN_HEIGHT) / (kElevator.MAX_HEIGHT - kElevator.MIN_HEIGHT);
+    double t =
+        (elevatorHeight - kElevator.MIN_HEIGHT) / (kElevator.MAX_HEIGHT - kElevator.MIN_HEIGHT);
     return kRobotIntrinsics.MIN_CG + t * (kRobotIntrinsics.MAX_CG - kRobotIntrinsics.MIN_CG);
   }
 

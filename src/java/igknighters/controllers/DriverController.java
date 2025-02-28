@@ -34,8 +34,7 @@ public class DriverController {
 
     /// FACE BUTTONS
     this.A.whileTrue(
-            SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.IntakeHp)
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHp)
                 .alongWith(
                     IntakeCommands.intakeCoral(subsystems.intake),
                     new TeleopSwerveHeadingCmd(
@@ -56,12 +55,10 @@ public class DriverController {
                         },
                         kSwerve.CONSTRAINTS))
                 .until(subsystems.intake.isHolding(Holding.CORAL)))
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.B.whileTrue(
-            SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.Processor)
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor)
                 .alongWith(
                     new TeleopSwerveHeadingCmd(
                         swerve,
@@ -69,8 +66,7 @@ public class DriverController {
                         localizer,
                         () -> AllianceFlipper.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
                         kSwerve.CONSTRAINTS)))
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.X.onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
@@ -83,16 +79,14 @@ public class DriverController {
                         localizer,
                         () -> AllianceFlipper.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
                         kSwerve.CONSTRAINTS)))
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
     this.RB.onTrue(IntakeCommands.expel(intake).withTimeout(0.4));
 
     this.LB
         .whileTrue(operatorTarget.gotoSuperStructureTargetCmd())
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // CENTER BUTTONS
     this.Back.onTrue(Commands.none());
@@ -108,8 +102,7 @@ public class DriverController {
     this.LT
         .and(operatorTarget.hasTarget())
         .whileTrue(operatorTarget.gotoTargetCmd(localizer))
-        .onFalse(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.RT
         .and(operatorTarget.superStructureAtSetpoint())
