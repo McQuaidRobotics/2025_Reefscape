@@ -111,12 +111,11 @@ public class OperatorTarget implements StructSerializable {
     Supplier<Command> c =
         () ->
             Commands.deadline(
-                SwerveCommands.moveToReef(
+                SwerveCommands.moveTo(
                     subsystems.swerve,
                     localizer,
                     targetLocation(),
-                    PathObstacles.fromReefSide(side),
-                    0.013),
+                    PathObstacles.fromReefSide(side)),
                 SuperStructureCommands.holdAt(
                     subsystems.superStructure,
                     superStructureState,

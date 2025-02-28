@@ -73,8 +73,7 @@ public class DriverController {
         .onFalse(
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
-    this.X.onTrue(
-        SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
+    this.X.onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
     this.Y.whileTrue(
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net, holdingAlgae)
@@ -107,14 +106,11 @@ public class DriverController {
     this.RS.onTrue(Commands.none());
 
     // // TRIGGERS
-    // this.LT
-    //     .and(operatorTarget.hasTarget())
-    //     .whileTrue(operatorTarget.gotoTargetCmd(localizer))
-    //     .onFalse(
-    //         SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow,
-    // holdingAlgae));
-
-    this.LT.onTrue(IntakeCommands.intakeAlgae(intake));
+    this.LT
+        .and(operatorTarget.hasTarget())
+        .whileTrue(operatorTarget.gotoTargetCmd(localizer))
+        .onFalse(
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow, holdingAlgae));
 
     this.RT
         .and(operatorTarget.superStructureAtSetpoint())

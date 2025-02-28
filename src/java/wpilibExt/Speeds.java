@@ -69,7 +69,7 @@ public sealed interface Speeds extends StructSerializable {
     }
 
     public double magnitudeInDirection(Rotation2d direction) {
-      return Math.abs(vx * direction.getCos() + vy * direction.getSin());
+      return vx * direction.getCos() + vy * direction.getSin();
     }
 
     public LinearVelocity vxMeasure() {

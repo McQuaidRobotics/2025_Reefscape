@@ -11,6 +11,7 @@ import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import java.util.function.Supplier;
 import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.Types.ChassisConstraints;
+import wayfinder.controllers.Types.ControllerMode;
 import wpilibExt.Speeds;
 
 public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
@@ -32,7 +33,7 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
     addRequirements(swerve);
     this.localizer = localizer;
     this.headingSupplier = heading;
-    this.rotController = new RotationalController(5.0, 0.02, false);
+    this.rotController = new RotationalController(3.5, 0.02, ControllerMode.STRICT);
     this.constraints = constraints;
   }
 

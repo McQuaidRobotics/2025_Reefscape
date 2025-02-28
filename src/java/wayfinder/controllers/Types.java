@@ -22,4 +22,13 @@ public class Types {
     public static final Struct<ChassisConstraints> struct =
         ProceduralStructGenerator.genRecord(ChassisConstraints.class);
   }
+
+  public enum ControllerMode {
+    STRICT,
+    REPLANNING,
+    UNPROFILED;
+
+    public static final Struct<ControllerMode> struct =
+        ProceduralStructGenerator.genEnum(ControllerMode.class);
+  }
 }
