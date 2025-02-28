@@ -99,7 +99,7 @@ public class SuperStructureVisualizer {
     double elevTop = elevatorMeters + (2.0 * Conv.INCHES_TO_METERS) + Stage.TUBE_HEIGHT;
     double distAboveFirst = elevTop - firstStageTop;
 
-    intake.setAngle(45.0 + Math.toDegrees(wristRads));
+    intake.setAngle(45.0 - Math.toDegrees(wristRads));
 
     if (distAboveFirst < 0.0) {
       stage1.setLength(0.0);

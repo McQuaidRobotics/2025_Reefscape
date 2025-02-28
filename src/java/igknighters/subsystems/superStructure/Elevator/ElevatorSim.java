@@ -43,9 +43,7 @@ public class ElevatorSim extends Elevator {
             shamMCX,
             KilogramSquareMeters.of(kElevator.MOI),
             GearRatio.reduction(kElevator.GEAR_RATIO),
-            Friction.of(
-                DCMotor.getKrakenX60Foc(2).withReduction(kElevator.GEAR_RATIO),
-                Volts.of(kElevator.kS)),
+            Friction.of(DCMotor.getKrakenX60Foc(2), Volts.of(kElevator.kS * 1.1)),
             // MechanismDynamics.forElevator(
             //     Pounds.of(22.0), Meters.of(ElevatorConstants.PULLEY_RADIUS * 2.0)),
             MechanismDynamics.zero(),
