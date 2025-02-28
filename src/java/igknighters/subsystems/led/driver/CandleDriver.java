@@ -39,7 +39,7 @@ public class CandleDriver extends Driver {
       newAnimations = true;
     } else {
       for (int i = 0; i < animations.length; i++) {
-        if (!animations[i].equals(lastAnimations[i])) {
+        if (animations[i].equals(lastAnimations[i])) {
           newAnimations = true;
           break;
         }

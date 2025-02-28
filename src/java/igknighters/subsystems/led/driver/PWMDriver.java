@@ -1,8 +1,12 @@
 package igknighters.subsystems.led.driver;
 
+import static edu.wpi.first.units.Units.Centimeter;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+
+import java.util.Map;
 
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -19,56 +23,49 @@ import igknighters.subsystems.led.LedAnimations.PartialAnimation;
 import igknighters.subsystems.led.LedAnimations.LedPattern.Rainbow;
 import igknighters.subsystems.led.LedAnimations.LedPattern.Solid;
 
-public abstract class PWMDriver extends Driver{
-  private final AddressableLED led1 = new AddressableLED(LedConstants.LED_PWM_PORT1);
-  private final AddressableLED led2 = new AddressableLED(LedConstants.LED_PWM_PORT2);
-  private final AddressableLEDBuffer led1Buffer = new AddressableLEDBuffer(LedConstants.LENGTH);
-  private final AddressableLEDBuffer led2Buffer = new AddressableLEDBuffer(LedConstants.LENGTH);
-  private final LEDPattern patternToRun = LEDPattern.solid(Color.kBlack);
+public class PWMDriver extends Driver{
+  private final AddressableLED led1;
+  private final AddressableLEDBuffer ledBuffer;
   private PartialAnimation[] animations;
+  private LEDPattern pattern;
 
   
-  public PWMDriver() {
-    led1.setLength(led1Buffer.getLength());
-    led2.setLength(led2Buffer.getLength());
+  
+  public PWMDriver(int length, int pwm){
+    led1 = new AddressableLED(pwm);
+    ledBuffer = new AddressableLEDBuffer(length);
+    led1.setLength(ledBuffer.getLength());
     led1.start();
-    led2.start();
+  }
+  public void animateLEDs(int index, int length, LEDPattern animation){
+    AddressableLEDBufferView ledView = ledBuffer.createView(index, index + length);
+    animation.applyTo(ledView);
+
   }
   @Override
-  public void animate(PartialAnimation[] animations) {
+  public void animate(LedAnimations.PartialAnimation[] animations) {
     this.animations = animations;
+    this.pattern = convertAnimationToPWMLibrary(animations[0]);
 
   }
-  public void convertAnimationToPWMLibrary(PartialAnimation animation, int length, int stripNumber){
-    if(animation.anim().pattern instanceof LedPattern.Rainbow rainbow) {
-      final LEDPattern m_rainbow = LEDPattern.rainbow(255, (int)rainbow.brightness());
-  
-      final Distance kLedSpacing = Meters.of(1 / 120.0);
+  public LEDPattern convertAnimationToPWMLibrary(PartialAnimation animation){
+    if(animation.anim().pattern instanceof LedPattern.Rainbow rainbowy) {
+      return LEDPattern.rainbow(255, (int)rainbowy.brightness());
 
-      final LEDPattern m_scrollingRainbow = m_rainbow.scrollAtAbsoluteSpeed(MetersPerSecond.of(rainbow.speed()), kLedSpacing);
-      if(stripNumber == 0){
-        m_scrollingRainbow.applyTo(led1Buffer);
-      }else{
-        m_scrollingRainbow.applyTo(led2Buffer);
-      }
     } else if(animation.anim().pattern instanceof LedPattern.Solid solid){
-      final LEDPattern m_solid = LEDPattern.solid(new Color(solid.r(), solid.b(), solid.b()));
-      if (stripNumber == 0){
-        m_solid.applyTo(led1Buffer);
-      } else{
-        m_solid.applyTo(led2Buffer);
-      }
+      return LEDPattern.solid(new Color(solid.r(), solid.g(), solid.b()));
+
     } else if(animation.anim().pattern instanceof LedPattern.Strobe strobe){
       final LEDPattern base = LEDPattern.solid(new Color(strobe.r(), strobe.g(), strobe.b()));
       final LEDPattern m_effect = base.blink(Seconds.of(strobe.speed()));
-      if (stripNumber == 0){
-        m_effect.applyTo(led1Buffer);
-      } else if(stripNumber == 1){
-        m_effect.applyTo(led2Buffer);
-      }
-    } else if(animation.anim().pattern instanceof LedPattern.Flow flow){
-      final LEDPattern flowy = LEDPattern.
-
+      return m_effect;
+    } else{
+      final LedPattern.Flow flow = (LedPattern.Flow) animation.anim().pattern;
+      final Map<Double, Color> map = Map.of(0.0, new Color(flow.r(), flow.g(), flow.b()));
+      final LEDPattern base = LEDPattern.solid(Color.kBlack);
+      final LEDPattern mask = LEDPattern.steps(map).scrollAtAbsoluteSpeed(MetersPerSecond.of(flow.speed()), Centimeter.of(.1));
+      base.mask(mask);
+      return base;
     }
 
     }
@@ -76,10 +73,9 @@ public abstract class PWMDriver extends Driver{
 
   @Override
   public void periodic() {
-    led1.setData(led1Buffer);
-    led2.setData(led2Buffer);
+    int length = animations.length;
+    animateLEDs(0, length, pattern);
   }
-  
   
   
 }

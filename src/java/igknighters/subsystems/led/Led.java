@@ -7,20 +7,24 @@ import igknighters.subsystems.Subsystems.SharedSubsystem;
 import igknighters.subsystems.led.LedAnimations.PartialAnimation;
 import igknighters.subsystems.led.driver.CandleDriver;
 import igknighters.subsystems.led.driver.Driver;
+import igknighters.subsystems.led.driver.PWMDriver;
 import igknighters.subsystems.led.driver.SimDriver;
 import wpilibExt.Tracer;
 
 public class Led implements SharedSubsystem {
-  private final Driver driver;
+  private final Driver[] driver;
 
   private int reservedId = 0;
   private boolean reserved = false;
 
   public Led() {
     if (Robot.isReal()) {
-      driver = new CandleDriver();
+      driver = new Driver[]{
+        new CandleDriver(),
+        new PWMDriver(9, 60)
+      };
     } else {
-      driver = new SimDriver();
+      driver = new Driver[]{new SimDriver()};
     }
   }
 
