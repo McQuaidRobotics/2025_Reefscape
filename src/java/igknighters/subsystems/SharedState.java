@@ -3,10 +3,12 @@ package igknighters.subsystems;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
+import wpilibExt.Speeds.FieldSpeeds;
 
 public class SharedState {
   public double elevatorHeight = kElevator.MIN_HEIGHT;
   public boolean holdingAlgae = false;
+  public FieldSpeeds fieldSpeeds = FieldSpeeds.kZero;
 
   public double calcCgHeight() {
     double t =

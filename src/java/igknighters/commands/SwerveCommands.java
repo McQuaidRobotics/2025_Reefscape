@@ -63,6 +63,10 @@ public class SwerveCommands {
     return Commands.run(() -> swerve.drive(speeds), swerve);
   }
 
+  public static Command stop(Swerve swerve) {
+    return Commands.runOnce(() -> swerve.drive(RobotSpeeds.kZero), swerve);
+  }
+
   private static Command followRepulsor(
       RepulsorFieldPlanner planner,
       Swerve swerve,

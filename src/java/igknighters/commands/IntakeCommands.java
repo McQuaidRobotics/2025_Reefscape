@@ -34,17 +34,18 @@ public class IntakeCommands {
   public static Command intakeCoral(Intake intake) {
     return runVoltage(intake, -3.0)
         .alongWith(Commands.run(() -> intake.setTryingToHold(Holding.CORAL)))
-        .until(intake.isHolding(Holding.CORAL));
+        .until(intake.isHolding(Holding.CORAL))
+        .withName("IntakeCoral");
   }
 
   public static Command intakeAlgae(Intake intake) {
     return runVoltage(intake, -10.0)
         .alongWith(Commands.run(() -> intake.setTryingToHold(Holding.ALGAE)))
         .until(intake.isHolding(Holding.ALGAE))
-        .ignoringDisable(true);
+        .withName("IntakeAlgae");
   }
 
   public static Command expel(Intake intake) {
-    return runVoltage(intake, 3.0).withTimeout(0.3);
+    return runVoltage(intake, 3.0).withTimeout(0.3).withName("IntakeExpel");
   }
 }

@@ -68,8 +68,7 @@ public class OperatorTarget implements StructSerializable {
   }
 
   public Pose2d targetLocation() {
-    double backoffDist = (kRobotIntrinsics.CHASSIS_WIDTH / 2.0)
-      + (5.0 * Conv.INCHES_TO_METERS);
+    double backoffDist = (kRobotIntrinsics.CHASSIS_WIDTH / 2.0) + (5.0 * Conv.INCHES_TO_METERS);
     var ret =
         switch (faceSubLocation) {
           case LEFT -> side.alignScoreLeft(backoffDist, subsystems.intake.gamepieceYOffset());
@@ -133,27 +132,34 @@ public class OperatorTarget implements StructSerializable {
                             superStructureState.minHeight(SuperStructureState.ScoreL3))
                         .until(isNearPose(localizer, targetLocation().getTranslation(), 0.1)),
                     SuperStructureCommands.holdAt(subsystems.superStructure, superStructureState)));
-    return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure);
+    return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure)
+        .withName("TeleopAlignFull");
   }
 
   public Command gotoSuperStructureTargetCmd() {
     Supplier<Command> c =
         () -> SuperStructureCommands.holdAt(subsystems.superStructure, superStructureState);
-    return makeRefreshableCmd(c, subsystems.superStructure);
+    return makeRefreshableCmd(c, subsystems.superStructure)
+        .withName("TeleopSuperStructureAlign");
   }
 
   public Command updateTargetCmd(
       FaceSubLocation faceSubLocation, SuperStructureState superStructureState) {
     return Commands.runOnce(() -> updateScoring(faceSubLocation, superStructureState))
-        .ignoringDisable(true);
+        .ignoringDisable(true)
+        .withName("UpdateTargetScoring");
   }
 
   public Command updateTargetCmd(Reef.Side side) {
-    return Commands.runOnce(() -> updateSide(side)).ignoringDisable(true);
+    return Commands.runOnce(() -> updateSide(side))
+        .ignoringDisable(true)
+        .withName("UpdateTargetFace");
   }
 
   public Command clearTargetCmd() {
-    return Commands.runOnce(() -> hasTarget = false).ignoringDisable(true);
+    return Commands.runOnce(() -> hasTarget = false)
+        .ignoringDisable(true)
+        .withName("ClearTarget");
   }
 
   public static final Struct<OperatorTarget> struct =

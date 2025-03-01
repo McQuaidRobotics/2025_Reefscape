@@ -64,6 +64,18 @@ public class VisionConstants {
             new LerpTable.LerpTableEntry(5.0, 0.5),
             new LerpTable.LerpTableEntry(8.0, 0.0));
 
+    public static final LerpTable LINEAR_VELOCITY_TRUST_COEFFICIENT =
+        new LerpTable(
+            new LerpTable.LerpTableEntry(0.0, 1.0),
+            new LerpTable.LerpTableEntry(2.5, 0.8),
+            new LerpTable.LerpTableEntry(kSwerve.MAX_DRIVE_VELOCITY, 0.1));
+
+    public static final LerpTable ANGULAR_VELOCITY_TRUST_COEFFICIENT =
+        new LerpTable(
+            new LerpTable.LerpTableEntry(0.0, 1.0),
+            new LerpTable.LerpTableEntry(7.0, 0.65),
+            new LerpTable.LerpTableEntry(12.0, 0.0));
+
     public static final HashMap<Integer, Double> TAG_RANKINGS =
         new HashMap<>() {
           {

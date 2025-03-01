@@ -188,6 +188,17 @@ public class Swerve implements ExclusiveSubsystem {
     drive(speeds, defaultConstraints);
   }
 
+  public void drivePreProfiled(Speeds speeds) {
+    RobotSpeeds robotSpeeds = speeds.asRobotRelative(getYaw());
+    log("targetSpeed", robotSpeeds);
+
+    setpoint =
+        setpointGeneratorBeta.generateSimpleSetpoint(
+            setpoint, robotSpeeds, ConstValues.PERIODIC_TIME);
+
+    setModuleStates(setpoint.moduleStates());
+  }
+
   /**
    * Offsets the gyro to define the current yaw as the supplied value
    *
