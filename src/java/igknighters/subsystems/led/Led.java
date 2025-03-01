@@ -19,12 +19,9 @@ public class Led implements SharedSubsystem {
 
   public Led() {
     if (Robot.isReal()) {
-      driver = new Driver[]{
-        new CandleDriver(),
-        new PWMDriver(9, 60)
-      };
+      driver = new Driver[] {new CandleDriver(), new PWMDriver(9, 60)};
     } else {
-      driver = new Driver[]{new SimDriver()};
+      driver = new Driver[] {new SimDriver()};
     }
   }
 
