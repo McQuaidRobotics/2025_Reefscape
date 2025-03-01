@@ -16,7 +16,7 @@ public class CameraSimPhoton extends CameraRealPhoton {
     this.simCtx = simCtx;
 
     final SimCameraProperties props = new SimCameraProperties();
-    props.setCalibError(0.05, 0.002);
+    props.setCalibError(0.5, 0.002);
     props.setFPS(43.0);
     props.setCalibration(1280, 800, Rotation2d.fromDegrees(79.1));
     props.setAvgLatencyMs(20.0);

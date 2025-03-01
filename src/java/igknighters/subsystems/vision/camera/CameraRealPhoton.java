@@ -78,9 +78,10 @@ public class CameraRealPhoton extends Camera {
     if (estRoboPose.targetsUsed.size() == 1) {
       var target = estRoboPose.targetsUsed.get(0);
       avgDistance = target.getBestCameraToTarget().getTranslation().getNorm();
-      if (DriverStation.isEnabled()) {
-        // its assumed that the gyro is generally correct when enabled
-        pose = reproject(target, gyroYawSupplier.apply(estRoboPose.timestampSeconds));
+      Rotation2d gyroAngle = gyroYawSupplier.apply(estRoboPose.timestampSeconds);
+      if (DriverStation.isTeleopEnabled() && gyroAngle != null) {
+        // its assumed that the gyro is generally correct when enabled in teleop
+        pose = reproject(target, gyroAngle);
       }
     } else {
       avgDistance =
@@ -100,8 +101,7 @@ public class CameraRealPhoton extends Camera {
               new Pose3d(previousUpdate.get().pose()),
               estRoboPose.timestampSeconds - previousUpdate.get().timestamp(),
               avgDistance,
-              seenTags,
-              List.of());
+              seenTags);
     }
 
     var u = new VisionUpdate(pose, estRoboPose.timestampSeconds, faults);

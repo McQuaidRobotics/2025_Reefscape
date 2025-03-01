@@ -79,7 +79,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     subsystems =
         new Subsystems(
             new Swerve(sharedState, localizer, simCtx),
-            new Vision(localizer, simCtx),
+            new Vision(sharedState, localizer, simCtx),
             new Led(),
             new SuperStructure(sharedState, simCtx),
             new Intake(sharedState, simCtx),

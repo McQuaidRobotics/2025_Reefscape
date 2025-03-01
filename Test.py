@@ -1,3 +1,6 @@
+import math
+
+
 def inches_to_meters(inches):
     return inches * 0.0254
 
@@ -18,3 +21,4 @@ CG_HEIGHT = calc_cg_height(80)
 
 print(CG_HEIGHT)
 print(((9.81 * (WHEEL_BASE_WIDTH / 2.0)) / (CG_HEIGHT)) * 0.75)
+print(math.hypot(WHEEL_BASE_WIDTH / 2.0, WHEEL_BASE_WIDTH / 2.0))

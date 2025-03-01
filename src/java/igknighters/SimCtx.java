@@ -60,13 +60,13 @@ public class SimCtx {
 
   private final ShamMechanismConfig driveMotorCfg =
       new ShamMechanismConfig(new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1))
-          .withFriction(Volts.of(kDriveMotor.kS), Volts.of(kDriveMotor.kS * 0.8))
+          .withFriction(Volts.of(kDriveMotor.kS), Volts.of(kDriveMotor.kS * 1.2))
           .withGearRatio(GearRatio.reduction(kDriveMotor.GEAR_RATIO))
           .withNoise(0.00)
           .withRotorInertia(KilogramSquareMeters.of(0.003));
   private final ShamMechanismConfig steerMotorCfg =
       new ShamMechanismConfig(new DCMotorExt(DCMotor.getFalcon500Foc(1), 1))
-          .withFriction(Volts.of(kSteerMotor.kS), Volts.of(kSteerMotor.kS * 0.8))
+          .withFriction(Volts.of(kSteerMotor.kS), Volts.of(kSteerMotor.kS * 1.2))
           .withGearRatio(GearRatio.reduction(kSteerMotor.GEAR_RATIO))
           .withNoise(0.00)
           .withRotorInertia(KilogramSquareMeters.of(0.02));
