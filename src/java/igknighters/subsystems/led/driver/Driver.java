@@ -1,7 +1,7 @@
 package igknighters.subsystems.led.driver;
 
 import igknighters.subsystems.Component;
-import igknighters.subsystems.led.LedAnimations.PartialAnimation;
+import igknighters.subsystems.led.LedAnimation.PartialAnimation;
 import monologue.Annotations.Log;
 
 public abstract class Driver extends Component {

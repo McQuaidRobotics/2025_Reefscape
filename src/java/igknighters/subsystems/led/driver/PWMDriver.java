@@ -9,9 +9,9 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
-import igknighters.subsystems.led.LedAnimations;
-import igknighters.subsystems.led.LedAnimations.LedPattern;
-import igknighters.subsystems.led.LedAnimations.PartialAnimation;
+import igknighters.subsystems.led.LedAnimation;
+import igknighters.subsystems.led.LedAnimation.LedPattern;
+import igknighters.subsystems.led.LedAnimation.PartialAnimation;
 import java.util.Map;
 
 public class PWMDriver extends Driver {
@@ -45,7 +45,7 @@ public class PWMDriver extends Driver {
    * @param animations The desired animations to be played
    */
   @Override
-  public void animate(LedAnimations.PartialAnimation[] animations) {
+  public void animate(LedAnimation.PartialAnimation[] animations) {
     for(int i = 0; i<animations.length; i++){
       animateLEDs(animations[i].offset(), animations[i].leds(), convertAnimationToPWMLibrary(animations[i]));
     }

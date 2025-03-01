@@ -7,7 +7,7 @@ import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.SchemaBuilder;
 import monologue.ProceduralStructGenerator.SchemaBuilder.EnumFieldBuilder;
 
-public enum LedAnimations implements StructSerializable {
+public enum LedAnimation implements StructSerializable {
   DISABLED(new LedPattern.Strobe(255, 0, 0, 0, 0.0)),
   TELEOP(new LedPattern.Flow(0, 255, 0, 0, 0.2, false)),
   AUTO(new LedPattern.Rainbow(1.0, 0.5, false)),
@@ -21,17 +21,17 @@ public enum LedAnimations implements StructSerializable {
 
   public final LedPattern pattern;
 
-  private LedAnimations(LedPattern pattern) {
+  private LedAnimation(PartialAnimation[] pattern) {
     this.pattern = pattern;
   }
 
-  public static final Struct<LedAnimations> struct =
-      new Struct<LedAnimations>() {
+  public static final Struct<LedAnimation> struct =
+      new Struct<LedAnimation>() {
         @Override
         public String getSchema() {
           SchemaBuilder schema = new SchemaBuilder();
           EnumFieldBuilder enumField = new EnumFieldBuilder("pattern");
-          for (LedAnimations anim : LedAnimations.values()) {
+          for (LedAnimation anim : LedAnimation.values()) {
             enumField.addVariant(anim.name(), anim.ordinal());
           }
           schema.addEnumField(enumField);
@@ -44,8 +44,8 @@ public enum LedAnimations implements StructSerializable {
         }
 
         @Override
-        public Class<LedAnimations> getTypeClass() {
-          return LedAnimations.class;
+        public Class<LedAnimation> getTypeClass() {
+          return LedAnimation.class;
         }
 
         @Override
@@ -54,13 +54,13 @@ public enum LedAnimations implements StructSerializable {
         }
 
         @Override
-        public void pack(ByteBuffer bb, LedAnimations value) {
+        public void pack(ByteBuffer bb, LedAnimation value) {
           bb.put((byte) value.ordinal());
         }
 
         @Override
-        public LedAnimations unpack(ByteBuffer bb) {
-          return LedAnimations.values()[bb.get()];
+        public LedAnimation unpack(ByteBuffer bb) {
+          return LedAnimation.values()[bb.get()];
         }
 
         @Override
@@ -98,7 +98,7 @@ public enum LedAnimations implements StructSerializable {
    * @param offset The number of LEDs to offset the animation by
    * @param anim The animation to pass through the CANdle
    */
-  public static record PartialAnimation(int leds, int offset, LedAnimations anim)
+  public static record PartialAnimation(int leds, int offset, LedAnimation anim)
       implements StructSerializable {
 
     public LedPattern getPattern() {

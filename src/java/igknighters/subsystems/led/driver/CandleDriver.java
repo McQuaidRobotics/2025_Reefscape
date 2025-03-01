@@ -11,8 +11,8 @@ import com.ctre.phoenix.led.StrobeAnimation;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
-import igknighters.subsystems.led.LedAnimations.LedPattern;
-import igknighters.subsystems.led.LedAnimations.PartialAnimation;
+import igknighters.subsystems.led.LedAnimation.LedPattern;
+import igknighters.subsystems.led.LedAnimation.PartialAnimation;
 import monologue.Annotations.Log;
 
 public class CandleDriver extends Driver {

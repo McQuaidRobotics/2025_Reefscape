@@ -1,6 +1,6 @@
 package igknighters.subsystems.led.driver;
 
-import igknighters.subsystems.led.LedAnimations.PartialAnimation;
+import igknighters.subsystems.led.LedAnimation.PartialAnimation;
 
 public class SimDriver extends Driver {
   @Override
