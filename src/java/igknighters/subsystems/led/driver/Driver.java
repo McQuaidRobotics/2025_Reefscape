@@ -13,4 +13,5 @@ public abstract class Driver extends Component {
    * @param animations The animations to be played
    */
   public abstract void animate(PartialAnimation[] animations);
+  public abstract void periodic();
 }

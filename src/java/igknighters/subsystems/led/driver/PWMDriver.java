@@ -17,8 +17,6 @@ import java.util.Map;
 public class PWMDriver extends Driver {
   private final AddressableLED led1;
   private final AddressableLEDBuffer ledBuffer;
-  private PartialAnimation[] animations;
-  private LEDPattern pattern;
 
   public PWMDriver(int length, int pwm) {
     led1 = new AddressableLED(pwm);
@@ -26,14 +24,26 @@ public class PWMDriver extends Driver {
     led1.setLength(ledBuffer.getLength());
     led1.start();
   }
-
-  public void animateLEDs(int index, int length, LEDPattern animationy) {
+  /**
+   * this function applies an animation onto the LED Buffer
+   * 
+   * @param index how far into the LED strip to start the animation
+   * @param length how long the animation should be
+   * @param anamation what animation to apply to the LEDs
+   * 
+   * @return void applys the animation to the LED buffer
+   */
+  public void animateLEDs(int index, int length, LEDPattern anamation) {
     AddressableLEDBufferView ledView = ledBuffer.createView(index, index + length);
-    animationy.applyTo(ledView);
+    anamation.applyTo(ledView);
 
 
   }
-
+  /**
+   * This function calls animate LEDS to apply the animations to the LED buffer using animateLEds and convertAnimationToPWMLibrary
+   * 
+   * @param animations The desired animations to be played
+   */
   @Override
   public void animate(LedAnimations.PartialAnimation[] animations) {
     for(int i = 0; i<animations.length; i++){
@@ -41,7 +51,11 @@ public class PWMDriver extends Driver {
     }
     led1.setData(ledBuffer);
   }
-
+  /**
+   * Takes a animation from the local LedPattern and converts it into a WPILIB LEDPattern so it can be applied to a LED buffer
+   * @param animation
+   * @return LEDPattern that is converted from the local LedPattern into the WPILIB LEDPattern
+   */
   public LEDPattern convertAnimationToPWMLibrary(PartialAnimation animation) {
     if (animation.anim().pattern instanceof LedPattern.Rainbow rainbowy) {
       return LEDPattern.rainbow(255, (int) rainbowy.brightness());
@@ -64,9 +78,12 @@ public class PWMDriver extends Driver {
       return base;
     }
   }
+  /**
+   * This function is called by the periodic function in the Led subsystem to update the LEDs to match the Buffer
+   */
 
   @Override
   public void periodic() {
-    int length = animations.length;
+    led1.setData(ledBuffer);
   }
 }

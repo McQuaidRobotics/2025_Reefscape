@@ -19,18 +19,24 @@ public class Led implements SharedSubsystem {
 
   public Led() {
     if (Robot.isReal()) {
-      driver = new Driver[] {new CandleDriver(), new PWMDriver(9, 60)};
+      driver = new Driver[] {new CandleDriver(), new PWMDriver(60, 9)};
     } else {
       driver = new Driver[] {new SimDriver()};
     }
   }
+  /**
+   * This is the function that is called to animate the LEDs using the animations from the LedAnimations enum (not WPILIB)
+   * @param handle
+   * @param animation
+   */
 
   public void animate(int handle, LedAnimations animation) {
     if (handle != reservedId && handle >= 0) {
       return;
     }
-    driver.animate(
-        new PartialAnimation[] {new PartialAnimation(kLed.LED_COUNT, kLed.CANDLE_LEDS, animation)});
+    for (Driver drivey: driver)
+      drivey.animate(
+          new PartialAnimation[] {new PartialAnimation(kLed.LED_COUNT, kLed.CANDLE_LEDS, animation)});
   }
 
   public int reserve() {
@@ -47,7 +53,8 @@ public class Led implements SharedSubsystem {
   @Override
   public void periodic() {
     Tracer.startTrace("LedPeriodic");
-    Tracer.traceFunc("DriverPeriodic", driver::periodic);
+    for(Driver drivey: driver)
+      Tracer.traceFunc("DriverPeriodic", drivey::periodic);
 
     Tracer.startTrace("DefaultPatternSetter");
     if (!reserved) {

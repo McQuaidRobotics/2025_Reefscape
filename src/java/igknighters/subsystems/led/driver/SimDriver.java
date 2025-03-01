@@ -5,4 +5,6 @@ import igknighters.subsystems.led.LedAnimations.PartialAnimation;
 public class SimDriver extends Driver {
   @Override
   public void animate(PartialAnimation[] animations) {}
+  @Override
+  public void periodic() {}
 }

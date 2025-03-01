@@ -17,7 +17,7 @@ public enum LedAnimations implements StructSerializable {
   WARNING(new LedPattern.Strobe(252, 169, 15, 30, 0.7)),
   Intake(new LedPattern.Solid(100, 0, 100, 100)),
   Off(new LedPattern.Solid(0, 0, 0, 0)),
-  LinedUp(new LedPattern.Solid(0, 0, 255, 0));
+  LinedUp(new LedPattern.Strobe(100, 100, 255, 0, 0.1));
 
   public final LedPattern pattern;
 
