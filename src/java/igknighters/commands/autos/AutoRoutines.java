@@ -37,4 +37,11 @@ public class AutoRoutines extends AutoCommands {
         .addTrajectories(StartingOutside, FarLeft_L, Intake, FarLeft_R, Intake, CloseLeft_R, Intake)
         .build();
   }
+
+  public Command testMove() {
+    return newAuto("testMove")
+        .addTrajectoriesMoveOnly(
+            StartingOutside, FarLeft_L, Intake, FarLeft_R, Intake, CloseLeft_R, Intake)
+        .build();
+  }
 }

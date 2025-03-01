@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import igknighters.Localizer;
 import igknighters.subsystems.swerve.Swerve;
 import java.util.function.Consumer;
+import monologue.GlobalField;
 import monologue.Monologue;
 import wpilibExt.Speeds;
 
@@ -37,6 +38,7 @@ public class AutoController implements Consumer<SwerveSample> {
     double rotationFeedback =
         rController.calculate(pose.getRotation().getRadians(), referenceState.heading);
 
+    GlobalField.setObject("autoControllerTarget", referenceState.getPose());
     Monologue.log(
         "Auto/Controller/TranslationalError",
         Math.hypot(xController.getError(), yController.getError()));

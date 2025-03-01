@@ -139,8 +139,7 @@ public class OperatorTarget implements StructSerializable {
   public Command gotoSuperStructureTargetCmd() {
     Supplier<Command> c =
         () -> SuperStructureCommands.holdAt(subsystems.superStructure, superStructureState);
-    return makeRefreshableCmd(c, subsystems.superStructure)
-        .withName("TeleopSuperStructureAlign");
+    return makeRefreshableCmd(c, subsystems.superStructure).withName("TeleopSuperStructureAlign");
   }
 
   public Command updateTargetCmd(
@@ -157,9 +156,7 @@ public class OperatorTarget implements StructSerializable {
   }
 
   public Command clearTargetCmd() {
-    return Commands.runOnce(() -> hasTarget = false)
-        .ignoringDisable(true)
-        .withName("ClearTarget");
+    return Commands.runOnce(() -> hasTarget = false).ignoringDisable(true).withName("ClearTarget");
   }
 
   public static final Struct<OperatorTarget> struct =

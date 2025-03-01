@@ -164,9 +164,19 @@ public class AutoCommands {
     }
 
     public ReefscapeAuto addTrajectories(Waypoints... waypoints) {
-      for (int i = 0; i < waypoints.length - 2; i++) {
+      for (int i = 0; i < waypoints.length - 2; i += 2) {
         addScoringTrajectory(waypoints[i], waypoints[i + 1]);
         addIntakeTrajectory(waypoints[i + 1], waypoints[i + 2]);
+      }
+      return this;
+    }
+
+    public ReefscapeAuto addTrajectoriesMoveOnly(Waypoints... waypoints) {
+      headCommand.addCommands(routine.trajectory(waypoints[0].to(waypoints[1])).resetOdometry());
+      for (int i = 0; i < waypoints.length - 2; i += 2) {
+        bodyCommand.addCommands(
+            routine.trajectory(waypoints[i].to(waypoints[i + 1])).cmd(),
+            routine.trajectory(waypoints[i + 1].to(waypoints[i + 2])).cmd());
       }
       return this;
     }
