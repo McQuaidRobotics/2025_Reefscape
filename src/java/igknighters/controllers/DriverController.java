@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
+import igknighters.commands.ClimberCommands;
 import igknighters.commands.IntakeCommands;
 import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
@@ -89,7 +90,7 @@ public class DriverController {
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // CENTER BUTTONS
-    this.Back.onTrue(Commands.none());
+    this.Back.onTrue(SuperStructureCommands.home(superStructure, true));
 
     this.Start.onTrue(SwerveCommands.orientGyro(swerve, localizer));
 
@@ -110,16 +111,13 @@ public class DriverController {
         .onTrue(IntakeCommands.expel(intake).until(intake.isHolding(Holding.NONE)));
 
     // DPAD
-    this.DPR.whileTrue(
-        climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
+    this.DPR.whileTrue(ClimberCommands.stow(climber));
 
-    this.DPD.whileTrue(
-        climber.run(() -> climber.voltageOut(-6.0)).finallyDo(() -> climber.voltageOut(0.0)));
+    this.DPD.whileTrue(ClimberCommands.stage(climber));
 
-    this.DPL.onTrue(SuperStructureCommands.home(superStructure));
+    this.DPL.onTrue(climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    this.DPU.whileTrue(
-        climber.run(() -> climber.voltageOut(6.0)).finallyDo(() -> climber.voltageOut(0.0)));
+    this.DPU.whileTrue(ClimberCommands.climb(climber));
   }
 
   // Define the buttons on the controller

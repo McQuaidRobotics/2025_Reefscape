@@ -94,7 +94,10 @@ public class SuperStructure implements ExclusiveSubsystem {
         && wrist.isAtPosition(wristAngle, wristTolerance));
   }
 
-  public void home(double wristAngle, double wristTolerance) {
+  public void home(double wristAngle, double wristTolerance, boolean force) {
+    if (force) {
+      elevator.resetHomed();
+    }
     wrist.goToPosition(wristAngle);
     if (wrist.isAtPosition(wristAngle, wristTolerance)) {
       elevator.home();

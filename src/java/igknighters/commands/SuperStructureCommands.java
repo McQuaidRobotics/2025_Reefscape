@@ -41,11 +41,14 @@ public class SuperStructureCommands {
         .withName("MoveTo(" + state.name() + ")");
   }
 
-  public static Command home(SuperStructure superStructure) {
+  public static Command home(SuperStructure superStructure, boolean force) {
     return superStructure
-        .run(() -> superStructure.home(kWrist.MAX_ANGLE, 0.1))
+        .startRun(
+          () -> superStructure.home(kWrist.MAX_ANGLE, 0.1, true),
+          () -> superStructure.home(kWrist.MAX_ANGLE, 0.1, false)
+        )
         .until(superStructure::isHomed)
-        .unless(superStructure::isHomed)
+        .unless(() -> superStructure.isHomed() && !force)
         .withName("HomeSuperStructure");
   }
 }

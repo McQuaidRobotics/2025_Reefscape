@@ -70,12 +70,15 @@ public class PivotReal extends Pivot {
     cfg.Feedback.FeedbackRemoteSensorID = PivotConstants.ENCODER_ID;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = PivotConstants.FORWARD_LIMIT;
+    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = PivotConstants.FORWARD_LIMIT * Conv.RADIANS_TO_ROTATIONS;
     cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = PivotConstants.REVERSE_LIMIT;
+    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
 
-    cfg.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.MAX_VELOCITY;
-    cfg.MotionMagic.MotionMagicAcceleration = PivotConstants.MAX_ACCELERATION;
+    cfg.MotorOutput.PeakReverseDutyCycle = 0.6;
+    cfg.Voltage.PeakReverseVoltage = 7.2;
+
+    // cfg.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.MAX_VELOCITY;
+    // cfg.MotionMagic.MotionMagicAcceleration = PivotConstants.MAX_ACCELERATION;
 
     cfg.CurrentLimits.StatorCurrentLimit = PivotConstants.STATOR_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLimit = PivotConstants.SUPPLY_CURRENT_LIMIT;
