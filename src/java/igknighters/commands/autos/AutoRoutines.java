@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.subsystems.Subsystems;
+import java.util.function.Supplier;
 
 public class AutoRoutines extends AutoCommands {
 
@@ -24,6 +25,11 @@ public class AutoRoutines extends AutoCommands {
                   .andThen(() -> DriverStationSim.setEnabled(false))
                   .withName("Simulated Auto Ender"));
     }
+  }
+
+  public Supplier<Command> trajTest(String trajName) {
+    return () ->
+        Commands.sequence(factory.resetOdometry(trajName), factory.trajectoryCmd(trajName));
   }
 
   public Command test() {

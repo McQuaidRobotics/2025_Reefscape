@@ -7,13 +7,14 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WrapperCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.commands.IntakeCommands;
 import igknighters.commands.SuperStructureCommands;
+import igknighters.commands.SwerveCommands;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.intake.Intake.Holding;
@@ -77,76 +78,77 @@ public class AutoCommands {
     return new WrapperCommand(command) {
       @Override
       public void initialize() {
-        logAutoEvent(this.getName(), "started");
+        logAutoEvent(this.getName(), "Started");
         super.initialize();
       }
 
       @Override
       public void end(boolean interrupted) {
         super.end(interrupted);
-        logAutoEvent(this.getName(), "ended");
+        logAutoEvent(this.getName(), "Finished");
       }
     };
   }
 
   public Command afterIntake(AutoTrajectory traj) {
     return loggedCmd(
-        Commands.sequence(Commands.waitUntil(intake.isHolding(Holding.CORAL)), traj.cmd())
+        Commands.sequence(
+                Commands.waitUntil(intake.isHolding(Holding.CORAL)),
+                traj.cmd(),
+                SwerveCommands.stop(swerve))
             .withName("AfterIntake" + traj.getRawTrajectory().name()));
   }
 
   public Command afterScore(AutoTrajectory traj) {
     return loggedCmd(
-        Commands.sequence(Commands.waitUntil(intake.isHolding(Holding.NONE)), traj.cmd())
+        Commands.sequence(
+                Commands.waitUntil(intake.isHolding(Holding.NONE)),
+                traj.cmd(),
+                SwerveCommands.stop(swerve))
             .withName("AfterScore" + traj.getRawTrajectory().name()));
   }
 
-  public void orchestrateSuperstructure(AutoTrajectory traj) {
+  public void orchestrateScoring(AutoTrajectory traj) {
     traj.active()
-        .onTrue(
-            loggedCmd(
-                SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.Stow)));
+        .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
     traj.atTimeBeforeEnd(timeBeforeL4Move)
         .onTrue(
-            loggedCmd(
-                SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.ScoreL4)));
+            loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.ScoreL4)));
   }
 
   public void orchestrateIntake(AutoTrajectory traj) {
     traj.active()
+        .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
+    traj.atTimeBeforeEnd(
+            Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.98))
         .onTrue(
-            loggedCmd(
-                SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.Stow)));
-    traj.atTimeBeforeEnd(timeBeforeIntakeMove * 1.2)
-        .onTrue(
-            loggedCmd(
-                SuperStructureCommands.holdAt(
-                    superStructure, SuperStructureState.IntakeHp)));
+            loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHp)))
+        .onTrue(loggedCmd(IntakeCommands.intakeCoral(intake)));
   }
 
   protected class ReefscapeAuto {
     private final AutoRoutine routine;
     private final ParallelCommandGroup headCommand = new ParallelCommandGroup();
     private final SequentialCommandGroup bodyCommand = new SequentialCommandGroup();
-    private Trigger scorePathDone;
     private boolean trajectoryBeenAdded = false;
 
     private ReefscapeAuto(AutoRoutine routine) {
       this.routine = routine;
-      scorePathDone = new Trigger(routine.loop(), () -> false);
+      headCommand.addCommands(SuperStructureCommands.home(superStructure));
     }
 
     public ReefscapeAuto addScoringTrajectory(Waypoints start, Waypoints end) {
       final AutoTrajectory traj = routine.trajectory(start.to(end));
       if (!trajectoryBeenAdded) {
         trajectoryBeenAdded = true;
-        headCommand.addCommands(traj.resetOdometry(), SuperStructureCommands.home(superStructure));
+        headCommand.addCommands(traj.resetOdometry());
       }
-      bodyCommand.addCommands(afterIntake(traj));
-      scorePathDone = scorePathDone.or(traj.recentlyDone());
+      orchestrateScoring(traj);
+      bodyCommand.addCommands(
+          afterIntake(traj),
+          Commands.waitUntil(
+              SuperStructureCommands.isAt(superStructure, SuperStructureState.ScoreL4)),
+          new ScheduleCommand(loggedCmd(IntakeCommands.expel(intake))));
       return this;
     }
 
@@ -154,8 +156,9 @@ public class AutoCommands {
       final AutoTrajectory traj = routine.trajectory(start.to(end));
       if (!trajectoryBeenAdded) {
         trajectoryBeenAdded = true;
-        headCommand.addCommands(traj.resetOdometry(), SuperStructureCommands.home(superStructure));
+        headCommand.addCommands(traj.resetOdometry());
       }
+      orchestrateIntake(traj);
       bodyCommand.addCommands(afterScore(traj));
       return this;
     }
@@ -169,9 +172,6 @@ public class AutoCommands {
     }
 
     public Command build() {
-      scorePathDone
-          .and(SuperStructureCommands.isAt(superStructure, SuperStructureState.ScoreL4))
-          .onTrue(IntakeCommands.expel(intake));
       routine.active().onTrue(headCommand.withName(routine.name() + "_AutoHead"));
       routine
           .active()

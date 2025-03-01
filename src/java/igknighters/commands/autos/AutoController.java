@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import igknighters.Localizer;
 import igknighters.subsystems.swerve.Swerve;
 import java.util.function.Consumer;
+import monologue.Monologue;
 import wpilibExt.Speeds;
 
 public class AutoController implements Consumer<SwerveSample> {
@@ -36,10 +37,14 @@ public class AutoController implements Consumer<SwerveSample> {
     double rotationFeedback =
         rController.calculate(pose.getRotation().getRadians(), referenceState.heading);
 
-    Speeds out =
-        Speeds.fromFieldRelative(xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback)
-            .asRobotRelative(pose.getRotation());
+    Monologue.log(
+        "Auto/Controller/TranslationalError",
+        Math.hypot(xController.getError(), yController.getError()));
+    Monologue.log("Auto/Controller/RotationalError", rController.getError());
 
-    swerve.drive(out);
+    Speeds out =
+        Speeds.fromFieldRelative(xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback);
+
+    swerve.drivePreProfiled(out);
   }
 }
