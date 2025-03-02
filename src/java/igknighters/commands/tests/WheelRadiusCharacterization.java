@@ -16,7 +16,7 @@ import wpilibExt.Speeds;
 
 public class WheelRadiusCharacterization extends Command {
   private static final TunableDouble characterizationSpeed =
-      TunableValues.getDouble("WheelRadiusCharacterization/SpeedRadsPerSec", 0.1);
+      TunableValues.getDouble("WheelRadiusCharacterization/SpeedRadsPerSec", 1.4);
   private static final double driveRadius = kSwerve.DRIVEBASE_RADIUS;
 
   private final DoubleSupplier gyroYawRadsSupplier;
@@ -46,14 +46,14 @@ public class WheelRadiusCharacterization extends Command {
 
   private double[] wheelPositions() {
     return Arrays.stream(swerve.getModulePositions())
-        .mapToDouble(s -> s.distanceMeters / kWheel.CIRCUMFERENCE)
+        .mapToDouble(s -> s.distanceMeters / kWheel.RADIUS)
         .toArray();
   }
 
   public WheelRadiusCharacterization(Swerve swerve, Direction omegaDirection) {
     this.swerve = swerve;
     this.omegaDirection = omegaDirection;
-    this.gyroYawRadsSupplier = () -> swerve.getYaw().getRadians();
+    this.gyroYawRadsSupplier = () -> swerve.getYawForNow();
     addRequirements(swerve);
   }
 

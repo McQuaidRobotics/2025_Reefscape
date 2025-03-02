@@ -13,6 +13,9 @@ import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
+import igknighters.commands.tests.WheelRadiusCharacterization;
+import igknighters.commands.tests.WheelRadiusCharacterization.Direction;
+import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
@@ -44,7 +47,7 @@ public class DriverController {
                         localizer,
                         () -> {
                           final double angle = 54.0;
-                          if (false) {
+                          if (localizer.translation().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
                             return AllianceFlipper.isBlue()
                                 ? Rotation2d.fromDegrees(180 - angle)
                                 : Rotation2d.fromDegrees(angle);
@@ -97,7 +100,7 @@ public class DriverController {
     // STICKS
     this.LS.onTrue(Commands.none());
 
-    this.RS.onTrue(Commands.none());
+    this.RS.onTrue(new WheelRadiusCharacterization(swerve, Direction.COUNTER_CLOCKWISE));
 
     // // TRIGGERS
     this.LT
@@ -115,7 +118,8 @@ public class DriverController {
 
     this.DPD.whileTrue(ClimberCommands.stage(climber));
 
-    this.DPL.onTrue(climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
+    this.DPL.onTrue(
+        climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
     this.DPU.whileTrue(ClimberCommands.climb(climber));
   }

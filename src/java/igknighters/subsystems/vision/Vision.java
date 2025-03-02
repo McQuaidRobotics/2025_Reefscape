@@ -20,6 +20,7 @@ import igknighters.subsystems.vision.VisionConstants.kVision;
 import igknighters.subsystems.vision.camera.Camera;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.subsystems.vision.camera.CameraDisabled;
+import igknighters.subsystems.vision.camera.CameraRealPhoton;
 import igknighters.subsystems.vision.camera.CameraSimPhoton;
 import igknighters.util.plumbing.Channel.Sender;
 import igknighters.util.plumbing.TunableValues;
@@ -117,8 +118,8 @@ public class Vision implements SharedSubsystem {
         return new CameraSimPhoton(config, simCtx, this::rotationAtTimestamp);
         // return new CameraDisabled(config.cameraName(), config.cameraTransform());
       } else {
-        // return new CameraRealPhoton(config, this::rotationAtTimestamp);
-        return new CameraDisabled(config.cameraName(), config.cameraTransform());
+        return new CameraRealPhoton(config, this::rotationAtTimestamp);
+        // return new CameraDisabled(config.cameraName(), config.cameraTransform());
       }
     } catch (Exception e) {
       // if the camera fails to initialize, return a disabled camera to not crash the code

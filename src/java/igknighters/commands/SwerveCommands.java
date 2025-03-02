@@ -90,13 +90,13 @@ public class SwerveCommands {
       Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
     final ChassisConstraints constraints =
         new ChassisConstraints(
-            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.8, kSwerve.MAX_DRIVE_VELOCITY),
+            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.5, kSwerve.MAX_DRIVE_VELOCITY / 2.0),
             new Constraints(
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
     final PositionalController preciseController =
         new PositionalController(
-            new TranslationController(3.0, 0.09, 0.13, ControllerMode.STRICT),
-            new RotationalController(10.0, 0.2, ControllerMode.STRICT));
+            new TranslationController(2.0, 0.00, 0.0, ControllerMode.STRICT),
+            new RotationalController(4.0, 0.2, ControllerMode.STRICT));
     final PositionalController roughController =
         new PositionalController(
             new TranslationController(

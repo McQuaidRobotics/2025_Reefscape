@@ -8,6 +8,7 @@ public final class ConstValues {
   public static final class Conv {
     public static final double FEET_TO_METERS = 0.3048;
     public static final double INCHES_TO_METERS = 0.0254;
+    public static final double METERS_TO_INCHES = 1.0 / INCHES_TO_METERS;
     public static final double DEGREES_TO_RADIANS = Math.PI / 180.0;
     public static final double DEGREES_TO_ROTATIONS = 1.0 / 360.0;
     public static final double ROTATIONS_TO_RADIANS = TAU;

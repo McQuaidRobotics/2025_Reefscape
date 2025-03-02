@@ -46,7 +46,7 @@ public class SuperStructureConstants {
         (PULLEY_RADIUS * PULLEY_RADIUS)
             * (STAGES[0].mass + STAGES[1].mass + STAGES[2].mass + STAGES[3].mass);
 
-    public static final double MIN_HEIGHT = 12.75 * Conv.INCHES_TO_METERS;
+    public static final double MIN_HEIGHT = 13.1 * Conv.INCHES_TO_METERS;
     public static final double MAX_HEIGHT = 80.5 * Conv.INCHES_TO_METERS;
     public static final double DEFAULT_TOLERANCE = 0.75 * Conv.INCHES_TO_METERS;
 

@@ -19,39 +19,33 @@ public class VisionConstants {
     public static final CameraConfig[] CONFIGS =
         new CameraConfig[] {
           new CameraConfig(
-              "photon_front_forward_1",
+              "front_left",
               new Pose3d(
-                  new Translation3d(
-                      6.3 * Conv.INCHES_TO_METERS,
-                      -11.5 * Conv.INCHES_TO_METERS,
-                      7.0 * Conv.INCHES_TO_METERS),
+                  new Translation3d(0.158, -0.269, 0.187),
                   new Rotation3d(
-                      0.0, -17.5 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
+                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
           new CameraConfig(
-              "photon_front_forward_2",
+              "front_right",
               new Pose3d(
-                  new Translation3d(
-                      6.3 * Conv.INCHES_TO_METERS,
-                      11.5 * Conv.INCHES_TO_METERS,
-                      7.0 * Conv.INCHES_TO_METERS),
+                  new Translation3d(0.203, 0.292, 0.176),
                   new Rotation3d(
-                      0.0, -17.5 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
+                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
           new CameraConfig(
-              "photon_climber_1",
+              "back_left",
               new Pose3d(
                   new Translation3d(
                       kSwerve.MODULE_CHASSIS_LOCATIONS[1].getX(),
                       kSwerve.MODULE_CHASSIS_LOCATIONS[1].getY(),
-                      7.0 * Conv.INCHES_TO_METERS),
+                      8.0 * Conv.INCHES_TO_METERS),
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -145.0 * Conv.DEGREES_TO_RADIANS))),
           new CameraConfig(
-              "photon_climber_2",
+              "back_right",
               new Pose3d(
                   new Translation3d(
                       kSwerve.MODULE_CHASSIS_LOCATIONS[2].getX(),
                       kSwerve.MODULE_CHASSIS_LOCATIONS[2].getY(),
-                      7.0 * Conv.INCHES_TO_METERS),
+                      8.0 * Conv.INCHES_TO_METERS),
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 145.0 * Conv.DEGREES_TO_RADIANS))),
         };

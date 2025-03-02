@@ -3,6 +3,7 @@ package wayfinder.controllers;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import monologue.Monologue;
 import wayfinder.controllers.Types.Constraints;
 import wayfinder.controllers.Types.ControllerMode;
 import wayfinder.controllers.Types.State;
@@ -74,6 +75,8 @@ public class TranslationController {
       }
       prevError = positionError;
 
+      // Monologue.log("tcError", positionError);
+
       double dirVelo =
           MathUtil.clamp(
               (kP * positionError) + (kI * totalError) + (kD * errorDerivative),
@@ -108,6 +111,8 @@ public class TranslationController {
                 constraints.maxAcceleration() * period / kI);
       }
       prevError = positionError;
+
+      Monologue.log("tcError", positionError);
 
       prevSetpoint = setpoint;
 

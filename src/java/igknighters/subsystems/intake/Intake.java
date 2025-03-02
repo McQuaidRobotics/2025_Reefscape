@@ -83,6 +83,8 @@ public class Intake implements ExclusiveSubsystem {
         && currentlyHolding == Holding.NONE
         && rollers.isLaserTripped()) {
       currentlyHolding = Holding.CORAL;
+    } else if (!rollers.isLaserTripped()) {
+      currentlyHolding = Holding.NONE;
     }
     shared.holdingAlgae = getHolding() == Holding.ALGAE;
   }

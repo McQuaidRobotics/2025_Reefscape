@@ -11,6 +11,7 @@ import igknighters.constants.FieldConstants;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
 import igknighters.subsystems.vision.Vision.VisionUpdateFlaws;
 import igknighters.util.logging.BootupLogger;
+import igknighters.util.plumbing.TunableValues;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,11 +76,14 @@ public class CameraRealPhoton extends Camera {
     VisionUpdateFlaws faults = VisionUpdateFlaws.empty();
     double avgDistance;
     Pose2d pose = estRoboPose.estimatedPose.toPose2d();
+    log("tagsUsed", estRoboPose.targetsUsed.size());
     if (estRoboPose.targetsUsed.size() == 1) {
       var target = estRoboPose.targetsUsed.get(0);
       avgDistance = target.getBestCameraToTarget().getTranslation().getNorm();
       Rotation2d gyroAngle = gyroYawSupplier.apply(estRoboPose.timestampSeconds);
-      if (DriverStation.isTeleopEnabled() && gyroAngle != null) {
+      if (DriverStation.isTeleopEnabled()
+          && gyroAngle != null
+          && TunableValues.getBoolean("useReproject", true).value()) {
         // its assumed that the gyro is generally correct when enabled in teleop
         pose = reproject(target, gyroAngle);
       }
