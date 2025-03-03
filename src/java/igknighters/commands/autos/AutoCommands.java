@@ -120,10 +120,9 @@ public class AutoCommands {
     traj.active()
         .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
     traj.atTimeBeforeEnd(
-            Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.98))
-        .onTrue(
-            loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHp)))
-        .onTrue(loggedCmd(IntakeCommands.intakeCoral(intake)));
+      Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.98)
+    ).onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHp)))
+      .onTrue(loggedCmd(IntakeCommands.intakeCoral(intake)));
   }
 
   protected class ReefscapeAuto {
