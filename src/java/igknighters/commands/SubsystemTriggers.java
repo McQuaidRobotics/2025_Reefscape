@@ -38,9 +38,10 @@ public class SubsystemTriggers {
     new Trigger(
             () -> {
               final Rotation3d robotRotation = swerve.getRotation();
-              final double tiltLimit = Units.degreesToRadians(17.5);
-              return Math.abs(robotRotation.getX()) > tiltLimit
-                  || Math.abs(robotRotation.getY()) > tiltLimit;
+              final double frontBackTiltLimit = Units.degreesToRadians(10.0);
+              final double sideToSideTiltLimit = Units.degreesToRadians(7.0);
+              return Math.abs(robotRotation.getX()) > frontBackTiltLimit
+                  || Math.abs(robotRotation.getY()) > sideToSideTiltLimit;
             })
         .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
 

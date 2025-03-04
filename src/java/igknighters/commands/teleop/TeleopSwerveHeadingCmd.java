@@ -68,6 +68,6 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
             0.0 * Conv.DEGREES_TO_RADIANS,
             constraints.rotation());
 
-    swerve.drive(Speeds.fromFieldRelative(vt.getX(), vt.getY(), omega), constraints);
+    swerve.drivePreProfiled(Speeds.fromFieldRelative(vt.getX(), vt.getY(), omega));
   }
 }

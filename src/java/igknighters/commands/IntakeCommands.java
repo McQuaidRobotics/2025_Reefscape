@@ -52,6 +52,6 @@ public class IntakeCommands {
   public static Command bounce(Intake intake) {
     return Commands.sequence(
         IntakeCommands.runVoltage(intake, 1.0).withTimeout(0.1),
-        IntakeCommands.runVoltage(intake, -2.0).withTimeout(0.15));
+        IntakeCommands.runVoltage(intake, -12.0).withTimeout(0.15));
   }
 }
