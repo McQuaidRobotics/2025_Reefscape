@@ -13,8 +13,6 @@ import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
-import igknighters.commands.tests.WheelRadiusCharacterization;
-import igknighters.commands.tests.WheelRadiusCharacterization.Direction;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake.Holding;
@@ -60,7 +58,7 @@ public class DriverController {
                         kSwerve.CONSTRAINTS))
                 .until(subsystems.intake.isHolding(Holding.CORAL)))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
-        .onFalse(IntakeCommands.bounce(intake));
+        .onFalse(IntakeCommands.bounce(intake).andThen(IntakeCommands.runCurrent(intake, -40.0)));
 
     this.B.whileTrue(
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor)
@@ -73,7 +71,13 @@ public class DriverController {
                         kSwerve.CONSTRAINTS)))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
-    this.X.onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+    this.X.whileTrue(
+            SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeFloor)
+                .alongWith(IntakeCommands.intakeAlgae(intake)))
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+        .negate()
+        .and(intake.isHolding(Holding.ALGAE))
+        .onTrue(IntakeCommands.runCurrent(intake, 70.0));
 
     this.Y.whileTrue(
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net)
@@ -91,22 +95,26 @@ public class DriverController {
 
     this.LB
         .whileTrue(operatorTarget.gotoSuperStructureTargetCmd())
+        .and(LT.negate())
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // CENTER BUTTONS
-    this.Back.onTrue(SuperStructureCommands.home(superStructure, true));
+    this.Back.onTrue(
+        SuperStructureCommands.home(superStructure, true)
+            .andThen(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
 
     this.Start.onTrue(SwerveCommands.orientGyro(swerve, localizer));
 
     // STICKS
     this.LS.onTrue(Commands.none());
 
-    this.RS.onTrue(new WheelRadiusCharacterization(swerve, Direction.COUNTER_CLOCKWISE));
+    this.RS.onTrue(Commands.none());
 
     // // TRIGGERS
     this.LT
         .and(operatorTarget.hasTarget())
         .whileTrue(operatorTarget.gotoTargetCmd(localizer))
+        .and(LB.negate())
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.RT.whileTrue(Commands.repeatingSequence(IntakeCommands.bounce(intake)));

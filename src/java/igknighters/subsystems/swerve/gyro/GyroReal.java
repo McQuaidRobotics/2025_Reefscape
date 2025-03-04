@@ -26,7 +26,7 @@ public class GyroReal extends Gyro {
     gyro = new Pigeon2(kGyro.PIGEON_ID, kSwerve.CANBUS);
     Pigeon2Configuration cfg = new Pigeon2Configuration();
     cfg.MountPose.MountPoseRoll = 180.0;
-    CANRetrier.retryStatusCode(() -> gyro.getConfigurator().apply(new Pigeon2Configuration()), 5);
+    CANRetrier.retryStatusCode(() -> gyro.getConfigurator().apply(cfg), 5);
 
     rollSignal = gyro.getRoll();
     pitchSignal = gyro.getPitch();

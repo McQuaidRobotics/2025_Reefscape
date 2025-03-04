@@ -21,6 +21,7 @@ public enum SuperStructureState implements StructSerializable {
   Processor(20.0 * INCHES_TO_METERS, 0.0, 1.5),
   Net(MAX_HEIGHT, MAX_ANGLE, 1.0),
   IntakeHp(26.875 * INCHES_TO_METERS, -72.0 * DEGREES_TO_RADIANS, 0.8),
+  IntakeFloor(MIN_HEIGHT, 15.0 * DEGREES_TO_RADIANS, 0.8),
   AntiTilt(MIN_HEIGHT, MAX_ANGLE, 1.0);
 
   public final double elevatorMeters;
