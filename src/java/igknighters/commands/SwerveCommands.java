@@ -101,15 +101,18 @@ public class SwerveCommands {
         new PositionalController(
             new TranslationController(
                 kSwerve.MAX_DRIVE_VELOCITY, 0.0, 0.0, ControllerMode.UNPROFILED),
-            new RotationalController(7.0, 0.2, ControllerMode.STRICT));
+            new RotationalController(4.0, 0.2, ControllerMode.STRICT));
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(preciseController, obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
         new RepulsorFieldPlanner(roughController, PathObstacles.Other.obstacles);
 
+    final Transform2d roughPoseOffset = new Transform2d(1.0, 0, Rotation2d.kZero);
     return Commands.sequence(
         swerve.runOnce(
-            () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
+            () ->
+                roughController.reset(
+                    localizer.pose(), swerve.getFieldSpeeds(), target.plus(roughPoseOffset))),
         followRepulsor(roughPlanner, swerve, localizer, target, () -> constraints)
             .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
         swerve.runOnce(

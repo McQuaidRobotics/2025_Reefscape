@@ -59,7 +59,8 @@ public class DriverController {
                         },
                         kSwerve.CONSTRAINTS))
                 .until(subsystems.intake.isHolding(Holding.CORAL)))
-        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+        .onFalse(IntakeCommands.bounce(intake));
 
     this.B.whileTrue(
             SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor)
@@ -108,10 +109,7 @@ public class DriverController {
         .whileTrue(operatorTarget.gotoTargetCmd(localizer))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
-    this.RT
-        .and(operatorTarget.superStructureAtSetpoint())
-        .and(new Trigger(intake.isHolding(Holding.NONE)).negate())
-        .onTrue(IntakeCommands.expel(intake).until(intake.isHolding(Holding.NONE)));
+    this.RT.whileTrue(Commands.repeatingSequence(IntakeCommands.bounce(intake)));
 
     // DPAD
     this.DPR.whileTrue(ClimberCommands.stow(climber));

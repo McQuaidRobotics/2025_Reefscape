@@ -80,8 +80,8 @@ public class Pathing {
   };
 
   private static final Obstacle[] REEF_LARGE = {
-    new Obstacle.TeardropObstacle(new Translation2d(4.49, 4), 1.4, 2.5, 1.5, 0.7, 0.8),
-    new Obstacle.TeardropObstacle(new Translation2d(13.08, 4), 1.4, 2.5, 1.5, 0.7, 0.8),
+    new Obstacle.TeardropObstacle(new Translation2d(4.49, 4), 1.4, 2.5, 1.5, 0.7, 1.2),
+    new Obstacle.TeardropObstacle(new Translation2d(13.08, 4), 1.4, 2.5, 1.5, 0.7, 1.2),
   };
 
   private static final Obstacle[] WALL =
@@ -116,9 +116,8 @@ public class Pathing {
     public final Obstacle[] obstacles;
 
     private static Rectangle2d faceHitBox(Pose2d face) {
-      final Transform2d transform =
-          new Transform2d(new Translation2d(1.0, 0.0), Rotation2d.kZero);
-      return new Rectangle2d(face.plus(transform), 2.4, 1.5);
+      final Transform2d transform = new Transform2d(new Translation2d(1.0, 0.0), Rotation2d.kZero);
+      return new Rectangle2d(face.plus(transform), 2.4, 1.0);
     }
 
     PathObstacles(Pose2d hitBox, Obstacle[]... obstacles) {

@@ -11,6 +11,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
@@ -63,6 +64,7 @@ public class WristReal extends Wrist {
     cfg.Slot0.kG = kWrist.KG;
     cfg.Slot0.kV = kWrist.KV * Conv.RADIANS_TO_ROTATIONS;
     cfg.Slot0.kA = kWrist.KA;
+    cfg.Slot0.GravityType = GravityTypeValue.Elevator_Static;
 
     cfg.Feedback.RotorToSensorRatio = kWrist.GEAR_RATIO;
     cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;

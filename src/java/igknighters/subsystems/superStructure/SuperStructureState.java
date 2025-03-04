@@ -20,7 +20,7 @@ public enum SuperStructureState implements StructSerializable {
   ScoreStaged(1.4, MAX_ANGLE, 2.0),
   Processor(20.0 * INCHES_TO_METERS, 0.0, 1.5),
   Net(MAX_HEIGHT, MAX_ANGLE, 1.0),
-  IntakeHp(27.0 * INCHES_TO_METERS, -65.0 * DEGREES_TO_RADIANS, 0.8),
+  IntakeHp(26.875 * INCHES_TO_METERS, -72.0 * DEGREES_TO_RADIANS, 0.8),
   AntiTilt(MIN_HEIGHT, MAX_ANGLE, 1.0);
 
   public final double elevatorMeters;
