@@ -14,8 +14,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * A utility to standardize flipping of coordinate data based on the current alliance across
@@ -34,13 +32,30 @@ public class ChoreoAllianceFlipUtil {
      * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
      * heading.
      */
-    MIRRORED {
+    MIRRORED_X {
       public double flipX(double x) {
         return activeYear.fieldLength - x;
       }
 
       public double flipY(double y) {
         return y;
+      }
+
+      public double flipHeading(double heading) {
+        return Math.PI - heading;
+      }
+    },
+    /**
+     * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
+     * heading.
+     */
+    MIRRORED_Y {
+      public double flipX(double x) {
+        return x;
+      }
+
+      public double flipY(double y) {
+        return activeYear.fieldWidth - y;
       }
 
       public double flipHeading(double heading) {
@@ -96,8 +111,8 @@ public class ChoreoAllianceFlipUtil {
           put(2020, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
           put(2021, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
           put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
-          put(2023, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
-          put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
+          put(2023, new YearInfo(Flipper.MIRRORED_X, 16.5811, 8.19912));
+          put(2024, new YearInfo(Flipper.MIRRORED_X, 16.5811, 8.19912));
           put(2025, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
         }
       };
@@ -186,7 +201,8 @@ public class ChoreoAllianceFlipUtil {
    */
   public static Rotation2d flip(Rotation2d rotation) {
     return switch (activeYear.flipper) {
-      case MIRRORED -> new Rotation2d(-rotation.getCos(), rotation.getSin());
+      case MIRRORED_X -> new Rotation2d(-rotation.getCos(), rotation.getSin());
+      case MIRRORED_Y -> new Rotation2d(rotation.getCos(), -rotation.getSin());
       case ROTATE_AROUND -> new Rotation2d(-rotation.getCos(), -rotation.getSin());
     };
   }
@@ -231,51 +247,5 @@ public class ChoreoAllianceFlipUtil {
    */
   public static Pose3d flip(Pose3d pose) {
     return new Pose3d(flip(pose.getTranslation()), flip(pose.getRotation()));
-  }
-
-  /**
-   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a
-   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Pose2d&gt;
-   *
-   * @param poseOpt The pose to flip
-   * @param allianceOpt The current alliance
-   * @param doFlip Returns true if flipping based on the alliance should be done
-   * @return empty if the alliance is empty; the original pose optional if the alliance is blue or
-   *     doFlip is false; the flipped pose optional if the alliance is red and doFlip is true
-   */
-  public static Supplier<Optional<Pose2d>> optionalFlippedPose2d(
-      Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, boolean doFlip) {
-    return () ->
-        doFlip
-            ? allianceOpt
-                .get()
-                .flatMap(ally -> poseOpt.map(pose -> ally == Alliance.Red ? flip(pose) : pose))
-            : poseOpt;
-  }
-
-  /**
-   * Creates a Supplier&lt;Optional&lt;Translation2d&gt;&gt; that is flipped based on a
-   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Translation2d&gt;
-   *
-   * @param translationOpt The translation to flip
-   * @param allianceOpt The current alliance
-   * @param doFlip Returns true if flipping based on the alliance should be done
-   * @return empty if the alliance is empty; the original translation optional if the alliance is
-   *     blue or doFlip is false; the flipped translation optional if the alliance is red and doFlip
-   *     is true
-   */
-  public static Supplier<Optional<Translation2d>> optionalFlippedTranslation2d(
-      Optional<Translation2d> translationOpt,
-      Supplier<Optional<Alliance>> allianceOpt,
-      boolean doFlip) {
-    return () ->
-        doFlip
-            ? allianceOpt
-                .get()
-                .flatMap(
-                    ally ->
-                        translationOpt.map(
-                            translation -> ally == Alliance.Red ? flip(translation) : translation))
-            : translationOpt;
   }
 }

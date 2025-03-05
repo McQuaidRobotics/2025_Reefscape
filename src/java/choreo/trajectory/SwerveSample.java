@@ -191,7 +191,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   @Override
   public SwerveSample flipped() {
     return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED ->
+      case MIRRORED_X ->
           new SwerveSample(
               this.t,
               ChoreoAllianceFlipUtil.flipX(this.x),
@@ -220,6 +220,36 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
                 this.moduleForcesY()[0],
                 this.moduleForcesY()[3],
                 this.moduleForcesY()[2]
+              });
+      case MIRRORED_Y ->
+          new SwerveSample(
+              this.t,
+              ChoreoAllianceFlipUtil.flipX(this.x),
+              ChoreoAllianceFlipUtil.flipY(this.y),
+              ChoreoAllianceFlipUtil.flipHeading(this.heading),
+              this.vx,
+              -this.vy,
+              -this.omega,
+              this.ax,
+              -this.ay,
+              -this.alpha,
+              // FL, FR, BL, BR
+              // Mirrored
+              // -BL, -BR, -FL, -FR
+              new double[] {
+                -this.moduleForcesX()[2],
+                -this.moduleForcesX()[3],
+                -this.moduleForcesX()[0],
+                -this.moduleForcesX()[1]
+              },
+              // FL, FR, BL, BR
+              // Mirrored
+              // BL, BR, FL, FR
+              new double[] {
+                this.moduleForcesY()[2],
+                this.moduleForcesY()[3],
+                this.moduleForcesY()[0],
+                this.moduleForcesY()[1]
               });
       case ROTATE_AROUND ->
           new SwerveSample(

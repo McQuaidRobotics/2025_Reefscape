@@ -127,7 +127,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
 
   public DifferentialSample flipped() {
     return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED ->
+      case MIRRORED_X ->
           new DifferentialSample(
               t,
               ChoreoAllianceFlipUtil.flipX(x),
@@ -140,6 +140,19 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
               al,
               fr,
               fl);
+      case MIRRORED_Y ->
+          new DifferentialSample(
+              t,
+              ChoreoAllianceFlipUtil.flipX(x), // No-op for mirroring
+              ChoreoAllianceFlipUtil.flipY(y),
+              ChoreoAllianceFlipUtil.flipHeading(heading),
+              vl,
+              vr,
+              -omega,
+              al,
+              ar,
+              fl,
+              fr);
       case ROTATE_AROUND ->
           new DifferentialSample(
               t,
