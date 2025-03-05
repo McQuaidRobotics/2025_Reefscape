@@ -5,7 +5,7 @@ import igknighters.constants.ConstValues.kLed;
 import igknighters.subsystems.Subsystems.SharedSubsystem;
 import igknighters.subsystems.led.LedAnimation.PartialAnimation;
 import igknighters.subsystems.led.driver.Driver;
-import igknighters.subsystems.led.driver.PWMDriver;
+
 import igknighters.subsystems.led.driver.SimDriver;
 import wpilibExt.Tracer;
 
@@ -13,14 +13,15 @@ public class Led implements SharedSubsystem {
   private final Driver[] drivers;
 
   public Led() {
-    if (Robot.isReal()) {
-      drivers = new Driver[] {
-        new PWMDriver(60, 9),
-        new PWMDriver(60, 0)
-      };
-    } else {
-      drivers = new Driver[] {new SimDriver()};
-    }
+    // if (Robot.isReal()) {
+    //   // drivers = new Driver[] {
+    //   //   new PWMDriver(60, 9),
+    //   //   new PWMDriver(60, 0)
+    //   };
+    // } else {
+    //   drivers = new Driver[] {new SimDriver()};
+    // }
+    drivers = new Driver[] {new SimDriver()};
   }
   /**
    * This is the function that is called to animate the LEDs using the animations from the LedAnimations enum (not WPILIB)

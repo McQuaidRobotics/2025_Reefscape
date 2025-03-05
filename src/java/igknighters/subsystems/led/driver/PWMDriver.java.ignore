@@ -9,7 +9,9 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
 import igknighters.subsystems.led.LedAnimation;
+import igknighters.subsystems.led.stateLEDAnimation;
 import igknighters.subsystems.led.LedAnimation.LedPattern;
 import igknighters.subsystems.led.LedAnimation.PartialAnimation;
 import java.util.Map;
@@ -51,19 +53,22 @@ public class PWMDriver extends Driver {
     }
     led1.setData(ledBuffer);
   }
+  public Command applyStateAnimation(stateLEDAnimation state){
+    return run(( -> animate)
+  }
   /**
    * Takes a animation from the local LedPattern and converts it into a WPILIB LEDPattern so it can be applied to a LED buffer
    * @param animation
    * @return LEDPattern that is converted from the local LedPattern into the WPILIB LEDPattern
    */
-  public LEDPattern convertAnimationToPWMLibrary(PartialAnimation animation) {
-    if (animation.anim().pattern instanceof LedPattern.Rainbow rainbowy) {
+  public LEDPattern convertAnimationToPWMLibrary(LedAnimation animation) {
+    if (animation.pattern instanceof LedPattern.Rainbow rainbowy) {
       return LEDPattern.rainbow(255, (int) rainbowy.brightness());
 
-    } else if (animation.anim().pattern instanceof LedPattern.Solid solid) {
+    } else if (animation.pattern instanceof LedPattern.Solid solid) {
       return LEDPattern.solid(new Color(solid.r(), solid.g(), solid.b()));
 
-    } else if (animation.anim().pattern instanceof LedPattern.Strobe strobe) {
+    } else if (animation.pattern instanceof LedPattern.Strobe strobe) {
       final LEDPattern base = LEDPattern.solid(new Color(strobe.r(), strobe.g(), strobe.b()));
       final LEDPattern m_effect = base.blink(Seconds.of(strobe.speed()));
       return m_effect;

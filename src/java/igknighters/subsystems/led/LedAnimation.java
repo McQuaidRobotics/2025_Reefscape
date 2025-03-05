@@ -2,6 +2,8 @@ package igknighters.subsystems.led;
 
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
+import edu.wpi.first.wpilibj.LEDPattern;
+
 import java.nio.ByteBuffer;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.SchemaBuilder;
@@ -21,7 +23,7 @@ public enum LedAnimation implements StructSerializable {
 
   public final LedPattern pattern;
 
-  private LedAnimation(PartialAnimation[] pattern) {
+  private LedAnimation(LedPattern pattern) {
     this.pattern = pattern;
   }
 
