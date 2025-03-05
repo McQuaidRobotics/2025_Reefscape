@@ -108,10 +108,16 @@ def rpm_to_rad_per_sec(rpm: float) -> float:
 KRAKEN: DCMotor = DCMotor.make_motor(12.0, 7.09, 366.0, 2.0, rpm_to_rad_per_sec(6000.0), 1)
 KRAKEN_FOC: DCMotor = DCMotor.make_motor(12.0, 9.37, 483.0, 2.0, rpm_to_rad_per_sec(5800.0), 1)
 
-speed = 0.0
-voltage = 5.0
-stator = KRAKEN_FOC.get_current_limited(speed, voltage, 40.0, 120.0)
-print(KRAKEN_FOC.get_voltage(KRAKEN_FOC.get_torque(stator), speed))
-print(stator)
-print(KRAKEN_FOC.get_torque(stator))
-print(KRAKEN_FOC.get_supply_current(speed, voltage, stator))
+# simulate a kraken stalled at a requested 12v with a 40A supply limit and a 60A stator limit
+MOTOR = KRAKEN_FOC
+v_bat = 12.0
+speed = rpm_to_rad_per_sec(5200)
+voltage = 11.5
+stator = MOTOR.get_current_limited(speed, voltage, 70.0, 120.0)
+new_voltage = MOTOR.get_voltage(MOTOR.get_torque(stator), speed)
+supply = MOTOR.get_supply_current(speed, v_bat, stator)
+print(f"stator current: {stator}A")
+print(f"torque: {MOTOR.get_torque(stator)}Nm")
+print(f"voltage: {new_voltage}V")
+print(f"supply current: {supply}A")
+print(f"power draw: {v_bat * supply}W")

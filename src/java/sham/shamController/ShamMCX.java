@@ -331,7 +331,6 @@ public class ShamMCX implements ShamMotorController {
   }
 
   public void controlVoltage(Voltage volts) {
-
     logger.log("control/position", Radians.zero());
     logger.log("control/velocity", RadiansPerSecond.zero());
     logger.log("control/acceleration", RadiansPerSecondPerSecond.zero());

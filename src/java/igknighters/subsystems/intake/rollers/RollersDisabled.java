@@ -1,6 +1,7 @@
 package igknighters.subsystems.intake.rollers;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import igknighters.subsystems.intake.IntakeConstants.RollerConstants;
 
 public class RollersDisabled extends Rollers {
   public RollersDisabled() {
@@ -8,18 +9,8 @@ public class RollersDisabled extends Rollers {
   }
 
   @Override
-  public boolean hasAlgae() {
-    return false;
-  }
+  public void voltageOut(double voltage) {}
 
   @Override
-  public boolean hasCoral() {
-    return false;
-  }
-
-  @Override
-  public void setVoltage(double voltage) {}
-
-  @Override
-  public void setCurrent(double current) {}
+  public void currentOut(double current) {}
 }

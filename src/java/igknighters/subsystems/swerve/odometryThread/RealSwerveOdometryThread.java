@@ -6,18 +6,18 @@ import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import igknighters.constants.ConstValues;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
 import igknighters.util.plumbing.Channel.Sender;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.DoubleFunction;
 
 public class RealSwerveOdometryThread extends SwerveOdometryThread {
   private final Thread thread;
   private final BaseStatusSignal[] signals = new BaseStatusSignal[(MODULE_COUNT * 4) + 4];
-  private final DoubleFunction<Double> driveRotsToMeters;
 
   protected final MedianFilter peakRemover = new MedianFilter(3);
   protected final LinearFilter lowPass = LinearFilter.movingAverage(50);
@@ -33,13 +33,9 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
     return Double.longBitsToDouble(array[index].get());
   }
 
-  public RealSwerveOdometryThread(
-      int hz,
-      DoubleFunction<Double> driveRotsToMeters,
-      Sender<SwerveDriveSample> swerveDataSender) {
+  public RealSwerveOdometryThread(int hz, Sender<SwerveDriveSample> swerveDataSender) {
     super(hz, swerveDataSender);
     this.thread = new Thread(this::run, "OdometryThread");
-    this.driveRotsToMeters = driveRotsToMeters;
     for (int i = 0; i < MODULE_COUNT * 2; i++) {
       moduleStates[i] = new AtomicLong();
     }
@@ -47,8 +43,10 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
     gyroStates[1] = new AtomicLong();
   }
 
-  private static double latencyCompensatedValue(
-      BaseStatusSignal signal, BaseStatusSignal signalSlope) {
+  private double latencyCompensatedValue(BaseStatusSignal signal, BaseStatusSignal signalSlope) {
+    if (!enableLatencyCompensation) {
+      return signal.getValueAsDouble();
+    }
     final double maxLatencySeconds = ConstValues.PERIODIC_TIME * 5;
     final double nonCompensatedSignal = signal.getValueAsDouble();
     final double changeInSignal = signalSlope.getValueAsDouble();
@@ -92,23 +90,17 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
       int offset = 4 * i;
       positions[i] =
           new SwerveModulePosition(
-              driveRotsToMeters.apply(
-                  enableLatencyCompensation
-                      ? latencyCompensatedValue(signals[offset + 0], signals[offset + 1])
-                      : signals[offset + 0].getValueAsDouble()),
+              latencyCompensatedValue(signals[offset + 0], signals[offset + 1])
+                  * kWheel.CIRCUMFERENCE,
               Rotation2d.fromRotations(
-                  enableLatencyCompensation
-                      ? latencyCompensatedValue(signals[offset + 2], signals[offset + 3])
-                      : signals[offset + 2].getValueAsDouble()));
+                  latencyCompensatedValue(signals[offset + 2], signals[offset + 3])));
     }
     return positions;
   }
 
   private Rotation2d getGyroRotation() {
     return Rotation2d.fromDegrees(
-        enableLatencyCompensation
-            ? latencyCompensatedValue(signals[MODULE_COUNT * 4], signals[(MODULE_COUNT * 4) + 1])
-            : signals[MODULE_COUNT * 4].getValueAsDouble());
+        latencyCompensatedValue(signals[MODULE_COUNT * 4], signals[(MODULE_COUNT * 4) + 1]));
   }
 
   private double getAcceleration() {
@@ -128,6 +120,10 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
         long elapsedTime = RobotController.getFPGATime() - startTime;
 
         updateTimeMicros.set((long) lowPass.calculate(peakRemover.calculate(elapsedTime)));
+
+        if (DriverStation.isTestEnabled()) {
+          continue;
+        }
 
         for (int i = 0; i < MODULE_COUNT; i++) {
           int positionOffset = 4 * i;

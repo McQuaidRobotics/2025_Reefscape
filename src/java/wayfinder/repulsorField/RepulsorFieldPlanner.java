@@ -6,9 +6,12 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.ArrayList;
 import java.util.List;
+import monologue.Monologue;
 import wayfinder.controllers.CircularSlewRateLimiter;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.Types.ChassisConstraints;
+import wpilibExt.MutTranslation2d;
+import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
 
 public class RepulsorFieldPlanner {
@@ -17,12 +20,14 @@ public class RepulsorFieldPlanner {
       new CircularSlewRateLimiter(Math.PI * 5.0);
   private final List<Obstacle> fixedObstacles = new ArrayList<>();
 
+  private final MutTranslation2d netForceVec = new MutTranslation2d();
+
   public RepulsorFieldPlanner(PositionalController controller, Obstacle... obstacles) {
     fixedObstacles.addAll(List.of(obstacles));
     this.controller = controller;
   }
 
-  Translation2d getForce(Translation2d curLocation, Translation2d goal) {
+  void getForce(Translation2d curLocation, Translation2d goal, MutTranslation2d out) {
     // push towards goal
     double xForceGoal = 0.0;
     double yForceGoal = 0.0;
@@ -42,33 +47,53 @@ public class RepulsorFieldPlanner {
     double yForceObs = 0.0;
     for (Obstacle obs : fixedObstacles) {
       Translation2d force = obs.getForceAtPosition(curLocation, goal);
+      if (!Double.isFinite(xForceObs) || !Double.isFinite(yForceObs)) {
+        continue;
+      }
       xForceObs += force.getX();
       yForceObs += force.getY();
-
-      if (!Double.isFinite(xForceObs) || !Double.isFinite(yForceObs)) {
-        System.out.println("nan force");
-      }
     }
 
-    return new Translation2d(xForceGoal + xForceObs, yForceGoal + yForceObs);
+    out.set(xForceGoal + xForceObs, yForceGoal + yForceObs);
+  }
+
+  Translation2d getForce(Translation2d curLocation, Translation2d goal) {
+    MutTranslation2d out = new MutTranslation2d();
+    getForce(curLocation, goal, out);
+    return out;
   }
 
   public FieldSpeeds calculate(
-      double period, Pose2d measurement, Pose2d target, ChassisConstraints constraints) {
-    double straightDist = measurement.getTranslation().getDistance(target.getTranslation()) * 1.5;
-    if (straightDist < 0.2) {
-      return controller.calculate(period, measurement, target, Transform2d.kZero, constraints);
-    } else {
-      Translation2d netForce = getForce(measurement.getTranslation(), target.getTranslation());
-      netForce = netForce.times(straightDist / netForce.getNorm());
-      Rotation2d targetDirection = netForce.getAngle();
-      Rotation2d limited =
-          new Rotation2d(rotationRateLimiter.calculate(targetDirection.getRadians()));
-      netForce = netForce.rotateBy(limited.minus(targetDirection));
+      double period,
+      Pose2d measurement,
+      Speeds measurementVelo,
+      Pose2d target,
+      ChassisConstraints constraints) {
+    double straightDist = measurement.getTranslation().getDistance(target.getTranslation());
+    Monologue.log("straightDist", straightDist);
+    if (straightDist < 0.375) {
       return controller.calculate(
           period,
           measurement,
-          new Pose2d(measurement.getTranslation().plus(netForce), target.getRotation()),
+          measurementVelo,
+          target,
+          new Transform2d(0.01, 0.01, Rotation2d.kZero),
+          constraints);
+    } else {
+      getForce(measurement.getTranslation(), target.getTranslation(), netForceVec);
+      netForceVec.timesMut(straightDist / netForceVec.getNorm());
+      Rotation2d targetDirection = netForceVec.getAngle();
+      Rotation2d limited =
+          new Rotation2d(rotationRateLimiter.calculate(targetDirection.getRadians()));
+      return controller.calculate(
+          period,
+          measurement,
+          measurementVelo,
+          new Pose2d(
+              measurement
+                  .getTranslation()
+                  .plus(netForceVec.rotateBy(limited.minus(targetDirection))),
+              target.getRotation()),
           Transform2d.kZero,
           constraints);
     }
@@ -101,27 +126,4 @@ public class RepulsorFieldPlanner {
 
     return arrows;
   }
-
-  // public ArrayList<Translation2d> getTrajectory(
-  //     Translation2d goal, Translation2d loc, double stepSize_m) {
-  //   ArrayList<Translation2d> trajectory = new ArrayList<>();
-  //   Translation2d robot = loc;
-  //   for (int i = 0; i < 400; i++) {
-  //     var err = robot.minus(goal);
-  //     if (err.getNorm() < stepSize_m * 1.5) {
-  //       trajectory.add(goal);
-  //       break;
-  //     } else {
-  //       var netForce = getForce(robot, goal);
-  //       if (netForce.getNorm() == 0) {
-  //         break;
-  //       }
-  //       var step = new Translation2d(stepSize_m, netForce.getAngle());
-  //       var intermediateGoal = robot.plus(step);
-  //       trajectory.add(intermediateGoal);
-  //       robot = intermediateGoal;
-  //     }
-  //   }
-  //   return trajectory;
-  // }
 }

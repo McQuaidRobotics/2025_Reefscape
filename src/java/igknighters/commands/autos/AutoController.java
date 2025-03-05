@@ -4,7 +4,6 @@ import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import igknighters.Localizer;
-import igknighters.constants.ConstValues.kAuto;
 import igknighters.subsystems.swerve.Swerve;
 import java.util.function.Consumer;
 import wpilibExt.Speeds;
@@ -12,12 +11,9 @@ import wpilibExt.Speeds;
 public class AutoController implements Consumer<SwerveSample> {
   private final Swerve swerve;
   private final Localizer localizer;
-  private final PIDController xController =
-      new PIDController(kAuto.kTranslation.kP, kAuto.kTranslation.kI, kAuto.kTranslation.kD);
-  private final PIDController yController =
-      new PIDController(kAuto.kTranslation.kP, kAuto.kTranslation.kI, kAuto.kTranslation.kD);
-  private final PIDController rController =
-      new PIDController(kAuto.kRotation.kP, kAuto.kRotation.kI, kAuto.kRotation.kD);
+  private final PIDController xController = new PIDController(5.0, 0.0, 0.0);
+  private final PIDController yController = new PIDController(5.0, 0.0, 0.0);
+  private final PIDController rController = new PIDController(5.0, 0.0, 0.0);
 
   public AutoController(Swerve swerve, Localizer localizer) {
     this.localizer = localizer;

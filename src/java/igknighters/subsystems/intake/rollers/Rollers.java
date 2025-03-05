@@ -7,11 +7,12 @@ import monologue.Annotations.Log;
 public abstract class Rollers extends Component {
   private final double kt, kv;
 
-  @Log protected double current;
+  @Log protected double amps;
   @Log protected double volts;
-  @Log protected boolean hasAlgae;
-  @Log protected boolean hasCoral;
   @Log protected double radiansPerSecond;
+  @Log protected boolean laserTripped;
+  @Log protected double gamepieceDistance;
+  @Log protected boolean controlledLastCycle;
 
   protected Rollers(DCMotor motor) {
     kt = motor.KtNMPerAmp;
@@ -23,22 +24,22 @@ public abstract class Rollers extends Component {
    *
    * @param voltage the voltage to set
    */
-  public abstract void setVoltage(double voltage);
+  public abstract void voltageOut(double voltage);
 
   /**
    * Sets the current of the rollers.
    *
    * @param current the current to set
    */
-  public abstract void setCurrent(double current);
+  public abstract void currentOut(double current);
 
   /**
    * Sets the torque of the rollers.
    *
    * @param torque the torque to set in newton-meters
    */
-  public void setTorque(double torque) {
-    setCurrent(torque / kt);
+  public void torqueOut(double torque) {
+    currentOut(torque / kt);
   }
 
   /**
@@ -46,27 +47,19 @@ public abstract class Rollers extends Component {
    *
    * @param velocity the velocity to set in radians per second
    */
-  public void setVelocity(double velocity) {
-    setVoltage(velocity / kv);
+  public void velocityOut(double velocity) {
+    voltageOut(velocity / kv);
   }
 
-  /**
-   * Returns true if the rollers have coral.
-   *
-   * <p>This returning true in a given cycle should be mutually exclusive with {@link #hasAlgae()}
-   * returning true in the same cycle.
-   *
-   * @return true if the rollers have coral
-   */
-  public abstract boolean hasCoral();
+  public boolean isLaserTripped() {
+    return laserTripped;
+  }
 
-  /**
-   * Returns true if the rollers have algae.
-   *
-   * <p>This returning true in a given cycle should be mutually exclusive with {@link #hasCoral()}
-   * returning true in the same cycle.
-   *
-   * @return true if the rollers have algae
-   */
-  public abstract boolean hasAlgae();
+  public double currentDraw() {
+    return amps;
+  }
+
+  public double gamepieceDistance() {
+    return gamepieceDistance;
+  }
 }

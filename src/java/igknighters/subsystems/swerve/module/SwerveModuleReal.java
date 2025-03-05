@@ -8,13 +8,18 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import igknighters.constants.ConstValues.kSwerve;
-import igknighters.constants.ConstValues.kSwerve.kDriveMotor;
-import igknighters.constants.ConstValues.kSwerve.kSteerMotor;
+import edu.wpi.first.wpilibj.DriverStation;
+import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kDriveMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kSteerMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.swerve.odometryThread.RealSwerveOdometryThread;
 import igknighters.util.can.CANRetrier;
 import igknighters.util.can.CANSignalManager;
@@ -49,7 +54,7 @@ public class SwerveModuleReal extends SwerveModule {
 
     driveMotor = new TalonFX((moduleId * 2) + 1, kSwerve.CANBUS);
     steerMotor = new TalonFX((moduleId * 2) + 2, kSwerve.CANBUS);
-    steerEncoder = new CANcoder(21 + moduleId, kSwerve.CANBUS);
+    steerEncoder = new CANcoder((moduleId * 2) + 2, kSwerve.CANBUS);
 
     CANRetrier.retryStatusCode(
         () -> driveMotor.getConfigurator().apply(driveMotorConfig(), 1.0), 5);
@@ -98,25 +103,28 @@ public class SwerveModuleReal extends SwerveModule {
   protected TalonFXConfiguration driveMotorConfig() {
     var cfg = new TalonFXConfiguration();
 
-    cfg.MotorOutput.Inverted = kSwerve.DRIVE_MOTOR_INVERT;
-    cfg.MotorOutput.NeutralMode = kSwerve.DRIVE_NEUTRAL_MODE;
+    cfg.MotorOutput.Inverted =
+        kDriveMotor.INVERT
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+    cfg.MotorOutput.NeutralMode =
+        kDriveMotor.NEUTRAL_MODE_BRAKE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
 
     cfg.Slot0.kP = kDriveMotor.kP;
     cfg.Slot0.kI = kDriveMotor.kI;
     cfg.Slot0.kD = kDriveMotor.kD;
-    cfg.Slot0.kV =
-        12.0
-            / (kSwerve.MAX_DRIVE_VELOCITY
-                / (kSwerve.WHEEL_CIRCUMFERENCE / kSwerve.DRIVE_GEAR_RATIO));
+    cfg.Slot0.kV = kDriveMotor.kV / Conv.RADIANS_TO_ROTATIONS;
     cfg.Slot0.kS = kDriveMotor.kS;
 
     cfg.CurrentLimits.StatorCurrentLimitEnable = true;
-    cfg.CurrentLimits.StatorCurrentLimit = kSwerve.DRIVE_STATOR_CURRENT_LIMIT;
+    cfg.CurrentLimits.StatorCurrentLimit = kDriveMotor.STATOR_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLimitEnable = true;
-    cfg.CurrentLimits.SupplyCurrentLimit = kSwerve.DRIVE_SUPPLY_CURRENT_LIMIT;
+    cfg.CurrentLimits.SupplyCurrentLimit = kDriveMotor.SUPPLY_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLowerLimit = 0.3;
-    cfg.TorqueCurrent.PeakForwardTorqueCurrent = kSwerve.DRIVE_STATOR_CURRENT_LIMIT;
-    cfg.TorqueCurrent.PeakReverseTorqueCurrent = -kSwerve.DRIVE_STATOR_CURRENT_LIMIT;
+    cfg.TorqueCurrent.PeakForwardTorqueCurrent = kDriveMotor.STATOR_CURRENT_LIMIT;
+    cfg.TorqueCurrent.PeakReverseTorqueCurrent = -kDriveMotor.STATOR_CURRENT_LIMIT;
+
+    cfg.Feedback.SensorToMechanismRatio = kDriveMotor.GEAR_RATIO;
 
     return cfg;
   }
@@ -124,15 +132,19 @@ public class SwerveModuleReal extends SwerveModule {
   protected TalonFXConfiguration steerMotorConfig(int encoderId) {
     var cfg = new TalonFXConfiguration();
 
-    cfg.MotorOutput.Inverted = kSwerve.ANGLE_MOTOR_INVERT;
-    cfg.MotorOutput.NeutralMode = kSwerve.ANGLE_NEUTRAL_MODE;
+    cfg.MotorOutput.Inverted =
+        kSteerMotor.INVERT
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+    cfg.MotorOutput.NeutralMode =
+        kSteerMotor.NEUTRAL_MODE_BRAKE ? NeutralModeValue.Brake : NeutralModeValue.Coast;
 
     cfg.Slot0.kP = kSteerMotor.kP;
     cfg.Slot0.kI = kSteerMotor.kI;
     cfg.Slot0.kD = kSteerMotor.kD;
 
     cfg.Feedback.FeedbackRemoteSensorID = encoderId;
-    cfg.Feedback.RotorToSensorRatio = kSwerve.STEER_GEAR_RATIO;
+    cfg.Feedback.RotorToSensorRatio = kSteerMotor.GEAR_RATIO;
     cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
     cfg.ClosedLoopGeneral.ContinuousWrap = true;
 
@@ -152,6 +164,7 @@ public class SwerveModuleReal extends SwerveModule {
 
   @Override
   public void setDesiredState(AdvancedSwerveModuleState desiredState) {
+    super.controlledLastCycle = true;
     desiredState.optimize(getAngle());
     setAngle(desiredState);
     setSpeed(desiredState);
@@ -170,9 +183,7 @@ public class SwerveModuleReal extends SwerveModule {
 
   private void setSpeed(AdvancedSwerveModuleState desiredState) {
     super.targetDriveVeloMPS = desiredState.speedMetersPerSecond;
-    double rps =
-        (desiredState.speedMetersPerSecond / kSwerve.WHEEL_CIRCUMFERENCE)
-            * kSwerve.DRIVE_GEAR_RATIO;
+    double rps = desiredState.speedMetersPerSecond / kWheel.CIRCUMFERENCE;
     log("DriveRPS", rps);
     driveMotor.setControl(
         driveMotorClosedReq.withVelocity(rps).withAcceleration(desiredState.driveAcceleration));
@@ -191,25 +202,27 @@ public class SwerveModuleReal extends SwerveModule {
     return Rotation2d.fromRadians(super.steerAbsoluteRads);
   }
 
-  private double driveRotationsToMeters(double rotations) {
-    return (rotations / kSwerve.DRIVE_GEAR_RATIO) * kSwerve.WHEEL_CIRCUMFERENCE;
-  }
-
   @Override
   public void periodic() {
+    if (DriverStation.isDisabled() || !super.controlledLastCycle) {
+      setVoltageOut(0.0, getAngle());
+    }
+    super.controlledLastCycle = false;
+
     super.steerAbsoluteRads = Units.rotationsToRadians(steerAbsoluteSignal.getValueAsDouble());
     super.steerVeloRadPS = Units.rotationsToRadians(steerAbsoluteVeloSignal.getValueAsDouble());
     super.steerVolts = steerVoltSignal.getValueAsDouble();
     super.steerAmps = steerAmpSignal.getValueAsDouble();
 
-    super.drivePositionMeters = driveRotationsToMeters(odoThread.getModulePosition(moduleId));
-    super.driveVeloMPS = driveRotationsToMeters(odoThread.getModuleVelocity(moduleId));
+    super.drivePositionMeters = odoThread.getModulePosition(moduleId) * kWheel.CIRCUMFERENCE;
+    super.driveVeloMPS = odoThread.getModuleVelocity(moduleId) * kWheel.CIRCUMFERENCE;
     super.driveVolts = driveVoltSignal.getValueAsDouble();
     super.driveAmps = driveAmpSignal.getValueAsDouble();
   }
 
   @Override
   public void setVoltageOut(double volts, Rotation2d angle) {
+    super.controlledLastCycle = true;
     setAngle(new SwerveModuleState(0.0, angle));
     driveMotor.setVoltage(volts);
   }

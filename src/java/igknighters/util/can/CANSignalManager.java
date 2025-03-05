@@ -2,7 +2,6 @@ package igknighters.util.can;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.hardware.ParentDevice;
-import igknighters.constants.ConstValues;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -38,7 +37,7 @@ public class CANSignalManager {
    */
   public static void registerDevices(ParentDevice... devices) {
     for (ParentDevice device : devices) {
-      device.optimizeBusUtilization(ConstValues.DEBUG_SIGNAL_HZ, 1.0);
+      device.optimizeBusUtilization(4.0, 1.0);
     }
   }
 

@@ -1,22 +1,27 @@
 package igknighters.subsystems.superStructure;
 
-import igknighters.constants.ConstValues.Conv;
-import igknighters.constants.FieldConstants.Reef.BranchHeight;
-import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
-import igknighters.subsystems.superStructure.Wrist.WristConstants;
+import static igknighters.constants.ConstValues.Conv.*;
+import static igknighters.constants.FieldConstants.Reef.BranchHeight.*;
+import static igknighters.subsystems.superStructure.SuperStructureConstants.kElevator.*;
+import static igknighters.subsystems.superStructure.SuperStructureConstants.kWrist.*;
 
-public enum SuperStructureState {
-  ScoreL4(BranchHeight.L4.height, 20.0 * Conv.DEGREES_TO_RADIANS, 1.0),
-  ScoreL3(BranchHeight.L3.height, 50.0 * Conv.DEGREES_TO_RADIANS, 1.0),
-  ScoreL2(BranchHeight.L2.height, -20.0 * Conv.DEGREES_TO_RADIANS, 1.0),
-  ScoreL1(BranchHeight.L1.height, -50.0 * Conv.DEGREES_TO_RADIANS, 1.0),
-  AlgaeL3(51.0 * Conv.INCHES_TO_METERS, 20.0 * Conv.DEGREES_TO_RADIANS, 1.0),
-  AlgaeL2(37.0 * Conv.INCHES_TO_METERS, 20.0 * Conv.DEGREES_TO_RADIANS, 1.0),
-  Stow(ElevatorConstants.REVERSE_LIMIT + 0.3, WristConstants.FORWARD_LIMIT * 0.98, 1.0),
-  Processor(20.0 * Conv.INCHES_TO_METERS, 0.0, 1.0),
-  Net(ElevatorConstants.FORWARD_LIMIT * 0.98, 60.0 * Conv.DEGREES_TO_RADIANS, 1.0),
-  IntakeHp(32.0 * Conv.INCHES_TO_METERS, 35.0 * Conv.DEGREES_TO_RADIANS, 1.0),
-  AlgaeIntakeGround(0.0, -35.0 * Conv.DEGREES_TO_RADIANS, 1.0);
+import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.util.struct.StructSerializable;
+import monologue.ProceduralStructGenerator;
+
+public enum SuperStructureState implements StructSerializable {
+  ScoreL4(MAX_HEIGHT, 31.0 * DEGREES_TO_RADIANS, 0.75),
+  ScoreL3(L3.height + 0.25, -L3.pitch, 1.0),
+  ScoreL2(L2.height + 0.25, -L2.pitch, 1.0),
+  ScoreL1(0.33, -0.352816, 1.5),
+  AlgaeL3(L3.height + 0.23, 30.0 * DEGREES_TO_RADIANS, 1.2),
+  AlgaeL2(L2.height + 0.23, 30.0 * DEGREES_TO_RADIANS, 1.2),
+  Stow(MIN_HEIGHT + STAGES[2].rangeOfMotion() - 3.0 * INCHES_TO_METERS, MAX_ANGLE, 2.0),
+  ScoreStaged(1.4, MAX_ANGLE, 2.0),
+  Processor(20.0 * INCHES_TO_METERS, 0.0, 1.5),
+  Net(MAX_HEIGHT, MAX_ANGLE, 1.0),
+  IntakeHp(27.0 * INCHES_TO_METERS, -59.0 * DEGREES_TO_RADIANS, 0.8),
+  AntiTilt(MIN_HEIGHT, MAX_ANGLE, 1.0);
 
   public final double elevatorMeters;
   public final double wristRads;
@@ -27,4 +32,15 @@ public enum SuperStructureState {
     this.wristRads = wristRads;
     this.toleranceScalar = toleranceScalar;
   }
+
+  public SuperStructureState minHeight(SuperStructureState other) {
+    return this.elevatorMeters < other.elevatorMeters ? this : other;
+  }
+
+  public SuperStructureState maxHeight(SuperStructureState other) {
+    return this.elevatorMeters > other.elevatorMeters ? this : other;
+  }
+
+  public static final Struct<SuperStructureState> struct =
+      ProceduralStructGenerator.genEnum(SuperStructureState.class);
 }

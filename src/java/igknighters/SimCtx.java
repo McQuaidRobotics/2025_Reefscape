@@ -12,10 +12,11 @@ import edu.wpi.first.math.util.Units;
 import igknighters.constants.AprilTags;
 import igknighters.constants.ConstValues;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
-import igknighters.constants.ConstValues.kSwerve;
-import igknighters.constants.ConstValues.kSwerve.kDriveMotor;
-import igknighters.constants.ConstValues.kSwerve.kSteerMotor;
 import igknighters.constants.FieldConstants;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kDriveMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kSteerMotor;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.plumbing.Channel.Receiver;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,26 +60,26 @@ public class SimCtx {
 
   private final ShamMechanismConfig driveMotorCfg =
       new ShamMechanismConfig(new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1))
-          .withFriction(Volts.of(kDriveMotor.kS), Volts.of(kDriveMotor.kS * 0.8))
-          .withGearRatio(GearRatio.reduction(kSwerve.DRIVE_GEAR_RATIO))
+          .withFriction(Volts.of(kDriveMotor.kS), Volts.of(kDriveMotor.kS * 1.2))
+          .withGearRatio(GearRatio.reduction(kDriveMotor.GEAR_RATIO))
           .withNoise(0.00)
           .withRotorInertia(KilogramSquareMeters.of(0.003));
   private final ShamMechanismConfig steerMotorCfg =
       new ShamMechanismConfig(new DCMotorExt(DCMotor.getFalcon500Foc(1), 1))
-          .withFriction(Volts.of(kSteerMotor.kS), Volts.of(kSteerMotor.kS * 0.8))
-          .withGearRatio(GearRatio.reduction(kSwerve.STEER_GEAR_RATIO))
+          .withFriction(Volts.of(kSteerMotor.kS), Volts.of(kSteerMotor.kS * 1.2))
+          .withGearRatio(GearRatio.reduction(kSteerMotor.GEAR_RATIO))
           .withNoise(0.00)
           .withRotorInertia(KilogramSquareMeters.of(0.02));
   private final ShamSwerveModuleConfig moduleCfg =
       new ShamSwerveModuleConfig(
-          driveMotorCfg, steerMotorCfg, WheelCof.VEX_GRIPLOCK_V2.cof, kSwerve.WHEEL_RADIUS);
+          driveMotorCfg, steerMotorCfg, WheelCof.VEX_GRIPLOCK_V2.cof, kWheel.RADIUS);
   private final ShamSwerveConfig swerveConfig =
       new ShamSwerveConfig(
           kRobotIntrinsics.MASS,
           kRobotIntrinsics.MOMENT_OF_INERTIA,
           kRobotIntrinsics.CHASSIS_WIDTH,
           kRobotIntrinsics.CHASSIS_WIDTH,
-          kSwerve.MODULE_CHASSIS_OFFSETS,
+          kSwerve.MODULE_CHASSIS_LOCATIONS,
           moduleCfg,
           ShamGyroConfig.ofPigeon2());
 

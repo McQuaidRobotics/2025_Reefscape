@@ -13,13 +13,34 @@ public class Types {
 
   public record Constraints(double maxVelocity, double maxAcceleration)
       implements StructSerializable {
+
     public static final Struct<Constraints> struct =
         ProceduralStructGenerator.genRecord(Constraints.class);
+
+    public Constraints min(Constraints other) {
+      return new Constraints(
+          Math.min(maxVelocity, other.maxVelocity),
+          Math.min(maxAcceleration, other.maxAcceleration));
+    }
   }
 
   public record ChassisConstraints(Constraints translation, Constraints rotation)
       implements StructSerializable {
     public static final Struct<ChassisConstraints> struct =
         ProceduralStructGenerator.genRecord(ChassisConstraints.class);
+
+    public ChassisConstraints min(ChassisConstraints other) {
+      return new ChassisConstraints(
+          translation.min(other.translation), rotation.min(other.rotation));
+    }
+  }
+
+  public enum ControllerMode {
+    STRICT,
+    REPLANNING,
+    UNPROFILED;
+
+    public static final Struct<ControllerMode> struct =
+        ProceduralStructGenerator.genEnum(ControllerMode.class);
   }
 }

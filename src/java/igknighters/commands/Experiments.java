@@ -77,4 +77,18 @@ public class Experiments {
             })
         .ignoringDisable(true);
   }
+
+  // public static Command testScoringTime(SuperStructureManager ss) {
+  //   Timer timer = new Timer();
+  //   return Commands.sequence(
+  //       ss.moveTo(SuperStructureState.ScoreL2),
+  //       Commands.runOnce(() -> Monologue.log("bleh", "pre-amble")),
+  //       Commands.runOnce(() -> timer.restart()),
+  //       ss.moveTo(SuperStructureState.ScoreL4),
+  //       Commands.waitSeconds(0.15),
+  //       Commands.runOnce(() -> Monologue.log("scoreHalfTime", timer.get())),
+  //       ss.moveTo(SuperStructureState.ScoreL2),
+  //       Commands.runOnce(() -> timer.stop()),
+  //       Commands.runOnce(() -> Monologue.log("scoreTime", timer.get())));
+  // }
 }
