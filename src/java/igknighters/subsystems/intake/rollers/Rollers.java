@@ -59,6 +59,10 @@ public abstract class Rollers extends Component {
     return amps;
   }
 
+  public double voltageDraw() {
+    return volts;
+  }
+
   public double gamepieceDistance() {
     return gamepieceDistance;
   }

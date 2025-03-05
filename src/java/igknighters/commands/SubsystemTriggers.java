@@ -4,7 +4,6 @@ import static igknighters.commands.Triggers.*;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake.Holding;
@@ -19,21 +18,12 @@ public class SubsystemTriggers {
     final var superStructure = subsystems.superStructure;
     final var intake = subsystems.intake;
 
-    final Trigger atAlgaeState =
-        SuperStructureCommands.isAt(superStructure, SuperStructureState.AlgaeL3, 1.45)
-            .or(SuperStructureCommands.isAt(superStructure, SuperStructureState.AlgaeL2, 1.45));
-
     subsystemIdle(intake)
         .and(intake.isHolding(Holding.ALGAE))
-        .onTrue(IntakeCommands.runCurrent(intake, -80.0).withName("HoldAlgae"));
+        .onTrue(IntakeCommands.holdAlgae(intake));
     subsystemIdle(intake)
         .and(intake.isHolding(Holding.CORAL))
-        .onTrue(
-            Commands.sequence(
-                    IntakeCommands.runCurrent(intake, -40.0),
-                    IntakeCommands.runVoltage(intake, 1.0).withTimeout(0.12),
-                    IntakeCommands.runCurrent(intake, -20.0))
-                .withName("HoldCoral"));
+        .onTrue(IntakeCommands.holdCoral(intake));
 
     new Trigger(
             () -> {
@@ -44,9 +34,5 @@ public class SubsystemTriggers {
                   || Math.abs(robotRotation.getY()) > sideToSideTiltLimit;
             })
         .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
-
-    atAlgaeState
-        .and(subsystemIdle(intake))
-        .onTrue(IntakeCommands.intakeAlgae(intake).until(atAlgaeState.negate()));
   }
 }

@@ -115,6 +115,10 @@ public class OperatorTarget implements StructSerializable {
         () -> Monologue.log("offset", localizer.translation().getDistance(translation)) < dist);
   }
 
+  public Trigger wantsAlgae() {
+    return new Trigger(() -> faceSubLocation.equals(FaceSubLocation.CENTER));
+  }
+
   public Command gotoTargetCmd(Localizer localizer) {
     Supplier<Command> c =
         () ->
@@ -130,7 +134,7 @@ public class OperatorTarget implements StructSerializable {
                     SuperStructureCommands.holdAt(
                             subsystems.superStructure,
                             superStructureState.minHeight(SuperStructureState.ScoreL3))
-                        .until(isNearPose(localizer, targetLocation().getTranslation(), 0.1)),
+                        .until(isNearPose(localizer, targetLocation().getTranslation(), 0.04)),
                     SuperStructureCommands.holdAt(subsystems.superStructure, superStructureState)));
     return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure)
         .withName("TeleopAlignFull");

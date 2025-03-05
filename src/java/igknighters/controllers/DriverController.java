@@ -93,15 +93,13 @@ public class DriverController {
     // BUMPER
     this.RB.onTrue(IntakeCommands.expel(intake).withTimeout(0.4));
 
-    this.LB
-        .whileTrue(operatorTarget.gotoSuperStructureTargetCmd())
-        .and(LT.negate())
-        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+    this.LB.whileTrue(operatorTarget.gotoSuperStructureTargetCmd());
 
     // CENTER BUTTONS
-    this.Back.onTrue(
-        SuperStructureCommands.home(superStructure, true)
-            .andThen(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
+    this.Back.onTrue(Commands.sequence(
+        SuperStructureCommands.home(superStructure, true),
+        SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)
+    ));
 
     this.Start.onTrue(SwerveCommands.orientGyro(swerve, localizer));
 
@@ -113,11 +111,10 @@ public class DriverController {
     // // TRIGGERS
     this.LT
         .and(operatorTarget.hasTarget())
-        .whileTrue(operatorTarget.gotoTargetCmd(localizer))
-        .and(LB.negate())
-        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+        .whileTrue(operatorTarget.gotoTargetCmd(localizer));
 
-    this.RT.whileTrue(Commands.repeatingSequence(IntakeCommands.bounce(intake)));
+    this.RT
+      .whileTrue(Commands.repeatingSequence(IntakeCommands.bounce(intake)));
 
     // DPAD
     this.DPR.whileTrue(ClimberCommands.stow(climber));
@@ -128,6 +125,15 @@ public class DriverController {
         climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
     this.DPU.whileTrue(ClimberCommands.climb(climber));
+
+    // COMBOS
+
+    this.LT.and(LB)
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+
+    this.LT.or(LB)
+        .and(operatorTarget.wantsAlgae())
+        .whileTrue(IntakeCommands.intakeAlgae(intake));
   }
 
   // Define the buttons on the controller

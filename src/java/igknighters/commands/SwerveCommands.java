@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import igknighters.Localizer;
 import igknighters.constants.ConstValues;
 import igknighters.constants.Pathing.PathObstacles;
+import igknighters.subsystems.SharedState;
+import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.plumbing.TunableValues;
@@ -90,12 +92,14 @@ public class SwerveCommands {
       Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
     final ChassisConstraints constraints =
         new ChassisConstraints(
-            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.5, kSwerve.MAX_DRIVE_VELOCITY / 2.0),
+            new Constraints(
+                kSwerve.MAX_DRIVE_VELOCITY * 0.5,
+                SharedState.maximumAcceleration(SuperStructureState.ScoreL3.elevatorMeters)),
             new Constraints(
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
     final PositionalController preciseController =
         new PositionalController(
-            new TranslationController(2.0, 0.00, 0.0, ControllerMode.STRICT),
+            new TranslationController(4.0, 0.00, 0.5, ControllerMode.UNPROFILED),
             new RotationalController(4.0, 0.2, ControllerMode.STRICT));
     final PositionalController roughController =
         new PositionalController(
@@ -123,7 +127,9 @@ public class SwerveCommands {
   public static Command moveToSimple(Swerve swerve, Localizer localizer, Pose2d target) {
     final ChassisConstraints constraints =
         new ChassisConstraints(
-            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.8, kSwerve.MAX_DRIVE_VELOCITY),
+            new Constraints(
+                kSwerve.MAX_DRIVE_VELOCITY * 0.8,
+                SharedState.maximumAcceleration(SuperStructureState.ScoreL3.elevatorMeters)),
             new Constraints(
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
     final PositionalController roughController =

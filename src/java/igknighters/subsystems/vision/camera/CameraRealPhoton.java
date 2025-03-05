@@ -83,7 +83,7 @@ public class CameraRealPhoton extends Camera {
       Rotation2d gyroAngle = gyroYawSupplier.apply(estRoboPose.timestampSeconds);
       if (DriverStation.isTeleopEnabled()
           && gyroAngle != null
-          && TunableValues.getBoolean("useReproject", true).value()) {
+          && TunableValues.getBoolean("useReproject", false).value()) {
         // its assumed that the gyro is generally correct when enabled in teleop
         pose = reproject(target, gyroAngle);
       }

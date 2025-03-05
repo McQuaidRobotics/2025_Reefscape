@@ -52,6 +52,17 @@ public class IntakeCommands {
   public static Command bounce(Intake intake) {
     return Commands.sequence(
         IntakeCommands.runVoltage(intake, 1.0).withTimeout(0.1),
-        IntakeCommands.runVoltage(intake, -12.0).withTimeout(0.15));
+        IntakeCommands.runVoltage(intake, -12.0).withTimeout(0.15)
+    );
+  }
+
+  public static Command holdAlgae(Intake intake) {
+    return IntakeCommands.runCurrent(intake, -80.0)
+      .withName("HoldAlgae");
+  }
+
+  public static Command holdCoral(Intake intake) {
+    return IntakeCommands.runCurrent(intake, -25.0)
+      .withName("HoldCoral");
   }
 }
