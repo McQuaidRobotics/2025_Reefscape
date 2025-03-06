@@ -217,6 +217,10 @@ public class Swerve implements ExclusiveSubsystem {
     return Rotation2d.fromRadians(gyro.getYawRads());
   }
 
+  public double getYawForNow() {
+    return gyro.getYawRads();
+  }
+
   /**
    * Gets the current 3d rotation of the robot
    *

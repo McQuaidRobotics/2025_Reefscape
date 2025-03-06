@@ -46,7 +46,7 @@ public class AutoCommands {
                 kElevator.MAX_ACCELERATION * kElevator.PULLEY_RADIUS));
     final var stowState = new TrapezoidProfile.State(SuperStructureState.Stow.elevatorMeters, 0.0);
     final var intakeStake =
-        new TrapezoidProfile.State(SuperStructureState.IntakeHp.elevatorMeters, 0.0);
+        new TrapezoidProfile.State(SuperStructureState.IntakeHpClose.elevatorMeters, 0.0);
     final var l4State = new TrapezoidProfile.State(SuperStructureState.ScoreL4.elevatorMeters, 0.0);
 
     profile.calculate(0.01, stowState, l4State);
@@ -93,7 +93,7 @@ public class AutoCommands {
   public Command afterIntake(AutoTrajectory traj) {
     return loggedCmd(
         Commands.sequence(
-                Commands.waitUntil(intake.isHolding(Holding.CORAL)),
+                Commands.waitUntil(IntakeCommands.isHolding(intake, Holding.CORAL)),
                 traj.cmd(),
                 SwerveCommands.stop(swerve))
             .withName("AfterIntake" + traj.getRawTrajectory().name()));
@@ -102,7 +102,7 @@ public class AutoCommands {
   public Command afterScore(AutoTrajectory traj) {
     return loggedCmd(
         Commands.sequence(
-                Commands.waitUntil(intake.isHolding(Holding.NONE)),
+                Commands.waitUntil(IntakeCommands.isHolding(intake, Holding.NONE)),
                 traj.cmd(),
                 SwerveCommands.stop(swerve))
             .withName("AfterScore" + traj.getRawTrajectory().name()));
@@ -121,7 +121,7 @@ public class AutoCommands {
         .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
     traj.atTimeBeforeEnd(
       Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.98)
-    ).onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHp)))
+    ).onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose)))
       .onTrue(loggedCmd(IntakeCommands.intakeCoral(intake)));
   }
 
@@ -133,7 +133,7 @@ public class AutoCommands {
 
     private ReefscapeAuto(AutoRoutine routine) {
       this.routine = routine;
-      headCommand.addCommands(SuperStructureCommands.home(superStructure));
+      headCommand.addCommands(SuperStructureCommands.home(superStructure, true));
     }
 
     public ReefscapeAuto addScoringTrajectory(Waypoints start, Waypoints end) {

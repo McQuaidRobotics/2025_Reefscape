@@ -4,8 +4,6 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volt;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -26,7 +24,6 @@ import sham.shamController.ShamMCX;
 import sham.shamController.ShamMCX.CurrentLimits;
 import sham.shamController.unitSafeControl.UnitFeedback.PIDFeedback;
 import sham.shamController.unitSafeControl.UnitFeedforward.SimpleFeedforward;
-import sham.shamController.unitSafeControl.UnitTrapezoidProfile;
 import sham.utils.GearRatio;
 import wpilibExt.DCMotorExt;
 
@@ -57,10 +54,7 @@ public class PivotSim extends Pivot {
     controlLoop =
         ClosedLoop.forVoltageAngle(
             PIDFeedback.forAngular(Volts, PivotConstants.KP, PivotConstants.KD),
-            SimpleFeedforward.forVoltage(Rotations, 0.0, 0.0, 0.0, simCtx.robot().timing().dt()),
-            UnitTrapezoidProfile.forAngle(
-                RotationsPerSecond.of(PivotConstants.MAX_VELOCITY),
-                RotationsPerSecondPerSecond.of(PivotConstants.MAX_ACCELERATION)));
+            SimpleFeedforward.forVoltage(Rotations, 0.0, 0.0, 0.0, simCtx.robot().timing().dt()));
     shamMCX.setBrakeMode(false); // do not enable, this feature is broken
     shamMCX.configSensorToMechanismRatio(PivotConstants.GEAR_RATIO);
     shamMCX.configureCurrentLimit(

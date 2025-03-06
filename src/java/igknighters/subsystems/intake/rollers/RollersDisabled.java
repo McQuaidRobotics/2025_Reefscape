@@ -13,4 +13,9 @@ public class RollersDisabled extends Rollers {
 
   @Override
   public void currentOut(double current) {}
+
+  @Override
+  public boolean isStalling() {
+    return false;
+  }
 }

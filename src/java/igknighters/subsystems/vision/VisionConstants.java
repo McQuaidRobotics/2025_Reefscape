@@ -19,39 +19,33 @@ public class VisionConstants {
     public static final CameraConfig[] CONFIGS =
         new CameraConfig[] {
           new CameraConfig(
-              "photon_front_forward_1",
+              "front_left",
               new Pose3d(
-                  new Translation3d(
-                      6.3 * Conv.INCHES_TO_METERS,
-                      -11.5 * Conv.INCHES_TO_METERS,
-                      7.0 * Conv.INCHES_TO_METERS),
+                  new Translation3d(0.158, -0.269, 0.187),
                   new Rotation3d(
-                      0.0, -17.5 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
+                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
           new CameraConfig(
-              "photon_front_forward_2",
+              "front_right",
               new Pose3d(
-                  new Translation3d(
-                      6.3 * Conv.INCHES_TO_METERS,
-                      11.5 * Conv.INCHES_TO_METERS,
-                      7.0 * Conv.INCHES_TO_METERS),
+                  new Translation3d(0.203, 0.292, 0.176),
                   new Rotation3d(
-                      0.0, -17.5 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
+                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
           new CameraConfig(
-              "photon_climber_1",
+              "back_left",
               new Pose3d(
                   new Translation3d(
                       kSwerve.MODULE_CHASSIS_LOCATIONS[1].getX(),
                       kSwerve.MODULE_CHASSIS_LOCATIONS[1].getY(),
-                      7.0 * Conv.INCHES_TO_METERS),
+                      8.0 * Conv.INCHES_TO_METERS),
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -145.0 * Conv.DEGREES_TO_RADIANS))),
           new CameraConfig(
-              "photon_climber_2",
+              "back_right",
               new Pose3d(
                   new Translation3d(
                       kSwerve.MODULE_CHASSIS_LOCATIONS[2].getX(),
                       kSwerve.MODULE_CHASSIS_LOCATIONS[2].getY(),
-                      7.0 * Conv.INCHES_TO_METERS),
+                      8.0 * Conv.INCHES_TO_METERS),
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 145.0 * Conv.DEGREES_TO_RADIANS))),
         };
@@ -79,28 +73,28 @@ public class VisionConstants {
     public static final HashMap<Integer, Double> TAG_RANKINGS =
         new HashMap<>() {
           {
-            put(1, 1.0); // CORAL STATION
-            put(2, 1.0); // CORAL STATION
-            put(3, 1.0); // PROCESSOR
-            put(4, 0.4); // BARGE
-            put(5, 0.4); // BARGE
-            put(6, 1.25); // REEF
-            put(7, 1.25); // REEF
-            put(8, 1.25); // REEF
-            put(9, 1.25); // REEF
-            put(10, 1.25); // REEF
-            put(11, 1.25); // REEF
-            put(12, 1.0); // CORAL STATION
-            put(13, 1.0); // CORAL STATION
-            put(14, 0.4); // BARGE
-            put(15, 0.4); // BARGE
-            put(16, 1.0); // PROCESSOR
-            put(17, 1.25); // REEF
-            put(18, 1.25); // REEF
-            put(19, 1.25); // REEF
-            put(20, 1.25); // REEF
-            put(21, 1.25); // REEF
-            put(22, 1.25); // REEF
+            put(1, 0.0); // CORAL STATION
+            put(2, 0.0); // CORAL STATION
+            put(3, 0.0); // PROCESSOR
+            put(4, 0.0); // BARGE
+            put(5, 0.0); // BARGE
+            put(6, 1.0); // REEF
+            put(7, 1.0); // REEF
+            put(8, 1.0); // REEF
+            put(9, 1.0); // REEF
+            put(10, 1.0); // REEF
+            put(11, 1.0); // REEF
+            put(12, 0.0); // CORAL STATION
+            put(13, 0.0); // CORAL STATION
+            put(14, 0.0); // BARGE
+            put(15, 0.0); // BARGE
+            put(16, 0.0); // PROCESSOR
+            put(17, 1.0); // REEF
+            put(18, 1.0); // REEF
+            put(19, 1.0); // REEF
+            put(20, 1.0); // REEF
+            put(21, 1.0); // REEF
+            put(22, 1.0); // REEF
           }
         };
   }

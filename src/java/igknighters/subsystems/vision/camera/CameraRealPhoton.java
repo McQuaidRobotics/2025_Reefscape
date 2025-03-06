@@ -4,8 +4,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.AprilTags;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
@@ -26,9 +24,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class CameraRealPhoton extends Camera {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
-  private final Pose3d robotToCameraPoseOffset;
   private final PhotonPoseEstimator poseEstimator;
-  private final Function<Double, Rotation2d> gyroYawSupplier;
 
   private Optional<VisionUpdate> previousUpdate = Optional.empty();
   private ArrayList<Integer> seenTags = new ArrayList<>();
@@ -37,28 +33,14 @@ public class CameraRealPhoton extends Camera {
   public CameraRealPhoton(CameraConfig config, Function<Double, Rotation2d> gyroYawSupplier) {
     this.camera = new PhotonCamera(config.cameraName());
     this.robotToCamera = config.cameraTransform();
-    this.gyroYawSupplier = gyroYawSupplier;
-    this.robotToCameraPoseOffset = Pose3d.kZero.transformBy(robotToCamera);
 
     poseEstimator =
         new PhotonPoseEstimator(
-            FieldConstants.APRIL_TAG_FIELD,
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            this.robotToCamera);
+            FieldConstants.APRIL_TAG_FIELD, PoseStrategy.CONSTRAINED_SOLVEPNP, this.robotToCamera);
     poseEstimator.setTagModel(TargetModel.kAprilTag36h11);
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
-    poseEstimator.setPrimaryStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
 
     BootupLogger.bootupLog("    " + config.cameraName() + " camera initialized (real)");
-  }
-
-  private Pose2d reproject(PhotonTrackedTarget target, Rotation2d gyroAngle) {
-    Translation2d tagLoc = AprilTags.TAGS_POSE2D[target.fiducialId - 1].getTranslation();
-    Transform3d cameraToTag = target.getBestCameraToTarget();
-    Translation2d tagToRobotOffset =
-        robotToCameraPoseOffset.transformBy(cameraToTag).toPose2d().getTranslation();
-    tagToRobotOffset = tagToRobotOffset.rotateBy(gyroAngle);
-    return new Pose2d(tagLoc.minus(tagToRobotOffset), gyroAngle);
   }
 
   private Optional<VisionUpdate> update(EstimatedRobotPose estRoboPose) {
@@ -75,24 +57,16 @@ public class CameraRealPhoton extends Camera {
     VisionUpdateFlaws faults = VisionUpdateFlaws.empty();
     double avgDistance;
     Pose2d pose = estRoboPose.estimatedPose.toPose2d();
-    if (estRoboPose.targetsUsed.size() == 1) {
-      var target = estRoboPose.targetsUsed.get(0);
-      avgDistance = target.getBestCameraToTarget().getTranslation().getNorm();
-      Rotation2d gyroAngle = gyroYawSupplier.apply(estRoboPose.timestampSeconds);
-      if (DriverStation.isTeleopEnabled() && gyroAngle != null) {
-        // its assumed that the gyro is generally correct when enabled in teleop
-        pose = reproject(target, gyroAngle);
-      }
-    } else {
-      avgDistance =
-          estRoboPose.targetsUsed.stream()
-              .map(PhotonTrackedTarget::getBestCameraToTarget)
-              .map(Transform3d::getTranslation)
-              .map(t3 -> Math.hypot(t3.getX(), t3.getY()))
-              .mapToDouble(Double::doubleValue)
-              .average()
-              .orElseGet(() -> 100.0);
-    }
+    log("tagsUsed", estRoboPose.targetsUsed.size());
+
+    avgDistance =
+        estRoboPose.targetsUsed.stream()
+            .map(PhotonTrackedTarget::getBestCameraToTarget)
+            .map(Transform3d::getTranslation)
+            .map(t3 -> Math.hypot(t3.getX(), t3.getY()))
+            .mapToDouble(Double::doubleValue)
+            .average()
+            .orElseGet(() -> 100.0);
 
     if (previousUpdate.isPresent()) {
       faults =
@@ -133,17 +107,34 @@ public class CameraRealPhoton extends Camera {
   }
 
   @Override
+  public void updateHeading(double timestamp, Rotation2d heading) {
+    poseEstimator.addHeadingData(timestamp, heading);
+  }
+
+  @Override
   public void periodic() {
     seenTags.clear();
-    camera.getAllUnreadResults().stream()
-        .filter(result -> result.hasTargets())
-        .map(poseEstimator::update)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .map(this::update)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .forEach(updates::add);
+    // camera.getAllUnreadResults().stream()
+    //     .filter(result -> result.hasTargets())
+    //     .map(poseEstimator::update)
+    //     .filter(Optional::isPresent)
+    //     .map(Optional::get)
+    //     .map(this::update)
+    //     .filter(Optional::isPresent)
+    //     .map(Optional::get)
+    //     .forEach(updates::add);
+    final var results = camera.getAllUnreadResults();
+    for (var result : results) {
+      if (result.hasTargets()) {
+        var estRoboPose = poseEstimator.update(result);
+        if (estRoboPose.isPresent()) {
+          var u = update(estRoboPose.get());
+          if (u.isPresent()) {
+            updates.add(u.get());
+          }
+        }
+      }
+    }
 
     log("isConnected", camera.isConnected());
   }

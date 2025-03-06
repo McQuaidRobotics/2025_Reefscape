@@ -152,10 +152,10 @@ public class TwistyPoseEst {
       forcePrune(timestamp, pose);
       return;
     }
-    Twist2d twist = lastPose.log(pose);
+    Twist2d twist = lastPose.log(new Pose2d(pose.getTranslation(), lastPose.getRotation()));
     twist.dx *= weight;
     twist.dy *= weight;
-    twist.dtheta *= weight;
+    twist.dtheta *= 1.0;
     forcePrune(timestamp, lastPose.exp(twist));
   }
 

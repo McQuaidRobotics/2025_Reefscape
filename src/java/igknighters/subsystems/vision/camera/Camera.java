@@ -1,6 +1,7 @@
 package igknighters.subsystems.vision.camera;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import igknighters.subsystems.Component;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
@@ -47,4 +48,12 @@ public abstract class Camera extends Component {
    * @return The last seen tags
    */
   public abstract List<Integer> getSeenTags();
+
+  /**
+   * Updates any internal pose estimators to the robots heading.
+   *
+   * @param timestamp The timestamp of the update in FPGA time
+   * @param heading The heading of the robot
+   */
+  public abstract void updateHeading(double timestamp, Rotation2d heading);
 }

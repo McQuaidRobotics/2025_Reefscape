@@ -64,6 +64,10 @@ public class Localizer implements Logged {
     return swerveDataChannel.sender();
   }
 
+  public Receiver<SwerveDriveSample> swerveDataReceiver() {
+    return swerveDataReceiver.fork(32, ThreadSafetyMarker.CONCURRENT);
+  }
+
   public Receiver<Pose2d> poseResetsReceiver() {
     return poseResetsChannel.openReceiver(8, ThreadSafetyMarker.CONCURRENT);
   }

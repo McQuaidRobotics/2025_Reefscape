@@ -68,6 +68,10 @@ public abstract class Elevator extends Component {
     return isHomed;
   }
 
+  public void resetHomed() {
+    isHomed = false;
+  }
+
   /**
    * Requests the elevator to be powered at a specific voltage for the next control cycle.
    *

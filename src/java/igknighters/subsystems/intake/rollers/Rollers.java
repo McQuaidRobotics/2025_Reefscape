@@ -55,9 +55,7 @@ public abstract class Rollers extends Component {
     return laserTripped;
   }
 
-  public double currentDraw() {
-    return amps;
-  }
+  public abstract boolean isStalling();
 
   public double gamepieceDistance() {
     return gamepieceDistance;
