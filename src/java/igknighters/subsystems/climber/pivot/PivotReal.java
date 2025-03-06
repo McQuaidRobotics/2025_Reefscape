@@ -70,9 +70,11 @@ public class PivotReal extends Pivot {
     cfg.Feedback.FeedbackRemoteSensorID = PivotConstants.ENCODER_ID;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = PivotConstants.FORWARD_LIMIT * Conv.RADIANS_TO_ROTATIONS;
+    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        PivotConstants.FORWARD_LIMIT * Conv.RADIANS_TO_ROTATIONS;
     cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
+    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+        PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
 
     cfg.MotorOutput.PeakReverseDutyCycle = 0.6;
     cfg.Voltage.PeakReverseVoltage = 7.2;

@@ -44,9 +44,8 @@ public class SuperStructureCommands {
   public static Command home(SuperStructure superStructure, boolean force) {
     return superStructure
         .startRun(
-          () -> superStructure.home(kWrist.MAX_ANGLE, 0.1, true),
-          () -> superStructure.home(kWrist.MAX_ANGLE, 0.1, false)
-        )
+            () -> superStructure.home(kWrist.MAX_ANGLE, 0.1, true),
+            () -> superStructure.home(kWrist.MAX_ANGLE, 0.1, false))
         .until(superStructure::isHomed)
         .unless(() -> superStructure.isHomed() && !force)
         .withName("HomeSuperStructure");

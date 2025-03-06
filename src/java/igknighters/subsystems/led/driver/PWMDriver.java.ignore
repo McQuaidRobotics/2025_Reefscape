@@ -16,7 +16,7 @@ import igknighters.subsystems.led.LedAnimation.LedPattern;
 import igknighters.subsystems.led.LedAnimation.PartialAnimation;
 import java.util.Map;
 
-public class PWMDriver extends Driver {
+public class PWMDriver extends  {
   private final AddressableLED led1;
   private final AddressableLEDBuffer ledBuffer;
 

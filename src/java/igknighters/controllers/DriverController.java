@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.ClimberCommands;
 import igknighters.commands.IntakeCommands;
+// import igknighters.commands.LEDCommands;
 import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
@@ -115,7 +116,8 @@ public class DriverController {
 
     this.DPD.whileTrue(ClimberCommands.stage(climber));
 
-    this.DPL.onTrue(climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
+    this.DPL.onTrue(
+        climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
     this.DPU.whileTrue(ClimberCommands.climb(climber));
   }

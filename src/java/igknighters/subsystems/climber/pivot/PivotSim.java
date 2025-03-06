@@ -54,8 +54,7 @@ public class PivotSim extends Pivot {
     controlLoop =
         ClosedLoop.forVoltageAngle(
             PIDFeedback.forAngular(Volts, PivotConstants.KP, PivotConstants.KD),
-            SimpleFeedforward.forVoltage(Rotations, 0.0, 0.0, 0.0, simCtx.robot().timing().dt())
-          );
+            SimpleFeedforward.forVoltage(Rotations, 0.0, 0.0, 0.0, simCtx.robot().timing().dt()));
     shamMCX.setBrakeMode(false); // do not enable, this feature is broken
     shamMCX.configSensorToMechanismRatio(PivotConstants.GEAR_RATIO);
     shamMCX.configureCurrentLimit(
