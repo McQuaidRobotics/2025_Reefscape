@@ -15,7 +15,6 @@ import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
-import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
@@ -35,71 +34,65 @@ public class DriverController {
     final var climber = subsystems.climber;
 
     /// FACE BUTTONS
-    this.A.whileTrue(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHp)
-                .alongWith(
-                    IntakeCommands.intakeCoral(subsystems.intake),
-                    new TeleopSwerveHeadingCmd(
-                        swerve,
-                        this,
-                        localizer,
-                        () -> {
-                          final double angle = 54.0;
-                          if (localizer.translation().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
-                            return AllianceFlipper.isBlue()
-                                ? Rotation2d.fromDegrees(180 - angle)
-                                : Rotation2d.fromDegrees(angle);
-                          } else {
-                            return AllianceFlipper.isBlue()
-                                ? Rotation2d.fromDegrees(-(180 - angle))
-                                : Rotation2d.fromDegrees(-angle);
-                          }
-                        },
-                        kSwerve.CONSTRAINTS))
-                .until(subsystems.intake.isHolding(Holding.CORAL)))
+    this.A.or(this.X)
+        .whileTrue(IntakeCommands.intakeCoral(intake))
+        .whileTrue(
+            new TeleopSwerveHeadingCmd(
+                swerve,
+                this,
+                localizer,
+                () -> {
+                  final double angle = 54.0;
+                  if (localizer.translation().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
+                    return AllianceFlipper.isBlue()
+                        ? Rotation2d.fromDegrees(180 - angle)
+                        : Rotation2d.fromDegrees(angle);
+                  } else {
+                    return AllianceFlipper.isBlue()
+                        ? Rotation2d.fromDegrees(-(180 - angle))
+                        : Rotation2d.fromDegrees(-angle);
+                  }
+                },
+                kSwerve.CONSTRAINTS))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
-        .onFalse(IntakeCommands.bounce(intake).andThen(IntakeCommands.runCurrent(intake, -40.0)));
+        .onFalse(
+            IntakeCommands.bounce(intake)
+                .andThen(IntakeCommands.holdCoral(intake))
+                .withName("BounceThenHoldCoral"));
+    this.A.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose));
+    this.X.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpFar));
 
-    this.B.whileTrue(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor)
-                .alongWith(
-                    new TeleopSwerveHeadingCmd(
-                        swerve,
-                        this,
-                        localizer,
-                        () -> AllianceFlipper.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
-                        kSwerve.CONSTRAINTS)))
+    this.B.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor))
+        .whileTrue(
+            new TeleopSwerveHeadingCmd(
+                swerve,
+                this,
+                localizer,
+                () -> AllianceFlipper.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
+                kSwerve.CONSTRAINTS))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
-    this.X.whileTrue(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeFloor)
-                .alongWith(IntakeCommands.intakeAlgae(intake)))
-        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
-        .negate()
-        .and(intake.isHolding(Holding.ALGAE))
-        .onTrue(IntakeCommands.runCurrent(intake, 70.0));
-
-    this.Y.whileTrue(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net)
-                .alongWith(
-                    new TeleopSwerveHeadingCmd(
-                        swerve,
-                        this,
-                        localizer,
-                        () -> AllianceFlipper.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-                        kSwerve.CONSTRAINTS)))
+    this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
+        .whileTrue(
+            new TeleopSwerveHeadingCmd(
+                swerve,
+                this,
+                localizer,
+                () -> AllianceFlipper.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+                kSwerve.CONSTRAINTS))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
-    this.RB.onTrue(IntakeCommands.expel(intake).withTimeout(0.4));
+    this.RB.whileTrue(IntakeCommands.expel(intake));
 
     this.LB.whileTrue(operatorTarget.gotoSuperStructureTargetCmd());
 
     // CENTER BUTTONS
-    this.Back.onTrue(Commands.sequence(
-        SuperStructureCommands.home(superStructure, true),
-        SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)
-    ));
+    this.Back.onTrue(
+        Commands.sequence(
+                SuperStructureCommands.home(superStructure, true),
+                SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+            .withName("HomeAndHoldStow"));
 
     this.Start.onTrue(SwerveCommands.orientGyro(swerve, localizer));
 
@@ -109,12 +102,13 @@ public class DriverController {
     this.RS.onTrue(Commands.none());
 
     // // TRIGGERS
-    this.LT
-        .and(operatorTarget.hasTarget())
-        .whileTrue(operatorTarget.gotoTargetCmd(localizer));
+    this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(localizer));
 
     this.RT
-      .whileTrue(Commands.repeatingSequence(IntakeCommands.bounce(intake)));
+        .whileTrue(
+            Commands.repeatingSequence(IntakeCommands.bounce(intake))
+                .withName("IntakeBounceRepeatedly"))
+        .onFalse(IntakeCommands.holdCoral(intake));
 
     // DPAD
     this.DPR.whileTrue(ClimberCommands.stow(climber));
@@ -128,10 +122,9 @@ public class DriverController {
 
     // COMBOS
 
-    this.LT.and(LB)
-        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
-
-    this.LT.or(LB)
+    this.LT
+        .or(LB)
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .and(operatorTarget.wantsAlgae())
         .whileTrue(IntakeCommands.intakeAlgae(intake));
   }

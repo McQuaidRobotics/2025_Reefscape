@@ -9,7 +9,6 @@ import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.intake.rollers.RollerSim;
 import igknighters.subsystems.intake.rollers.Rollers;
 import igknighters.subsystems.intake.rollers.RollersReal;
-import java.util.function.BooleanSupplier;
 import monologue.Annotations.Log;
 import monologue.ProceduralStructGenerator;
 
@@ -59,10 +58,6 @@ public class Intake implements ExclusiveSubsystem {
 
   public Holding getHolding() {
     return currentlyHolding;
-  }
-
-  public BooleanSupplier isHolding(Holding holding) {
-    return () -> getHolding() == holding;
   }
 
   public void setTryingToHold(Holding holding) {

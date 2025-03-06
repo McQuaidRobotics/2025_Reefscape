@@ -16,12 +16,14 @@ import igknighters.constants.FieldConstants;
 import igknighters.subsystems.SharedState;
 import igknighters.subsystems.Subsystems.SharedSubsystem;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
+import igknighters.subsystems.swerve.odometryThread.SwerveDriveSample;
 import igknighters.subsystems.vision.VisionConstants.kVision;
 import igknighters.subsystems.vision.camera.Camera;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
 import igknighters.subsystems.vision.camera.CameraDisabled;
 import igknighters.subsystems.vision.camera.CameraRealPhoton;
 import igknighters.subsystems.vision.camera.CameraSimPhoton;
+import igknighters.util.plumbing.Channel.Receiver;
 import igknighters.util.plumbing.Channel.Sender;
 import igknighters.util.plumbing.TunableValues;
 import java.util.HashSet;
@@ -38,6 +40,7 @@ public class Vision implements SharedSubsystem {
   @IgnoreLogged private final Localizer localizer;
 
   private final Sender<VisionSample> visionSender;
+  private final Receiver<SwerveDriveSample> swerveDataReceiver;
 
   private final Camera[] cameras;
 
@@ -138,12 +141,12 @@ public class Vision implements SharedSubsystem {
     }
 
     visionSender = localizer.visionDataSender();
+    swerveDataReceiver = localizer.swerveDataReceiver();
   }
 
   private Optional<VisionSample> gaugeTrust(final VisionUpdate update) {
     final VisionUpdateFlaws faults = update.flaws();
 
-    // These are "fatal" faults that should always invalidate the update
     if (faults.extremeJitter) {
       return Optional.empty();
     }
@@ -183,8 +186,15 @@ public class Vision implements SharedSubsystem {
   public void periodic() {
     Tracer.startTrace("VisionPeriodic");
 
+    final SwerveDriveSample[] swerveSamples = swerveDataReceiver.recvAll();
+
     for (final Camera camera : cameras) {
       Tracer.startTrace(camera.getName() + "Periodic");
+
+      for (final SwerveDriveSample sample : swerveSamples) {
+        camera.updateHeading(sample.timestamp(), sample.gyroYaw());
+      }
+
       try {
         camera.periodic();
       } catch (Exception e) {

@@ -2,11 +2,17 @@ package igknighters.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.intake.Intake.ControlType;
 import igknighters.subsystems.intake.Intake.Holding;
 
 public class IntakeCommands {
+  public static Trigger isHolding(Intake intake, Holding holding) {
+    return new Trigger(() -> intake.getHolding() == holding);
+  }
+
   public static Command runVoltage(Intake intake, double volts) {
     return intake
         .run(() -> intake.control(ControlType.VOLTAGE, volts))
@@ -34,14 +40,16 @@ public class IntakeCommands {
   public static Command intakeCoral(Intake intake) {
     return runVoltage(intake, -3.0)
         .alongWith(Commands.run(() -> intake.setTryingToHold(Holding.CORAL)))
-        .until(intake.isHolding(Holding.CORAL))
+        .until(isHolding(intake, Holding.CORAL))
+        .andThen(new ScheduleCommand(holdCoral(intake)))
         .withName("IntakeCoral");
   }
 
   public static Command intakeAlgae(Intake intake) {
     return runVoltage(intake, -10.0)
         .alongWith(Commands.run(() -> intake.setTryingToHold(Holding.ALGAE)))
-        .until(intake.isHolding(Holding.ALGAE))
+        .until(isHolding(intake, Holding.ALGAE))
+        .andThen(new ScheduleCommand(holdAlgae(intake)))
         .withName("IntakeAlgae");
   }
 
@@ -51,18 +59,16 @@ public class IntakeCommands {
 
   public static Command bounce(Intake intake) {
     return Commands.sequence(
-        IntakeCommands.runVoltage(intake, 1.0).withTimeout(0.1),
-        IntakeCommands.runVoltage(intake, -12.0).withTimeout(0.15)
-    );
+            IntakeCommands.runVoltage(intake, 1.0).withTimeout(0.1),
+            IntakeCommands.runVoltage(intake, -12.0).withTimeout(0.15))
+        .withName("IntakeBounce");
   }
 
   public static Command holdAlgae(Intake intake) {
-    return IntakeCommands.runCurrent(intake, -80.0)
-      .withName("HoldAlgae");
+    return IntakeCommands.runCurrent(intake, -80.0).withName("HoldAlgae");
   }
 
   public static Command holdCoral(Intake intake) {
-    return IntakeCommands.runCurrent(intake, -25.0)
-      .withName("HoldCoral");
+    return IntakeCommands.runCurrent(intake, -35.0).withName("HoldCoral");
   }
 }

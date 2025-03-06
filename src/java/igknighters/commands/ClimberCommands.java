@@ -6,19 +6,24 @@ import igknighters.subsystems.climber.ClimberConstants;
 
 public class ClimberCommands {
   public static Command stow(Climber climber) {
-    return climber.startRun(
-        () -> climber.setMagnetPower(false), () -> climber.setPivotPosition(0.0));
+    return climber
+        .startRun(() -> climber.setMagnetPower(false), () -> climber.setPivotPosition(0.0))
+        .withName("ClimberStow");
   }
 
   public static Command stage(Climber climber) {
-    return climber.startRun(
-        () -> climber.setMagnetPower(true),
-        () -> climber.setPivotPosition(ClimberConstants.PivotConstants.STAGE_ANGLE));
+    return climber
+        .startRun(
+            () -> climber.setMagnetPower(true),
+            () -> climber.setPivotPosition(ClimberConstants.PivotConstants.STAGE_ANGLE))
+        .withName("ClimberStage");
   }
 
   public static Command climb(Climber climber) {
-    return climber.startRun(
-        () -> climber.setMagnetPower(true),
-        () -> climber.setPivotPosition(ClimberConstants.PivotConstants.ASCEND_ANGLE));
+    return climber
+        .startRun(
+            () -> climber.setMagnetPower(true),
+            () -> climber.setPivotPosition(ClimberConstants.PivotConstants.ASCEND_ANGLE))
+        .withName("ClimberClimb");
   }
 }

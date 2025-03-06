@@ -1,12 +1,9 @@
 package igknighters.commands;
 
-import static igknighters.commands.Triggers.*;
-
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.subsystems.Subsystems;
-import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
 
 public class SubsystemTriggers {
@@ -17,13 +14,6 @@ public class SubsystemTriggers {
     final var led = subsystems.led;
     final var superStructure = subsystems.superStructure;
     final var intake = subsystems.intake;
-
-    subsystemIdle(intake)
-        .and(intake.isHolding(Holding.ALGAE))
-        .onTrue(IntakeCommands.holdAlgae(intake));
-    subsystemIdle(intake)
-        .and(intake.isHolding(Holding.CORAL))
-        .onTrue(IntakeCommands.holdCoral(intake));
 
     new Trigger(
             () -> {

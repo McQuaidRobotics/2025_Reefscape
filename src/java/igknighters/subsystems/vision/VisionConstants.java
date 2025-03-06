@@ -73,28 +73,28 @@ public class VisionConstants {
     public static final HashMap<Integer, Double> TAG_RANKINGS =
         new HashMap<>() {
           {
-            put(1, 1.0); // CORAL STATION
-            put(2, 1.0); // CORAL STATION
-            put(3, 1.0); // PROCESSOR
-            put(4, 0.4); // BARGE
-            put(5, 0.4); // BARGE
-            put(6, 1.25); // REEF
-            put(7, 1.25); // REEF
-            put(8, 1.25); // REEF
-            put(9, 1.25); // REEF
-            put(10, 1.25); // REEF
-            put(11, 1.25); // REEF
-            put(12, 1.0); // CORAL STATION
-            put(13, 1.0); // CORAL STATION
-            put(14, 0.4); // BARGE
-            put(15, 0.4); // BARGE
-            put(16, 1.0); // PROCESSOR
-            put(17, 1.25); // REEF
-            put(18, 1.25); // REEF
-            put(19, 1.25); // REEF
-            put(20, 1.25); // REEF
-            put(21, 1.25); // REEF
-            put(22, 1.25); // REEF
+            put(1, 0.0); // CORAL STATION
+            put(2, 0.0); // CORAL STATION
+            put(3, 0.0); // PROCESSOR
+            put(4, 0.0); // BARGE
+            put(5, 0.0); // BARGE
+            put(6, 1.0); // REEF
+            put(7, 1.0); // REEF
+            put(8, 1.0); // REEF
+            put(9, 1.0); // REEF
+            put(10, 1.0); // REEF
+            put(11, 1.0); // REEF
+            put(12, 0.0); // CORAL STATION
+            put(13, 0.0); // CORAL STATION
+            put(14, 0.0); // BARGE
+            put(15, 0.0); // BARGE
+            put(16, 0.0); // PROCESSOR
+            put(17, 1.0); // REEF
+            put(18, 1.0); // REEF
+            put(19, 1.0); // REEF
+            put(20, 1.0); // REEF
+            put(21, 1.0); // REEF
+            put(22, 1.0); // REEF
           }
         };
   }

@@ -70,4 +70,9 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
 
     swerve.drivePreProfiled(Speeds.fromFieldRelative(vt.getX(), vt.getY(), omega));
   }
+
+  @Override
+  public String getName() {
+    return "TeleopSwerveHeadingCmd";
+  }
 }

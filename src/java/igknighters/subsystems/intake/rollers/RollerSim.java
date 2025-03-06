@@ -70,6 +70,11 @@ public class RollerSim extends Rollers {
   }
 
   @Override
+  public boolean isStalling() {
+    return amps < 0.0 && isLaserTripped();
+  }
+
+  @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !super.controlledLastCycle) {
       voltageOut(0.0);

@@ -23,24 +23,6 @@ import igknighters.util.can.CANSignalManager;
 public class RollersReal extends Rollers {
   private static final double INTAKE_WIDTH = 13.5 * Conv.INCHES_TO_METERS;
   private static final double CORAL_WIDTH = 2.25 * Conv.INCHES_TO_METERS;
-  // private static final LerpTable DISTANCE_LERP =
-  //     new LerpTable(
-  //         new LerpTable.LerpTableEntry(0.4 * Conv.INCHES_TO_METERS, 1.9 * Conv.INCHES_TO_METERS),
-  //         new LerpTable.LerpTableEntry(2.0 * Conv.INCHES_TO_METERS, 3.7 * Conv.INCHES_TO_METERS),
-  //         new LerpTable.LerpTableEntry(3.0 * Conv.INCHES_TO_METERS, 4.64 *
-  // Conv.INCHES_TO_METERS),
-  //         new LerpTable.LerpTableEntry(4.0 * Conv.INCHES_TO_METERS, 5.98 *
-  // Conv.INCHES_TO_METERS),
-  //         new LerpTable.LerpTableEntry(5.0 * Conv.INCHES_TO_METERS, 7.08 *
-  // Conv.INCHES_TO_METERS),
-  //         new LerpTable.LerpTableEntry(6.0 * Conv.INCHES_TO_METERS, 8.0 * Conv.INCHES_TO_METERS),
-  //         new LerpTable.LerpTableEntry(7.0 * Conv.INCHES_TO_METERS, 8.58 *
-  // Conv.INCHES_TO_METERS),
-  //         new LerpTable.LerpTableEntry(8.0 * Conv.INCHES_TO_METERS, 9.65 *
-  // Conv.INCHES_TO_METERS),
-  //         new LerpTable.LerpTableEntry(8.75 * Conv.INCHES_TO_METERS, 10.5 *
-  // Conv.INCHES_TO_METERS)
-  //     );
   private static final LerpTable DISTANCE_LERP =
       new LerpTable(
           new LerpTable.LerpTableEntry(1.9 * Conv.INCHES_TO_METERS, 0.4 * Conv.INCHES_TO_METERS),
@@ -63,7 +45,9 @@ public class RollersReal extends Rollers {
   private final TorqueCurrentFOC currentReq = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
   private final StatusSignal<ReverseLimitValue> laserTrippedSignal;
-  private final BaseStatusSignal current, volts, velocity, temperature, distance;
+  private final BaseStatusSignal current, voltage, velocity, temperature, distance;
+
+  private boolean voltageControlled = false;
 
   private TalonFXConfiguration intakeConfiguration() {
     var cfg = new TalonFXConfiguration();
@@ -96,7 +80,7 @@ public class RollersReal extends Rollers {
     super(DCMotor.getKrakenX60(1).withReduction(RollerConstants.GEAR_RATIO));
     laserTrippedSignal = intakeMotor.getReverseLimit();
     current = intakeMotor.getTorqueCurrent();
-    volts = intakeMotor.getMotorVoltage();
+    voltage = intakeMotor.getMotorVoltage();
     velocity = intakeMotor.getVelocity();
     temperature = intakeMotor.getDeviceTemp();
     distance = distanceSensor.getDistance();
@@ -107,7 +91,7 @@ public class RollersReal extends Rollers {
         IntakeConstants.CANBUS,
         laserTrippedSignal,
         current,
-        volts,
+        voltage,
         velocity,
         temperature,
         distance);
@@ -118,13 +102,34 @@ public class RollersReal extends Rollers {
   @Override
   public void voltageOut(double voltage) {
     super.controlledLastCycle = true;
+    voltageControlled = true;
     intakeMotor.setControl(voltageReq.withOutput(voltage));
   }
 
   @Override
   public void currentOut(double current) {
     super.controlledLastCycle = true;
+    voltageControlled = false;
     intakeMotor.setControl(currentReq.withOutput(current));
+  }
+
+  @Override
+  public boolean isStalling() {
+    if (!controlledLastCycle) {
+      return false;
+    }
+
+    if (voltageControlled) {
+      if (voltageReq.Output < 0.0) {
+        return Math.abs(amps) > 40.0;
+      }
+    } else {
+      if (currentReq.Output < 0.0) {
+        return Math.abs(amps) > 40.0;
+      }
+    }
+
+    return false;
   }
 
   @Override
@@ -134,7 +139,7 @@ public class RollersReal extends Rollers {
     }
     super.controlledLastCycle = false;
     super.amps = current.getValueAsDouble();
-    super.volts = volts.getValueAsDouble();
+    super.volts = voltage.getValueAsDouble();
     super.laserTripped = laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround;
     super.gamepieceDistance =
         (DISTANCE_LERP.lerp(distance.getValueAsDouble()) + CORAL_WIDTH) - (INTAKE_WIDTH / 2.0);

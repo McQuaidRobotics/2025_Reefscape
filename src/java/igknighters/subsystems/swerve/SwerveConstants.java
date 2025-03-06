@@ -105,9 +105,9 @@ public class SwerveConstants {
         new LerpTable(
             new LerpTableEntry(0.0, 0.0),
             new LerpTableEntry(0.05, 0.0), // deadzone
-            new LerpTableEntry(0.5, 0.2),
-            new LerpTableEntry(0.7, 0.4),
-            new LerpTableEntry(1.0, 0.6));
+            new LerpTableEntry(0.5, 0.3),
+            new LerpTableEntry(0.7, 0.6),
+            new LerpTableEntry(1.0, 1.0));
 
     public static final Translation2d[] MODULE_CHASSIS_LOCATIONS =
         new Translation2d[] {

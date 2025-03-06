@@ -19,26 +19,77 @@ public class SuperStructureCommands {
   }
 
   public static Trigger isAt(
-      SuperStructure superStructure, SuperStructureState state, double scalar) {
+      SuperStructure superStructure, double elevatorMeters, double wristRads) {
     return new Trigger(
         () ->
             superStructure.isAt(
-                state.elevatorMeters,
-                state.wristRads,
-                kElevator.DEFAULT_TOLERANCE * state.toleranceScalar * scalar,
-                kWrist.DEFAULT_TOLERANCE * state.toleranceScalar * scalar));
+                elevatorMeters, wristRads, kElevator.DEFAULT_TOLERANCE, kWrist.DEFAULT_TOLERANCE));
+  }
+
+  public static Trigger isAt(
+      SuperStructure superStructure, double elevatorMeters, double wristRads, double scalar) {
+    return new Trigger(
+        () ->
+            superStructure.isAt(
+                elevatorMeters,
+                wristRads,
+                kElevator.DEFAULT_TOLERANCE * scalar,
+                kWrist.DEFAULT_TOLERANCE * scalar));
+  }
+
+  public enum MoveOrder {
+    ELEVATOR_FIRST,
+    WRIST_FIRST,
+    SIMULTANEOUS
+  }
+
+  public static Command holdAt(
+      SuperStructure superStructure, SuperStructureState state, MoveOrder order) {
+    Command simultaneous =
+        superStructure.run(() -> superStructure.goTo(state.elevatorMeters, state.wristRads));
+    ;
+    var tmp =
+        switch (order) {
+          case ELEVATOR_FIRST ->
+              superStructure
+                  .run(() -> superStructure.goTo(state.elevatorMeters, superStructure.wristAngle()))
+                  .until(
+                      () ->
+                          superStructure.isAt(
+                              state.elevatorMeters,
+                              0.0,
+                              kElevator.DEFAULT_TOLERANCE * state.toleranceScalar,
+                              1000.0))
+                  .andThen(simultaneous);
+          case WRIST_FIRST ->
+              superStructure
+                  .run(() -> superStructure.goTo(superStructure.elevatorHeight(), state.wristRads))
+                  .until(
+                      () ->
+                          superStructure.isAt(
+                              0.0,
+                              state.wristRads,
+                              1000.0,
+                              kWrist.DEFAULT_TOLERANCE * state.toleranceScalar))
+                  .andThen(simultaneous);
+          case SIMULTANEOUS -> simultaneous;
+        };
+    return tmp.withName("HoldAt(" + state.name() + ", " + order + ")");
   }
 
   public static Command holdAt(SuperStructure superStructure, SuperStructureState state) {
-    return superStructure
-        .run(() -> superStructure.goTo(state.elevatorMeters, state.wristRads))
-        .withName("HoldAt(" + state.name() + ")");
+    return holdAt(superStructure, state, MoveOrder.SIMULTANEOUS);
+  }
+
+  public static Command moveTo(
+      SuperStructure superStructure, SuperStructureState state, MoveOrder order) {
+    return holdAt(superStructure, state, order)
+        .until(isAt(superStructure, state))
+        .withName("MoveTo(" + state.name() + ")");
   }
 
   public static Command moveTo(SuperStructure superStructure, SuperStructureState state) {
-    return holdAt(superStructure, state)
-        .until(isAt(superStructure, state))
-        .withName("MoveTo(" + state.name() + ")");
+    return moveTo(superStructure, state, MoveOrder.SIMULTANEOUS);
   }
 
   public static Command home(SuperStructure superStructure, boolean force) {
