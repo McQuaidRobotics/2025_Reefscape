@@ -32,6 +32,10 @@ public class Climber implements ExclusiveSubsystem {
     pivot.setPositionRads(position);
   }
 
+  public boolean isPivotAtPosition(double position, double tolerance) {
+    return pivot.isAtPosition(position, tolerance);
+  }
+
   public void voltageOut(double voltage) {
     pivot.voltageOut(voltage);
   }

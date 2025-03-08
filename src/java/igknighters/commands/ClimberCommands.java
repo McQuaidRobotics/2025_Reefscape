@@ -24,6 +24,8 @@ public class ClimberCommands {
         .startRun(
             () -> climber.setMagnetPower(true),
             () -> climber.setPivotPosition(ClimberConstants.PivotConstants.ASCEND_ANGLE))
+        .until(() -> climber.isPivotAtPosition(ClimberConstants.PivotConstants.ASCEND_ANGLE, 0.1))
+        .andThen(climber.run(() -> climber.voltageOut(-0.45)))
         .withName("ClimberClimb");
   }
 
