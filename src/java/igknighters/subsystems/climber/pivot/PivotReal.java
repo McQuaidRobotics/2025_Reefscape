@@ -38,7 +38,9 @@ public class PivotReal extends Pivot {
 
   public PivotReal() {
     leader.getConfigurator().apply(motorConfiguration());
-    follower.getConfigurator().apply(new TalonFXConfiguration());
+    var cfg = new TalonFXConfiguration();
+    cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    follower.getConfigurator().apply(cfg);
     encoder.getConfigurator().apply(encoderConfiguration());
 
     follower.setControl(new Follower(leader.getDeviceID(), true));
@@ -72,8 +74,7 @@ public class PivotReal extends Pivot {
     // cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
     //     PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
 
-    cfg.MotorOutput.PeakReverseDutyCycle = 0.6;
-    cfg.Voltage.PeakReverseVoltage = 7.2;
+    cfg.Voltage.PeakReverseVoltage = 3.0;
 
     // cfg.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.MAX_VELOCITY;
     // cfg.MotionMagic.MotionMagicAcceleration = PivotConstants.MAX_ACCELERATION;
@@ -81,7 +82,7 @@ public class PivotReal extends Pivot {
     cfg.CurrentLimits.StatorCurrentLimit = PivotConstants.STATOR_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLimit = PivotConstants.SUPPLY_CURRENT_LIMIT;
 
-    cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     cfg.MotorOutput.Inverted =
         PivotConstants.INVERT_MOTOR
             ? InvertedValue.Clockwise_Positive

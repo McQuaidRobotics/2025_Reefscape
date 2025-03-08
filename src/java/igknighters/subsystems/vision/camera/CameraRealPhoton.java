@@ -4,12 +4,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.AprilTags;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
 import igknighters.subsystems.vision.Vision.VisionUpdateFlaws;
 import igknighters.util.logging.BootupLogger;
-import igknighters.util.plumbing.TunableValues;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +18,6 @@ import java.util.function.Function;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -38,9 +38,11 @@ public class CameraRealPhoton extends Camera {
 
     poseEstimator =
         new PhotonPoseEstimator(
-            FieldConstants.APRIL_TAG_FIELD, PoseStrategy.CONSTRAINED_SOLVEPNP, this.robotToCamera);
+            FieldConstants.APRIL_TAG_FIELD,
+            PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
+            this.robotToCamera);
     poseEstimator.setTagModel(TargetModel.kAprilTag36h11);
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
     BootupLogger.bootupLog("    " + config.cameraName() + " camera initialized (real)");
   }
@@ -114,24 +116,32 @@ public class CameraRealPhoton extends Camera {
   }
 
   @Override
+  public void clearHeading() {
+    try {
+      var field = PhotonPoseEstimator.class.getDeclaredField("headingBuffer");
+      field.setAccessible(true);
+      var buffer = (TimeInterpolatableBuffer<?>) field.get(poseEstimator);
+      buffer.clear();
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Override
   public void periodic() {
     seenTags.clear();
     final var results = camera.getAllUnreadResults();
-    PoseStrategy strategy =
-        TunableValues.getBoolean("constrainedSolve", true).value()
-            ? PoseStrategy.CONSTRAINED_SOLVEPNP
-            : PoseStrategy.PNP_DISTANCE_TRIG_SOLVE;
-    poseEstimator.setPrimaryStrategy(strategy);
+    if (DriverStation.isDisabled()) {
+      clearHeading();
+      poseEstimator.setPrimaryStrategy(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+    } else {
+      poseEstimator.setPrimaryStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    }
     for (var result : results) {
       if (result.hasTargets()) {
         var estRoboPose =
             poseEstimator.update(
-                result,
-                camera.getCameraMatrix(),
-                camera.getDistCoeffs(),
-                Optional.of(
-                    new ConstrainedSolvepnpParams(
-                        false, TunableValues.getDouble("headingFactor", 0.0).value())));
+                result, camera.getCameraMatrix(), camera.getDistCoeffs(), Optional.empty());
         if (estRoboPose.isPresent()) {
           var u = update(estRoboPose.get());
           if (u.isPresent()) {

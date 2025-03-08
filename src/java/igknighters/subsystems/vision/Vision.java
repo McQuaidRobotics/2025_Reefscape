@@ -182,6 +182,12 @@ public class Vision implements SharedSubsystem {
     return Optional.of(new VisionSample(update.pose(), update.timestamp(), trust));
   }
 
+  public void resetHeading() {
+    for (final Camera camera : cameras) {
+      camera.clearHeading();
+    }
+  }
+
   @Override
   public void periodic() {
     Tracer.startTrace("VisionPeriodic");
@@ -191,8 +197,10 @@ public class Vision implements SharedSubsystem {
     for (final Camera camera : cameras) {
       Tracer.startTrace(camera.getName() + "Periodic");
 
-      for (final SwerveDriveSample sample : swerveSamples) {
-        camera.updateHeading(sample.timestamp(), sample.gyroYaw());
+      if (DriverStation.isEnabled()) {
+        for (final SwerveDriveSample sample : swerveSamples) {
+          camera.updateHeading(sample.timestamp(), sample.gyroYaw());
+        }
       }
 
       try {
