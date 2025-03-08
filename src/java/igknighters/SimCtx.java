@@ -19,7 +19,6 @@ import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.plumbing.Channel.Receiver;
 import java.util.ArrayList;
-import java.util.List;
 import monologue.GlobalField;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.VisionSystemSim;
@@ -136,7 +135,7 @@ public class SimCtx {
       GlobalField.setObject("SimRobot", robotPose);
 
       aprilTagSim.clearAprilTags();
-      List<AprilTag> visibleTags = new ArrayList<>();
+      ArrayList<AprilTag> visibleTags = new ArrayList<>();
       for (AprilTag tag : AprilTags.TAGS) {
         boolean los =
             arena()

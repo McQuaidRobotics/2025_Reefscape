@@ -15,8 +15,8 @@ import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
+import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
-import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.led.LedUtil;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
@@ -37,65 +37,69 @@ public class DriverController {
     final var climber = subsystems.climber;
 
     /// FACE BUTTONS
+    this.A.or(this.X)
+        .whileTrue(IntakeCommands.intakeCoral(intake))
+        .whileTrue(
+            new TeleopSwerveHeadingCmd(
+                swerve,
+                this,
+                localizer,
+                () -> {
+                  final double angle = 54.0;
+                  if (localizer.translation().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
+                    return AllianceFlipper.isBlue()
+                        ? Rotation2d.fromDegrees(180 - angle)
+                        : Rotation2d.fromDegrees(angle);
+                  } else {
+                    return AllianceFlipper.isBlue()
+                        ? Rotation2d.fromDegrees(-(180 - angle))
+                        : Rotation2d.fromDegrees(-angle);
+                  }
+                },
+                kSwerve.CONSTRAINTS))
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+        .onFalse(
+            IntakeCommands.bounce(intake)
+                .andThen(IntakeCommands.holdCoral(intake))
+                .withName("BounceThenHoldCoral"));
     this.A.whileTrue(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHp)
-                .alongWith(
-                    IntakeCommands.intakeCoral(subsystems.intake),
-                    new TeleopSwerveHeadingCmd(
-                        swerve,
-                        this,
-                        localizer,
-                        () -> {
-                          final double angle = 54.0;
-                          if (false) {
-                            return AllianceFlipper.isBlue()
-                                ? Rotation2d.fromDegrees(180 - angle)
-                                : Rotation2d.fromDegrees(angle);
-                          } else {
-                            return AllianceFlipper.isBlue()
-                                ? Rotation2d.fromDegrees(-(180 - angle))
-                                : Rotation2d.fromDegrees(-angle);
-                          }
-                        },
-                        kSwerve.CONSTRAINTS))
-                .until(subsystems.intake.isHolding(Holding.CORAL)))
+        SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose));
+    this.X.whileTrue(
+        SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpFar));
+
+    this.B.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor))
+        .whileTrue(
+            new TeleopSwerveHeadingCmd(
+                swerve,
+                this,
+                localizer,
+                () -> AllianceFlipper.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
+                kSwerve.CONSTRAINTS))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
-    this.B.whileTrue(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor)
-                .alongWith(
-                    new TeleopSwerveHeadingCmd(
-                        swerve,
-                        this,
-                        localizer,
-                        () -> AllianceFlipper.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
-                        kSwerve.CONSTRAINTS)))
-        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
-
-    this.X.onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
-
-    this.Y.whileTrue(
-            SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net)
-                .alongWith(
-                    new TeleopSwerveHeadingCmd(
-                        swerve,
-                        this,
-                        localizer,
-                        () -> AllianceFlipper.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-                        kSwerve.CONSTRAINTS)))
+    this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
+        .whileTrue(
+            new TeleopSwerveHeadingCmd(
+                swerve,
+                this,
+                localizer,
+                () -> AllianceFlipper.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+                kSwerve.CONSTRAINTS))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
-    this.RB.onTrue(IntakeCommands.expel(intake).withTimeout(0.4));
+    this.RB.whileTrue(IntakeCommands.expel(intake));
 
-    this.LB
-        .whileTrue(operatorTarget.gotoSuperStructureTargetCmd())
-        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+    this.LB.whileTrue(operatorTarget.gotoSuperStructureTargetCmd());
 
     // CENTER BUTTONS
-    this.Back.onTrue(SuperStructureCommands.home(superStructure, true));
+    this.Back.onTrue(
+        Commands.sequence(
+                SuperStructureCommands.home(superStructure, true),
+                SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+            .withName("HomeAndHoldStow"));
 
-    this.Start.onTrue(SwerveCommands.orientGyro(swerve, localizer));
+    this.Start.onTrue(SwerveCommands.orientGyro(swerve, vision, localizer));
 
     // STICKS
     this.LS.onTrue(LEDCommands.rainbow(led, 255, 0, 36, 100, 1, 1));
@@ -103,25 +107,31 @@ public class DriverController {
     this.RS.onTrue(LEDCommands.runSplitWithLEDSection(led, 0, new LEDSection(0, LedUtil.makeRainbow(255, 100), 15), new LEDSection(15, LedUtil.makeFlash(255, 0, 0, 1.0), 15)));
 
     // // TRIGGERS
-    this.LT
-        .and(operatorTarget.hasTarget())
-        .whileTrue(operatorTarget.gotoTargetCmd(localizer))
-        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+    this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(localizer));
 
     this.RT
-        .and(operatorTarget.superStructureAtSetpoint())
-        .and(new Trigger(intake.isHolding(Holding.NONE)).negate())
-        .onTrue(IntakeCommands.expel(intake).until(intake.isHolding(Holding.NONE)));
+        .whileTrue(
+            Commands.repeatingSequence(IntakeCommands.bounce(intake))
+                .withName("IntakeBounceRepeatedly"))
+        .onFalse(IntakeCommands.holdCoral(intake));
 
     // DPAD
-    this.DPR.whileTrue(ClimberCommands.stow(climber));
+    this.DPR.onTrue(ClimberCommands.stow(climber));
 
-    this.DPD.whileTrue(ClimberCommands.stage(climber));
+    this.DPD.whileTrue(ClimberCommands.testMagnet(climber));
 
     this.DPL.onTrue(
         climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    this.DPU.whileTrue(ClimberCommands.climb(climber));
+    // this.DPU.whileTrue(ClimberCommands.climb(climber));
+
+    // COMBOS
+
+    this.LT
+        .or(LB)
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+        .and(operatorTarget.wantsAlgae())
+        .whileTrue(IntakeCommands.intakeAlgae(intake));
   }
 
   // Define the buttons on the controller

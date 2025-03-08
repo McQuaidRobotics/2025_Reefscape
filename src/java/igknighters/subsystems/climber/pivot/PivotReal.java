@@ -7,14 +7,13 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.PositionDutyCycle;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.climber.ClimberConstants;
@@ -29,15 +28,17 @@ public class PivotReal extends Pivot {
       new TalonFX(PivotConstants.FOLLOWER_MOTOR_ID, ClimberConstants.CANBUS);
   private final CANcoder encoder = new CANcoder(PivotConstants.ENCODER_ID, ClimberConstants.CANBUS);
 
-  private final BaseStatusSignal position, velocity, amps, voltage;
+  private final BaseStatusSignal position, velocity, amps, voltage, encoderPosition;
 
-  private final PositionDutyCycle controlReq = new PositionDutyCycle(0.0).withUpdateFreqHz(0.0);
+  private final VoltageOut controlReq = new VoltageOut(0.0).withUpdateFreqHz(0.0);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
 
+  private final PIDController pidController = new PIDController(60.0, 10.0, 0.0);
+
   public PivotReal() {
     leader.getConfigurator().apply(motorConfiguration());
-    follower.getConfigurator().apply(motorConfiguration());
+    follower.getConfigurator().apply(new TalonFXConfiguration());
     encoder.getConfigurator().apply(encoderConfiguration());
 
     follower.setControl(new Follower(leader.getDeviceID(), true));
@@ -47,13 +48,16 @@ public class PivotReal extends Pivot {
     amps = leader.getStatorCurrent();
     voltage = leader.getMotorVoltage();
 
-    this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
+    this.radians = encoder.getAbsolutePosition(false).waitForUpdate(2.5).getValue().in(Radians);
 
     encoder.getAbsolutePosition(false).setUpdateFrequency(125);
     encoder.getPosition(false).setUpdateFrequency(125);
     encoder.getVelocity(false).setUpdateFrequency(125);
 
-    CANSignalManager.registerSignals(ClimberConstants.CANBUS, position, velocity, amps, voltage);
+    encoderPosition = encoder.getAbsolutePosition(false);
+
+    CANSignalManager.registerSignals(
+        ClimberConstants.CANBUS, position, velocity, amps, voltage, encoderPosition);
 
     CANSignalManager.registerDevices(leader, encoder);
   }
@@ -61,20 +65,12 @@ public class PivotReal extends Pivot {
   private final TalonFXConfiguration motorConfiguration() {
     var cfg = new TalonFXConfiguration();
 
-    cfg.Slot0.kP = PivotConstants.KP;
-    cfg.Slot0.kI = PivotConstants.KI;
-    cfg.Slot0.kD = PivotConstants.KD;
-
-    cfg.Feedback.RotorToSensorRatio = PivotConstants.GEAR_RATIO;
-    cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-    cfg.Feedback.FeedbackRemoteSensorID = PivotConstants.ENCODER_ID;
-
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        PivotConstants.FORWARD_LIMIT * Conv.RADIANS_TO_ROTATIONS;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-        PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
+    // cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+    // cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+    //     PivotConstants.FORWARD_LIMIT * Conv.RADIANS_TO_ROTATIONS;
+    // cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+    // cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+    //     PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
 
     cfg.MotorOutput.PeakReverseDutyCycle = 0.6;
     cfg.Voltage.PeakReverseVoltage = 7.2;
@@ -85,7 +81,7 @@ public class PivotReal extends Pivot {
     cfg.CurrentLimits.StatorCurrentLimit = PivotConstants.STATOR_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLimit = PivotConstants.SUPPLY_CURRENT_LIMIT;
 
-    cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     cfg.MotorOutput.Inverted =
         PivotConstants.INVERT_MOTOR
             ? InvertedValue.Clockwise_Positive
@@ -111,7 +107,7 @@ public class PivotReal extends Pivot {
   public void setPositionRads(double targetRads) {
     super.targetRads = targetRads;
     controlledLastCycle = true;
-    leader.setControl(controlReq.withPosition(Conv.RADIANS_TO_ROTATIONS * targetRads));
+    leader.setControl(controlReq.withOutput(pidController.calculate(radians, targetRads)));
   }
 
   @Override
@@ -132,6 +128,7 @@ public class PivotReal extends Pivot {
 
   @Override
   public void periodic() {
+    follower.setControl(new Follower(leader.getDeviceID(), true));
     if (DriverStation.isDisabled() || !controlledLastCycle) {
       super.targetRads = Double.NaN;
       leader.setControl(neutralOut);
@@ -139,6 +136,6 @@ public class PivotReal extends Pivot {
     super.controlledLastCycle = false;
     super.amps = amps.getValueAsDouble();
     super.volts = voltage.getValueAsDouble();
-    super.radians = position.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
+    super.radians = encoderPosition.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
   }
 }

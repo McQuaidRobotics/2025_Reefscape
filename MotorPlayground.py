@@ -95,12 +95,12 @@ class DCMotor:
         losses: float = self.get_losses(speed_rad_per_sec, voltage_input, stator_current)
         return output / (output + losses)
 
-    def get_supply_current(self, speed_rad_per_sec: float, voltage_input: float, stator_current: float) -> float:
-        if math.isclose(voltage_input, 0.0, abs_tol=0.0001):
+    def get_supply_current(self, speed_rad_per_sec: float, v_in: float, v_bat: float, stator_current: float) -> float:
+        if math.isclose(v_bat, 0.0, abs_tol=0.0001):
             return 0.0
-        stator_power = voltage_input * self.get_speed_percent(speed_rad_per_sec, voltage_input) * stator_current
-        losses = self.get_losses(speed_rad_per_sec, voltage_input, stator_current)
-        return (stator_power + losses) / voltage_input
+        stator_power = v_bat * self.get_speed_percent(speed_rad_per_sec, v_in) * stator_current
+        losses = self.get_losses(speed_rad_per_sec, v_in, stator_current)
+        return (stator_power + losses) / v_bat
 
 def rpm_to_rad_per_sec(rpm: float) -> float:
     return rpm * math.pi / 30.0
@@ -111,11 +111,11 @@ KRAKEN_FOC: DCMotor = DCMotor.make_motor(12.0, 9.37, 483.0, 2.0, rpm_to_rad_per_
 # simulate a kraken stalled at a requested 12v with a 40A supply limit and a 60A stator limit
 MOTOR = KRAKEN_FOC
 v_bat = 12.0
-speed = rpm_to_rad_per_sec(5200)
-voltage = 11.5
+speed = 0.0
+voltage = 6.0
 stator = MOTOR.get_current_limited(speed, voltage, 70.0, 120.0)
 new_voltage = MOTOR.get_voltage(MOTOR.get_torque(stator), speed)
-supply = MOTOR.get_supply_current(speed, v_bat, stator)
+supply = MOTOR.get_supply_current(speed, voltage, v_bat, stator)
 print(f"stator current: {stator}A")
 print(f"torque: {MOTOR.get_torque(stator)}Nm")
 print(f"voltage: {new_voltage}V")

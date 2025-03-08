@@ -25,20 +25,20 @@ public class SuperStructure implements ExclusiveSubsystem {
   @Log(key = "Elevator")
   private final Elevator elevator;
 
-  /**
-   * Checks for potential collisions
-   *
-   * @param elevHeight The height of the elevator in meters
-   * @param theta
-   * @return position the wrist should be at in rads
-   */
-  private static double avoid(double elevHeight, double theta) {
-    double wristY = elevHeight - kWrist.LENGTH * Math.sin(theta);
-    if (wristY < SuperStructureConstants.COLLISION_HEIGHT) {
-      return Math.asin((elevHeight - SuperStructureConstants.COLLISION_HEIGHT) / kWrist.LENGTH);
-    }
-    return theta;
-  }
+  // /**
+  //  * Checks for potential collisions
+  //  *
+  //  * @param elevHeight The height of the elevator in meters
+  //  * @param theta
+  //  * @return position the wrist should be at in rads
+  //  */
+  // private static double avoid(double elevHeight, double theta) {
+  //   double wristY = elevHeight - kWrist.LENGTH * Math.sin(theta);
+  //   if (wristY < SuperStructureConstants.COLLISION_HEIGHT) {
+  //     return Math.asin((elevHeight - SuperStructureConstants.COLLISION_HEIGHT) / kWrist.LENGTH);
+  //   }
+  //   return theta;
+  // }
 
   public SuperStructure(SharedState shared, SimCtx simCtx) {
     this.shared = shared;
@@ -73,7 +73,6 @@ public class SuperStructure implements ExclusiveSubsystem {
     } else {
       wristRads = MathUtil.clamp(wristRads, kWrist.MAX_ANGLE, kWrist.MIN_ANGLE);
     }
-    wristRads = avoid(elevatorMeters, wristRads);
     elevator.gotoPosition(elevatorMeters);
     wrist.goToPosition(wristRads);
     visualizer.updateSetpoint(elevatorMeters, wristRads);

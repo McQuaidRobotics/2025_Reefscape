@@ -2,6 +2,7 @@ package igknighters.subsystems.intake;
 
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.SharedState;
@@ -9,7 +10,6 @@ import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.intake.rollers.RollerSim;
 import igknighters.subsystems.intake.rollers.Rollers;
 import igknighters.subsystems.intake.rollers.RollersReal;
-import java.util.function.BooleanSupplier;
 import monologue.Annotations.Log;
 import monologue.ProceduralStructGenerator;
 
@@ -61,10 +61,6 @@ public class Intake implements ExclusiveSubsystem {
     return currentlyHolding;
   }
 
-  public BooleanSupplier isHolding(Holding holding) {
-    return () -> getHolding() == holding;
-  }
-
   public void setTryingToHold(Holding holding) {
     tryingToHold = holding;
   }
@@ -76,13 +72,21 @@ public class Intake implements ExclusiveSubsystem {
   public void periodic() {
     rollers.periodic();
 
-    if (tryingToHold != Holding.NONE && rollers.isLaserTripped()) {
-      currentlyHolding = tryingToHold;
+    if (DriverStation.isDisabled()) {
       tryingToHold = Holding.NONE;
-    } else if (tryingToHold == Holding.NONE
-        && currentlyHolding == Holding.NONE
-        && rollers.isLaserTripped()) {
-      currentlyHolding = Holding.CORAL;
+      currentlyHolding = rollers.isLaserTripped() ? Holding.CORAL : Holding.NONE;
+      log("branchReason", "disabled");
+    } else {
+      if (tryingToHold != Holding.NONE && rollers.isLaserTripped()) {
+        currentlyHolding = tryingToHold;
+        tryingToHold = Holding.NONE;
+        log("branchReason", "justIntaked");
+      } else if (!rollers.isLaserTripped() && !rollers.isStalling()) {
+        currentlyHolding = Holding.NONE;
+        log("branchReason", "notTrippedNotStalling");
+      } else {
+        log("branchReason", "none");
+      }
     }
     shared.holdingAlgae = getHolding() == Holding.ALGAE;
   }

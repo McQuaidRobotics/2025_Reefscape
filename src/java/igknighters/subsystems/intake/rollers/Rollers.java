@@ -6,6 +6,7 @@ import monologue.Annotations.Log;
 
 public abstract class Rollers extends Component {
   private final double kt, kv;
+  protected final DCMotor motor;
 
   @Log protected double amps;
   @Log protected double volts;
@@ -15,6 +16,7 @@ public abstract class Rollers extends Component {
   @Log protected boolean controlledLastCycle;
 
   protected Rollers(DCMotor motor) {
+    this.motor = motor;
     kt = motor.KtNMPerAmp;
     kv = motor.KvRadPerSecPerVolt;
   }
@@ -55,9 +57,7 @@ public abstract class Rollers extends Component {
     return laserTripped;
   }
 
-  public double currentDraw() {
-    return amps;
-  }
+  public abstract boolean isStalling();
 
   public double gamepieceDistance() {
     return gamepieceDistance;

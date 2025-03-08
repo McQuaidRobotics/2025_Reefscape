@@ -30,14 +30,14 @@ public class SwerveConstants {
 
   public static final class ModuleConstants {
     public static final class kWheel {
-      public static final double RADIUS = 2.0 * Conv.INCHES_TO_METERS;
+      public static final double RADIUS = 1.92 * Conv.INCHES_TO_METERS;
       public static final double DIAMETER = RADIUS * 2.0;
       public static final double CIRCUMFERENCE = DIAMETER * Math.PI;
       public static final double COF = 1.8;
     }
 
     public static final class kDriveMotor {
-      public static final double GEAR_RATIO = SwerveGearRatios.L2_DRIVE_KRAKEN;
+      public static final double GEAR_RATIO = SwerveGearRatios.L3_DRIVE_KRAKEN;
 
       public static final boolean INVERT = false;
       public static final boolean NEUTRAL_MODE_BRAKE = false;
@@ -105,9 +105,9 @@ public class SwerveConstants {
         new LerpTable(
             new LerpTableEntry(0.0, 0.0),
             new LerpTableEntry(0.05, 0.0), // deadzone
-            new LerpTableEntry(0.5, 0.2),
-            new LerpTableEntry(0.7, 0.4),
-            new LerpTableEntry(1.0, 0.6));
+            new LerpTableEntry(0.5, 0.3),
+            new LerpTableEntry(0.7, 0.6),
+            new LerpTableEntry(1.0, 1.0));
 
     public static final Translation2d[] MODULE_CHASSIS_LOCATIONS =
         new Translation2d[] {
