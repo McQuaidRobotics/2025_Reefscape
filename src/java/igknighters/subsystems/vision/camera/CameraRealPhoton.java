@@ -9,6 +9,7 @@ import igknighters.constants.FieldConstants;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
 import igknighters.subsystems.vision.Vision.VisionUpdateFlaws;
 import igknighters.util.logging.BootupLogger;
+import igknighters.util.plumbing.TunableValues;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import java.util.function.Function;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -114,19 +116,22 @@ public class CameraRealPhoton extends Camera {
   @Override
   public void periodic() {
     seenTags.clear();
-    // camera.getAllUnreadResults().stream()
-    //     .filter(result -> result.hasTargets())
-    //     .map(poseEstimator::update)
-    //     .filter(Optional::isPresent)
-    //     .map(Optional::get)
-    //     .map(this::update)
-    //     .filter(Optional::isPresent)
-    //     .map(Optional::get)
-    //     .forEach(updates::add);
     final var results = camera.getAllUnreadResults();
+    PoseStrategy strategy =
+        TunableValues.getBoolean("constrainedSolve", true).value()
+            ? PoseStrategy.CONSTRAINED_SOLVEPNP
+            : PoseStrategy.PNP_DISTANCE_TRIG_SOLVE;
+    poseEstimator.setPrimaryStrategy(strategy);
     for (var result : results) {
       if (result.hasTargets()) {
-        var estRoboPose = poseEstimator.update(result);
+        var estRoboPose =
+            poseEstimator.update(
+                result,
+                camera.getCameraMatrix(),
+                camera.getDistCoeffs(),
+                Optional.of(
+                    new ConstrainedSolvepnpParams(
+                        false, TunableValues.getDouble("headingFactor", 0.0).value())));
         if (estRoboPose.isPresent()) {
           var u = update(estRoboPose.get());
           if (u.isPresent()) {

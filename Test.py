@@ -1,24 +1,24 @@
 import math
 
+FX = 913.6 # mm
+FY = 912.9 # mm
+CX = 641.63 # px
+CY = 363.79 # px
 
-def inches_to_meters(inches):
-    return inches * 0.0254
+def horizontal_fov(fx, width):
+    return 2 * math.atan2(width, 2 * fx) * 180 / math.pi
 
-def meters_to_inches(meters):
-    return meters / 0.0254
+def vertical_fov(fy, height):
+    return 2 * math.atan2(height, 2 * fy) * 180 / math.pi
 
-def calc_cg_height(elevator_height: float) -> float:
-    MAX_HEIGHT = 80.75
-    MIN_HEIGHT = 12.75
-    MAX_CG = 16.75
-    MIN_CG = 7.25
+# FOV_Diagonal   = 2 * atan2(sqrt(W^2 + H^2)/2, f) * 180 / pi
 
-    t = (elevator_height - MIN_HEIGHT) / (MAX_HEIGHT - MIN_HEIGHT)
-    return inches_to_meters(MIN_CG + t * (MAX_CG - MIN_CG))
+def diagonal_fov(fx, fy, width, height):
+    return 2 * math.atan2(math.sqrt(width**2 + height**2) / 2, fx) * 180 / math.pi
 
-WHEEL_BASE_WIDTH = 0.52705
-CG_HEIGHT = calc_cg_height(80)
+h_fov = horizontal_fov(FX, 1280)
+v_fov = vertical_fov(FY, 800)
 
-print(CG_HEIGHT)
-print(((9.81 * (WHEEL_BASE_WIDTH / 2.0)) / (CG_HEIGHT)) * 0.75)
-print(math.hypot(WHEEL_BASE_WIDTH / 2.0, WHEEL_BASE_WIDTH / 2.0))
+print("Horizontal FOV: {:.2f} degrees".format(h_fov))
+print("Vertical FOV: {:.2f} degrees".format(v_fov))
+print("Diagonal FOV: {:.2f} degrees".format(diagonal_fov(FX, FY, 1280, 800)))

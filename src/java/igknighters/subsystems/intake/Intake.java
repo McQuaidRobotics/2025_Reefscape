@@ -2,6 +2,7 @@ package igknighters.subsystems.intake;
 
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.SharedState;
@@ -71,15 +72,21 @@ public class Intake implements ExclusiveSubsystem {
   public void periodic() {
     rollers.periodic();
 
-    if (tryingToHold != Holding.NONE && rollers.isLaserTripped()) {
-      currentlyHolding = tryingToHold;
+    if (DriverStation.isDisabled()) {
       tryingToHold = Holding.NONE;
-    } else if (tryingToHold == Holding.NONE
-        && currentlyHolding == Holding.NONE
-        && rollers.isLaserTripped()) {
-      currentlyHolding = Holding.CORAL;
-    } else if (!rollers.isLaserTripped()) {
-      currentlyHolding = Holding.NONE;
+      currentlyHolding = rollers.isLaserTripped() ? Holding.CORAL : Holding.NONE;
+      log("branchReason", "disabled");
+    } else {
+      if (tryingToHold != Holding.NONE && rollers.isLaserTripped()) {
+        currentlyHolding = tryingToHold;
+        tryingToHold = Holding.NONE;
+        log("branchReason", "justIntaked");
+      } else if (!rollers.isLaserTripped() && !rollers.isStalling()) {
+        currentlyHolding = Holding.NONE;
+        log("branchReason", "notTrippedNotStalling");
+      } else {
+        log("branchReason", "none");
+      }
     }
     shared.holdingAlgae = getHolding() == Holding.ALGAE;
   }

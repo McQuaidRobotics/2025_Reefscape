@@ -59,10 +59,12 @@ public class OperatorController {
     this.C4R3.onTrue(Commands.none());
 
     // ROW 4
-    this.C1R4.onTrue(Commands.none());
+    this.C1R4.onTrue(
+        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL1));
     this.C2R4.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.CENTER, SuperStructureState.ScoreL1));
-    this.C3R4.onTrue(Commands.none());
+        operatorTarget.updateTargetCmd(FaceSubLocation.CENTER, SuperStructureState.AlgaeFloor));
+    this.C3R4.onTrue(
+        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL1));
     this.C4R4.onTrue(operatorTarget.clearTargetCmd());
 
     // ROW 5
