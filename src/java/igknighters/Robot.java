@@ -92,7 +92,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     driverController.bind(localizer, subsystems, operatorTarget);
     operatorController = new OperatorController(1);
     operatorController.bind(localizer, subsystems, operatorTarget);
-    SubsystemTriggers.setupTriggers(subsystems);
+    SubsystemTriggers.setupTriggers(subsystems, localizer);
 
     subsystems.swerve.setDefaultCommand(
         new TeleopSwerveTraditionalCmd(subsystems.swerve, driverController));

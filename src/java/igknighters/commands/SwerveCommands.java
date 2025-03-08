@@ -47,20 +47,22 @@ public class SwerveCommands {
     return swerve.runOnce(() -> swerve.drive(RobotSpeeds.kZero)).withName("commandStopDrives");
   }
 
-  public static Command orientGyro(Swerve swerve, Vision vision, Localizer localizer) {
+  public static Command orientGyro(
+      Swerve swerve, Vision vision, Localizer localizer, Rotation2d orientation) {
     return swerve.runOnce(
         () -> {
           vision.resetHeading();
-          if (AllianceFlipper.isBlue()) {
-            swerve.setYaw(Rotation2d.kZero);
-            var pose = new Pose2d(localizer.pose().getTranslation(), Rotation2d.kZero);
-            localizer.reset(pose);
-          } else {
-            swerve.setYaw(Rotation2d.kPi);
-            var pose = new Pose2d(localizer.pose().getTranslation(), Rotation2d.kPi);
-            localizer.reset(pose);
-          }
+          swerve.setYaw(orientation);
+          var pose = new Pose2d(localizer.pose().getTranslation(), orientation);
+          localizer.reset(pose);
         });
+  }
+
+  public static Command orientGyro(Swerve swerve, Vision vision, Localizer localizer) {
+    return Commands.either(
+        orientGyro(swerve, vision, localizer, Rotation2d.kZero),
+        orientGyro(swerve, vision, localizer, Rotation2d.kPi),
+        AllianceFlipper::isBlue);
   }
 
   public static Command drive(Swerve swerve, final Speeds speeds) {

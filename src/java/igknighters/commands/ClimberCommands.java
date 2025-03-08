@@ -28,6 +28,9 @@ public class ClimberCommands {
   }
 
   public static Command testMagnet(Climber climber) {
-    return climber.runOnce(() -> climber.setMagnetPower(true));
+    return climber
+        .run(() -> climber.setMagnetPower(true))
+        .finallyDo(() -> climber.setMagnetPower(false))
+        .withName("ClimberTestMagnet");
   }
 }

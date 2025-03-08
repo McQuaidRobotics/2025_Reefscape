@@ -115,12 +115,17 @@ public class DriverController {
     // DPAD
     this.DPR.onTrue(ClimberCommands.stow(climber));
 
-    this.DPD.whileTrue(ClimberCommands.testMagnet(climber));
+    this.DPD.onTrue(ClimberCommands.stage(climber));
 
-    this.DPL.onTrue(
-        climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
+    this.DPL.whileTrue(ClimberCommands.testMagnet(climber));
 
-    // this.DPU.whileTrue(ClimberCommands.climb(climber));
+    this.DPU.onTrue(ClimberCommands.climb(climber));
+
+    this.DPR
+        .or(this.DPD)
+        .or(this.DPL)
+        .or(this.DPU)
+        .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
 
     // COMBOS
 
