@@ -2,9 +2,6 @@ package igknighters.subsystems.led.driver;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.LEDPattern;
-import edu.wpi.first.wpilibj.util.Color;
-import igknighters.subsystems.Component;
 import igknighters.subsystems.led.Led;
 import monologue.Monologue;
 
@@ -12,29 +9,31 @@ public class PWMDriver extends Led {
 
   private final AddressableLED led;
   private final AddressableLEDBuffer previousBuffer;
-  //private final AddressableLEDBuffer buffer;
+
+  // private final AddressableLEDBuffer buffer;
 
   public PWMDriver(int port) {
     led = new AddressableLED(port);
-    //buffer = new AddressableLEDBuffer(40);
-    led.setLength(36);
+    // buffer = new AddressableLEDBuffer(40);
+    led.setLength(72);
     led.start();
-    previousBuffer = new AddressableLEDBuffer(36);
+    previousBuffer = new AddressableLEDBuffer(72);
   }
+
   /**
    * will apply a buffer to the LED if its a new one to take up as little resources as possible
+   *
    * @param appliedBuffer
    */
   public void applyBuffer(AddressableLEDBuffer appliedBuffer) {
     boolean newBuffer = false;
-    if(appliedBuffer == previousBuffer){
+    if (appliedBuffer == previousBuffer) {
       newBuffer = false;
-    }else{
+    } else {
       newBuffer = true;
       led.setData(appliedBuffer);
     }
     Monologue.log("new buffer", newBuffer);
-    
   }
 
   // public Command rainbow(int saturation, int value, int speed) {
