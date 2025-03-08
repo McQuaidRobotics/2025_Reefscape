@@ -12,34 +12,11 @@ import java.util.List;
 import monologue.Monologue;
 
 public class LEDCommands {
-  public LEDCommands() {
-    final AddressableLEDBuffer buffer = new AddressableLEDBuffer(36);
-  }
+  private final OperatorTarget target;
 
-  /**
-   * Continuosly calls led.animate() at the index provided 0 = pwm1 1 = pwm2
-   *
-   * @param led
-   * @param saturation
-   * @param value
-   * @param index
-   * @param velocity
-   * @return
-   */
-  // public static Command rainbow(
-  //     Led led, int saturation, int offset, int length, int value, int index, double velocity) {
-  //   final AddressableLEDBuffer blankSlate = new AddressableLEDBuffer(72);
-  //   final LEDPattern rainbow = LEDPattern.rainbow(saturation, value);
-  //   final LEDPattern scrollingRainbow =
-  //       rainbow.scrollAtAbsoluteSpeed(MetersPerSecond.of(velocity), Centimeter.of(1.7));
-  //   ;
-  //   return led.run(
-  //           () -> {
-  //             led.animate(blankSlate);
-  //           })
-  //       .withName("rainbow command running on LED strip: " + index)
-  //       .ignoringDisable(true);
-  // }
+  public LEDCommands(OperatorTarget target) {
+    this.target = target;
+  }
 
   public record LEDSection(int index, int offset, LEDPattern pattern, int length, String name) {}
 
@@ -105,9 +82,5 @@ public class LEDCommands {
       names.add(ledSection.name);
     }
     return runSplit(led, offsets, patterns, lengths, indexes, names);
-  }
-
-  public static Command runFlash(Led led, LEDPattern ledPattern, int speedToFlash) {
-    return led.runOnce(null);
   }
 }

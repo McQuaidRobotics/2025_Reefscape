@@ -67,6 +67,14 @@ public class OperatorTarget implements StructSerializable {
         .and(SuperStructureCommands.isAt(subsystems.superStructure, superStructureState));
   }
 
+  public Trigger targeting(SuperStructureState state) {
+    return new Trigger(() -> state == superStructureState);
+  }
+
+  public Trigger targeting(FaceSubLocation state) {
+    return new Trigger(() -> state == faceSubLocation);
+  }
+
   public Pose2d targetLocation() {
     double backoffDist = (kRobotIntrinsics.CHASSIS_WIDTH / 2.0) + (5.0 * Conv.INCHES_TO_METERS);
     var ret =
