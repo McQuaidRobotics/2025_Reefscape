@@ -26,4 +26,8 @@ public class ClimberCommands {
             () -> climber.setPivotPosition(ClimberConstants.PivotConstants.ASCEND_ANGLE))
         .withName("ClimberClimb");
   }
+
+  public static Command testMagnet(Climber climber) {
+    return climber.runOnce(() -> climber.setMagnetPower(true));
+  }
 }

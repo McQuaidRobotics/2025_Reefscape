@@ -12,6 +12,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
@@ -45,9 +46,7 @@ public class RollersReal extends Rollers {
   private final TorqueCurrentFOC currentReq = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
   private final StatusSignal<ReverseLimitValue> laserTrippedSignal;
-  private final BaseStatusSignal current, voltage, velocity, temperature, distance;
-
-  private boolean voltageControlled = false;
+  private final BaseStatusSignal current, voltage, velocity, acceleration, temperature, distance;
 
   private TalonFXConfiguration intakeConfiguration() {
     var cfg = new TalonFXConfiguration();
@@ -82,6 +81,7 @@ public class RollersReal extends Rollers {
     current = intakeMotor.getTorqueCurrent();
     voltage = intakeMotor.getMotorVoltage();
     velocity = intakeMotor.getVelocity();
+    acceleration = intakeMotor.getAcceleration();
     temperature = intakeMotor.getDeviceTemp();
     distance = distanceSensor.getDistance();
     intakeMotor.getConfigurator().apply(intakeConfiguration());
@@ -93,6 +93,7 @@ public class RollersReal extends Rollers {
         current,
         voltage,
         velocity,
+        acceleration,
         temperature,
         distance);
 
@@ -102,34 +103,20 @@ public class RollersReal extends Rollers {
   @Override
   public void voltageOut(double voltage) {
     super.controlledLastCycle = true;
-    voltageControlled = true;
     intakeMotor.setControl(voltageReq.withOutput(voltage));
   }
 
   @Override
   public void currentOut(double current) {
     super.controlledLastCycle = true;
-    voltageControlled = false;
     intakeMotor.setControl(currentReq.withOutput(current));
   }
 
   @Override
   public boolean isStalling() {
-    if (!controlledLastCycle) {
-      return false;
-    }
-
-    if (voltageControlled) {
-      if (voltageReq.Output < 0.0) {
-        return Math.abs(amps) > 40.0;
-      }
-    } else {
-      if (currentReq.Output < 0.0) {
-        return Math.abs(amps) > 40.0;
-      }
-    }
-
-    return false;
+    return !MathUtil.isNear(
+            radiansPerSecond, motor.KvRadPerSecPerVolt * volts, motor.KvRadPerSecPerVolt * 1.0)
+        || !MathUtil.isNear(amps, motor.getCurrent(radiansPerSecond, volts), 5.0);
   }
 
   @Override
@@ -145,8 +132,10 @@ public class RollersReal extends Rollers {
         (DISTANCE_LERP.lerp(distance.getValueAsDouble()) + CORAL_WIDTH) - (INTAKE_WIDTH / 2.0);
 
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
+    log("radiansPerSecondPerSecond", acceleration.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS);
     log("gamepieceDistInches", gamepieceDistance * Conv.METERS_TO_INCHES);
     log("rpm", velocity.getValueAsDouble() * 60.0);
     log("temp", temperature.getValueAsDouble());
+    log("isStalling", isStalling());
   }
 }

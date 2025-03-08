@@ -59,8 +59,10 @@ public class DriverController {
             IntakeCommands.bounce(intake)
                 .andThen(IntakeCommands.holdCoral(intake))
                 .withName("BounceThenHoldCoral"));
-    this.A.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose));
-    this.X.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpFar));
+    this.A.whileTrue(
+        SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose));
+    this.X.whileTrue(
+        SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpFar));
 
     this.B.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor))
         .whileTrue(
@@ -111,14 +113,14 @@ public class DriverController {
         .onFalse(IntakeCommands.holdCoral(intake));
 
     // DPAD
-    this.DPR.whileTrue(ClimberCommands.stow(climber));
+    this.DPR.onTrue(ClimberCommands.stow(climber));
 
-    this.DPD.whileTrue(ClimberCommands.stage(climber));
+    this.DPD.whileTrue(ClimberCommands.testMagnet(climber));
 
     this.DPL.onTrue(
         climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    this.DPU.whileTrue(ClimberCommands.climb(climber));
+    // this.DPU.whileTrue(ClimberCommands.climb(climber));
 
     // COMBOS
 

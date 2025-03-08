@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.vision.camera.Camera.CameraConfig;
+import igknighters.subsystems.vision.camera.Camera.CameraIntrinsics;
 import igknighters.util.LerpTable;
 import java.util.HashMap;
 
@@ -23,13 +24,26 @@ public class VisionConstants {
               new Pose3d(
                   new Translation3d(0.158, -0.269, 0.187),
                   new Rotation3d(
-                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS))),
+                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS)),
+              // TODO
+              new CameraIntrinsics(
+                  913.51,
+                  912.47,
+                  660.17,
+                  397.42,
+                  new double[] {0.049, -0.08, 0.0, 0.0, 0.024, -0.002, 0.004, 0.0})),
           new CameraConfig(
               "front_right",
               new Pose3d(
                   new Translation3d(0.203, 0.292, 0.176),
                   new Rotation3d(
-                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS))),
+                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS)),
+              new CameraIntrinsics(
+                  913.61,
+                  912.90,
+                  641.63,
+                  363.79,
+                  new double[] {0.046, -0.066, 0.0, 0.0, 0.013, -0.002, 0.005, 0.001})),
           new CameraConfig(
               "back_left",
               new Pose3d(
@@ -38,7 +52,14 @@ public class VisionConstants {
                       kSwerve.MODULE_CHASSIS_LOCATIONS[1].getY(),
                       8.0 * Conv.INCHES_TO_METERS),
                   new Rotation3d(
-                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -145.0 * Conv.DEGREES_TO_RADIANS))),
+                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -160.0 * Conv.DEGREES_TO_RADIANS)),
+              // TODO
+              new CameraIntrinsics(
+                  913.61,
+                  912.90,
+                  641.63,
+                  363.79,
+                  new double[] {0.046, -0.066, 0.0, 0.0, 0.013, -0.002, 0.005, 0.001})),
           new CameraConfig(
               "back_right",
               new Pose3d(
@@ -47,7 +68,13 @@ public class VisionConstants {
                       kSwerve.MODULE_CHASSIS_LOCATIONS[2].getY(),
                       8.0 * Conv.INCHES_TO_METERS),
                   new Rotation3d(
-                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 145.0 * Conv.DEGREES_TO_RADIANS))),
+                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 160.0 * Conv.DEGREES_TO_RADIANS)),
+              new CameraIntrinsics(
+                  913.51,
+                  912.47,
+                  660.17,
+                  397.42,
+                  new double[] {0.049, -0.08, 0.0, 0.0, 0.024, -0.002, 0.004, 0.0})),
         };
 
     public static final LerpTable DISTANCE_TRUST_COEFFICIENT =

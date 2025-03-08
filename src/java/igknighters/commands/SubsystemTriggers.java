@@ -2,18 +2,29 @@ package igknighters.commands;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.intake.Intake;
+import igknighters.subsystems.led.Led;
+import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.superStructure.SuperStructureState;
+import igknighters.subsystems.swerve.Swerve;
+import igknighters.subsystems.vision.Vision;
 
 public class SubsystemTriggers {
   @SuppressWarnings("unused")
   public static void setupTriggers(Subsystems subsystems) {
-    final var swerve = subsystems.swerve;
-    final var vision = subsystems.vision;
-    final var led = subsystems.led;
-    final var superStructure = subsystems.superStructure;
-    final var intake = subsystems.intake;
+    final Swerve swerve = subsystems.swerve;
+    final Vision vision = subsystems.vision;
+    final Led led = subsystems.led;
+    final SuperStructure superStructure = subsystems.superStructure;
+    final Intake intake = subsystems.intake;
+
+    RobotModeTriggers.disabled()
+        .negate()
+        .and(IntakeCommands.isHolding(intake, Intake.Holding.CORAL))
+        .onTrue(IntakeCommands.holdCoral(intake));
 
     new Trigger(
             () -> {

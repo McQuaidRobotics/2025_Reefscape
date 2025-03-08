@@ -58,7 +58,7 @@ public class SuperStructureCommands {
                           superStructure.isAt(
                               state.elevatorMeters,
                               0.0,
-                              kElevator.DEFAULT_TOLERANCE * state.toleranceScalar,
+                              kElevator.DEFAULT_TOLERANCE * state.toleranceScalar * 5.0,
                               1000.0))
                   .andThen(simultaneous);
           case WRIST_FIRST ->
@@ -70,7 +70,7 @@ public class SuperStructureCommands {
                               0.0,
                               state.wristRads,
                               1000.0,
-                              kWrist.DEFAULT_TOLERANCE * state.toleranceScalar))
+                              kWrist.DEFAULT_TOLERANCE * state.toleranceScalar * 5.0))
                   .andThen(simultaneous);
           case SIMULTANEOUS -> simultaneous;
         };

@@ -126,10 +126,10 @@ public class OperatorTarget implements StructSerializable {
 
   public Trigger wantsAlgae() {
     return new Trigger(
-      () -> superStructureState.equals(SuperStructureState.AlgaeFloor)
-        || superStructureState.equals(SuperStructureState.AlgaeL2)
-        || superStructureState.equals(SuperStructureState.AlgaeL3)
-    );
+        () ->
+            superStructureState.equals(SuperStructureState.AlgaeFloor)
+                || superStructureState.equals(SuperStructureState.AlgaeL2)
+                || superStructureState.equals(SuperStructureState.AlgaeL3));
   }
 
   public Command gotoTargetCmd(Localizer localizer) {
@@ -149,7 +149,7 @@ public class OperatorTarget implements StructSerializable {
                             superStructureState.minHeight(SuperStructureState.ScoreStaged))
                         .until(
                             isNearPose(localizer, targetLocation().getTranslation(), 0.04)
-                                .and(isSlowerThan(0.25))),
+                                .and(isSlowerThan(0.4))),
                     SuperStructureCommands.holdAt(
                         subsystems.superStructure, superStructureState, MoveOrder.ELEVATOR_FIRST)));
     return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure)
