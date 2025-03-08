@@ -22,10 +22,68 @@ public class SuperStructureVisualizer {
   private final Color8Bit backgroundColor = new Color8Bit(0, 0, 0);
   private final Translation2d pivotOrigin = new Translation2d(1.25, Conv.INCHES_TO_METERS * 3.75);
   private final double elevatorWidth = 15.0;
+  private final double reefWidth = 10.0;
+
+  public void visualizeReef() {
+    final MechanismRoot2d rootReef = mechanism.getRoot("Reef", pivotOrigin.getX() + 1.0, 0.0);
+
+    final MechanismLigament2d reefL1 =
+        rootReef.append(new MechanismLigament2d("reefL1", 0.470765190548, 90.0));
+    final MechanismLigament2d l1Branch =
+        reefL1.append(new MechanismLigament2d("L1Branch", .24614653, 90.0));
+    final MechanismLigament2d l1Branch2 =
+        l1Branch.append(new MechanismLigament2d("L1Branch2", .447675, 90.0));
+
+    final MechanismLigament2d reefL2 =
+        reefL1.append(new MechanismLigament2d("reefL2", .60517315 - .5, 0.0));
+
+    final MechanismLigament2d l2Branch =
+        reefL2.append(new MechanismLigament2d("L2Branch", .30783878, 35.0));
+
+    final MechanismLigament2d reefL3 = reefL2.append(new MechanismLigament2d("reefL3", .5, 0.0));
+
+    final MechanismLigament2d l3Branch =
+        reefL3.append(new MechanismLigament2d("L3Branch", .3, 35.0));
+
+    final MechanismLigament2d reefL4 = reefL3.append(new MechanismLigament2d("reefL4", 0.5, 0.0));
+
+    final MechanismLigament2d l4Branch =
+        reefL4.append(new MechanismLigament2d("L4Branch", .28066193, 45.0));
+
+    final MechanismLigament2d reefL4Arm =
+        l4Branch.append(new MechanismLigament2d("reefL1Arm", .20536295, -45.0));
+
+    reefL1.setColor(new Color8Bit(0, 0, 255));
+    reefL2.setColor(new Color8Bit(0, 0, 255));
+    reefL3.setColor(new Color8Bit(0, 0, 255));
+    reefL4.setColor(new Color8Bit(0, 0, 255));
+
+    l1Branch.setColor(new Color8Bit(0, 0, 255));
+    l1Branch2.setColor(new Color8Bit(0, 0, 255));
+    l2Branch.setColor(new Color8Bit(0, 0, 255));
+    l3Branch.setColor(new Color8Bit(0, 0, 255));
+    l4Branch.setColor(new Color8Bit(0, 0, 255));
+
+    reefL4Arm.setColor(new Color8Bit(0, 0, 255));
+
+    reefL1.setLineWeight(reefWidth);
+    reefL2.setLineWeight(reefWidth);
+    reefL3.setLineWeight(reefWidth);
+    reefL4.setLineWeight(reefWidth);
+
+    l1Branch.setLineWeight(reefWidth);
+    l2Branch.setLineWeight(reefWidth);
+    l3Branch.setLineWeight(reefWidth);
+    l4Branch.setLineWeight(reefWidth);
+
+    reefL4Arm.setLineWeight(reefWidth);
+  }
 
   public SuperStructureVisualizer() {
     mechanism = new Mechanism2d(2.5, 2.5);
     mechanism.setBackgroundColor(backgroundColor);
+
+    visualizeReef();
 
     rootSetpoint = mechanism.getRoot("A_setpoint", pivotOrigin.getX(), 0.0);
     rootCurrentStages = mechanism.getRoot("B_stages", pivotOrigin.getX(), pivotOrigin.getY());
