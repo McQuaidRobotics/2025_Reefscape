@@ -2,10 +2,9 @@ package igknighters.subsystems.led.driver;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import igknighters.subsystems.led.Led;
 import monologue.Monologue;
 
-public class PWMDriver extends Led {
+public class PWMDriver {
 
   private final AddressableLED led;
   private final AddressableLEDBuffer previousBuffer;

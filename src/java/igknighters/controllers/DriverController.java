@@ -3,6 +3,8 @@ package igknighters.controllers;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -10,10 +12,10 @@ import igknighters.Localizer;
 import igknighters.commands.ClimberCommands;
 import igknighters.commands.IntakeCommands;
 import igknighters.commands.LEDCommands;
+import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
-import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
@@ -102,9 +104,13 @@ public class DriverController {
     this.Start.onTrue(SwerveCommands.orientGyro(swerve, vision, localizer));
 
     // STICKS
-    this.LS.onTrue(LEDCommands.rainbow(led, 255, 0, 36, 100, 1, 1));
+    // this.LS.onTrue(LEDCommands.rainbow(led, 255, 0, 72, 100, 0, 1));
 
-    this.RS.onTrue(LEDCommands.runSplitWithLEDSection(led, 0, new LEDSection(0, LedUtil.makeRainbow(255, 100), 15), new LEDSection(15, LedUtil.makeFlash(255, 0, 0, 1.0), 15)));
+    this.RS.onTrue(
+        LEDCommands.runSplitWithLEDSection(
+            led,
+            new LEDSection(0, 0, LedUtil.makeRainbow(255, 100), 15, "red"),
+            new LEDSection(0, 15, LedUtil.makeFlash(255, 0, 0, 0.1), 15, "blue")));
 
     // // TRIGGERS
     this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(localizer));
@@ -123,7 +129,9 @@ public class DriverController {
     this.DPL.onTrue(
         climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    // this.DPU.whileTrue(ClimberCommands.climb(climber));
+    this.DPU.onTrue(
+        LEDCommands.runSplitWithLEDSection(
+            led, new LEDSection(0, 0, LEDPattern.solid(Color.kBlack), 36, "CLEAR THE STRIP")));
 
     // COMBOS
 
