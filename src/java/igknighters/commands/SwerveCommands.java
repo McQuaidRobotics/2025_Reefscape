@@ -13,6 +13,7 @@ import igknighters.subsystems.SharedState;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
+import igknighters.subsystems.vision.Vision;
 import igknighters.util.plumbing.TunableValues;
 import java.util.function.Supplier;
 import monologue.GlobalField;
@@ -46,9 +47,10 @@ public class SwerveCommands {
     return swerve.runOnce(() -> swerve.drive(RobotSpeeds.kZero)).withName("commandStopDrives");
   }
 
-  public static Command orientGyro(Swerve swerve, Localizer localizer) {
+  public static Command orientGyro(Swerve swerve, Vision vision, Localizer localizer) {
     return swerve.runOnce(
         () -> {
+          vision.resetHeading();
           if (AllianceFlipper.isBlue()) {
             swerve.setYaw(Rotation2d.kZero);
             var pose = new Pose2d(localizer.pose().getTranslation(), Rotation2d.kZero);

@@ -96,7 +96,7 @@ public class DriverController {
                 SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
             .withName("HomeAndHoldStow"));
 
-    this.Start.onTrue(SwerveCommands.orientGyro(swerve, localizer));
+    this.Start.onTrue(SwerveCommands.orientGyro(swerve, vision, localizer));
 
     // STICKS
     this.LS.onTrue(Commands.none());

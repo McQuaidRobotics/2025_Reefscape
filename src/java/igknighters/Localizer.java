@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.wpilibj.Timer;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.swerve.odometryThread.SwerveDriveSample;
@@ -18,7 +19,6 @@ import monologue.Annotations.Log;
 import monologue.GlobalField;
 import monologue.Logged;
 import wayfinder.poseEst.TwistyPoseEst;
-import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Tracer;
 
 public class Localizer implements Logged {
@@ -37,8 +37,7 @@ public class Localizer implements Logged {
   @Log(key = "pose")
   private Pose2d latestPose = FieldConstants.POSE2D_CENTER;
 
-  @Log(key = "speeds")
-  private FieldSpeeds latestSpeeds = FieldSpeeds.kZero;
+  private double resetTime = 0.0;
 
   private final Channel<Pose2d> poseResetsChannel = new Channel<>(new Pose2d[0]);
   private final Sender<Pose2d> poseResetsSender = poseResetsChannel.sender();
@@ -73,6 +72,7 @@ public class Localizer implements Logged {
   }
 
   public void reset(Pose2d pose) {
+    resetTime = Timer.getFPGATimestamp() + 0.02;
     poseEstimator.resetPose(pose);
     poseResetsSender.send(pose);
   }
@@ -81,6 +81,9 @@ public class Localizer implements Logged {
     Tracer.startTrace("SwerveSamples");
     final SwerveDriveSample[] swerveSamples = log("swerveSamples", swerveDataReceiver.recvAll());
     for (final SwerveDriveSample sample : swerveSamples) {
+      if (sample.timestamp() < resetTime) {
+        continue;
+      }
       poseEstimator.addDriveSample(
           kinematics, sample.modulePositions(), sample.gyroYaw(), sample.timestamp(), 1.0);
     }
@@ -94,6 +97,9 @@ public class Localizer implements Logged {
             .toList();
     double sumLatency = 0.0;
     for (final VisionSample sample : visionSamples) {
+      if (sample.timestamp() < resetTime) {
+        continue;
+      }
       poseEstimator.addVisionSample(sample.pose(), sample.timestamp(), sample.trust());
     }
     log("visionLatency", sumLatency / visionSamples.size());
@@ -117,10 +123,6 @@ public class Localizer implements Logged {
 
   public Rotation2d rotation() {
     return latestPose.getRotation();
-  }
-
-  public FieldSpeeds speeds() {
-    return latestSpeeds;
   }
 
   public Translation2d translation() {

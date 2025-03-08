@@ -95,4 +95,7 @@ public abstract class Camera extends Component {
    * @param heading The heading of the robot
    */
   public abstract void updateHeading(double timestamp, Rotation2d heading);
+
+  /** Clears the heading buffer of the camera. */
+  public abstract void clearHeading();
 }

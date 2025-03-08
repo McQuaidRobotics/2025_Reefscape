@@ -42,5 +42,8 @@ public class CameraDisabled extends Camera {
   public void updateHeading(double timestamp, Rotation2d heading) {}
 
   @Override
+  public void clearHeading() {}
+
+  @Override
   public void periodic() {}
 }
