@@ -32,7 +32,7 @@ public class ChoreoAllianceFlipUtil {
      * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
      * heading.
      */
-    MIRRORED_X {
+    MIRRORED_Y {
       public double flipX(double x) {
         return activeYear.fieldLength - x;
       }
@@ -49,7 +49,7 @@ public class ChoreoAllianceFlipUtil {
      * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading becomes PI -
      * heading.
      */
-    MIRRORED_Y {
+    MIRRORED_X {
       public double flipX(double x) {
         return x;
       }
@@ -59,7 +59,7 @@ public class ChoreoAllianceFlipUtil {
       }
 
       public double flipHeading(double heading) {
-        return Math.PI - heading;
+        return -heading;
       }
     },
     /** X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes PI - heading. */
@@ -111,8 +111,8 @@ public class ChoreoAllianceFlipUtil {
           put(2020, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
           put(2021, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
           put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
-          put(2023, new YearInfo(Flipper.MIRRORED_X, 16.5811, 8.19912));
-          put(2024, new YearInfo(Flipper.MIRRORED_X, 16.5811, 8.19912));
+          put(2023, new YearInfo(Flipper.MIRRORED_Y, 16.5811, 8.19912));
+          put(2024, new YearInfo(Flipper.MIRRORED_Y, 16.5811, 8.19912));
           put(2025, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
         }
       };
@@ -201,8 +201,8 @@ public class ChoreoAllianceFlipUtil {
    */
   public static Rotation2d flip(Rotation2d rotation) {
     return switch (activeYear.flipper) {
-      case MIRRORED_X -> new Rotation2d(-rotation.getCos(), rotation.getSin());
-      case MIRRORED_Y -> new Rotation2d(rotation.getCos(), -rotation.getSin());
+      case MIRRORED_Y -> new Rotation2d(-rotation.getCos(), rotation.getSin());
+      case MIRRORED_X -> new Rotation2d(rotation.getCos(), -rotation.getSin());
       case ROTATE_AROUND -> new Rotation2d(-rotation.getCos(), -rotation.getSin());
     };
   }

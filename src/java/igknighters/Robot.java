@@ -117,8 +117,8 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             });
 
     final var routines = new AutoRoutines(subsystems, localizer, autoFactory);
-    autoChooser.addCmd("test", routines::test);
-    autoChooser.addCmd("testMove", routines::testMove);
+    AutoRoutines.addCmd(autoChooser, "test", routines::test);
+    AutoRoutines.addCmd(autoChooser, "testMove", routines::testMove);
     setupAutoChooser();
 
     testManager = new TestManager();

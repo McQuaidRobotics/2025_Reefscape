@@ -2,6 +2,8 @@
 
 package choreo.trajectory;
 
+import choreo.util.ChoreoAllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil.Flipper;
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.ArrayList;
 import java.util.List;
@@ -209,16 +211,26 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   }
 
   /**
+   * Returns this trajectory, flipped based on the given flipper.
+   *
+   * @param flipper the flipper to use.
+   * @return this trajectory, flipped based on the given flipper.
+   */
+  public Trajectory<SampleType> flipped(Flipper flipper) {
+    var flippedStates = new ArrayList<SampleType>();
+    for (var state : samples) {
+      flippedStates.add(state.flipped(flipper));
+    }
+    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+  }
+
+  /**
    * Returns this trajectory, mirrored across the field midline.
    *
    * @return this trajectory, mirrored across the field midline.
    */
   public Trajectory<SampleType> flipped() {
-    var flippedStates = new ArrayList<SampleType>();
-    for (var state : samples) {
-      flippedStates.add(state.flipped());
-    }
-    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+    return flipped(ChoreoAllianceFlipUtil.getFlipper());
   }
 
   /**

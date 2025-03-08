@@ -13,8 +13,8 @@ import wpilibExt.Speeds;
 public class AutoController implements Consumer<SwerveSample> {
   private final Swerve swerve;
   private final Localizer localizer;
-  private final PIDController xController = new PIDController(5.0, 0.0, 0.0);
-  private final PIDController yController = new PIDController(5.0, 0.0, 0.0);
+  private final PIDController xController = new PIDController(2.0, 0.0, 0.0);
+  private final PIDController yController = new PIDController(2.0, 0.0, 0.0);
   private final PIDController rController = new PIDController(5.0, 0.0, 0.0);
 
   public AutoController(Swerve swerve, Localizer localizer) {

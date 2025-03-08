@@ -3,6 +3,8 @@ package igknighters.commands.autos;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
+import choreo.trajectory.Trajectory;
+import choreo.util.ChoreoAllianceFlipUtil.Flipper;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -120,24 +122,38 @@ public class AutoCommands {
     traj.active()
         .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
     traj.atTimeBeforeEnd(
-      Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.98)
-    ).onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose)))
-      .onTrue(loggedCmd(IntakeCommands.intakeCoral(intake)));
+            Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.98))
+        .onTrue(
+            loggedCmd(
+                SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose)))
+        .onTrue(loggedCmd(IntakeCommands.intakeCoral(intake)));
   }
 
   protected class ReefscapeAuto {
     private final AutoRoutine routine;
     private final ParallelCommandGroup headCommand = new ParallelCommandGroup();
     private final SequentialCommandGroup bodyCommand = new SequentialCommandGroup();
+    private final boolean leftSide;
     private boolean trajectoryBeenAdded = false;
 
-    private ReefscapeAuto(AutoRoutine routine) {
+    private ReefscapeAuto(AutoRoutine routine, boolean leftSide) {
       this.routine = routine;
+      this.leftSide = leftSide;
       headCommand.addCommands(SuperStructureCommands.home(superStructure, true));
     }
 
+    private AutoTrajectory getTrajectory(Waypoints start, Waypoints end) {
+      if (leftSide) {
+        return routine.trajectory(start.to(end));
+      } else {
+        Trajectory<?> rawTraj = factory.cache().loadTrajectory(start.to(end)).orElseThrow();
+        rawTraj = rawTraj.flipped(Flipper.MIRRORED_X);
+        return routine.trajectory(rawTraj);
+      }
+    }
+
     public ReefscapeAuto addScoringTrajectory(Waypoints start, Waypoints end) {
-      final AutoTrajectory traj = routine.trajectory(start.to(end));
+      final AutoTrajectory traj = getTrajectory(start, end);
       if (!trajectoryBeenAdded) {
         trajectoryBeenAdded = true;
         headCommand.addCommands(traj.resetOdometry());
@@ -152,7 +168,7 @@ public class AutoCommands {
     }
 
     public ReefscapeAuto addIntakeTrajectory(Waypoints start, Waypoints end) {
-      final AutoTrajectory traj = routine.trajectory(start.to(end));
+      final AutoTrajectory traj = getTrajectory(start, end);
       if (!trajectoryBeenAdded) {
         trajectoryBeenAdded = true;
         headCommand.addCommands(traj.resetOdometry());
@@ -171,11 +187,11 @@ public class AutoCommands {
     }
 
     public ReefscapeAuto addTrajectoriesMoveOnly(Waypoints... waypoints) {
-      headCommand.addCommands(routine.trajectory(waypoints[0].to(waypoints[1])).resetOdometry());
+      headCommand.addCommands(getTrajectory(waypoints[0], waypoints[1]).resetOdometry());
       for (int i = 0; i < waypoints.length - 2; i += 2) {
         bodyCommand.addCommands(
-            routine.trajectory(waypoints[i].to(waypoints[i + 1])).cmd(),
-            routine.trajectory(waypoints[i + 1].to(waypoints[i + 2])).cmd());
+            getTrajectory(waypoints[i], waypoints[i + 1]).cmd(),
+            getTrajectory(waypoints[i + 1], waypoints[i + 2]).cmd());
       }
       return this;
     }
@@ -190,7 +206,7 @@ public class AutoCommands {
     }
   }
 
-  protected ReefscapeAuto newAuto(String name) {
-    return new ReefscapeAuto(factory.newRoutine(name));
+  protected ReefscapeAuto newAuto(String name, boolean leftSide) {
+    return new ReefscapeAuto(factory.newRoutine(name), leftSide);
   }
 }

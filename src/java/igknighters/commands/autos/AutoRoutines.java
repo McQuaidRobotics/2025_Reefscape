@@ -2,6 +2,7 @@ package igknighters.commands.autos;
 
 import static igknighters.commands.autos.Waypoints.*;
 
+import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
@@ -32,14 +33,24 @@ public class AutoRoutines extends AutoCommands {
         Commands.sequence(factory.resetOdometry(trajName), factory.trajectoryCmd(trajName));
   }
 
-  public Command test() {
-    return newAuto("test")
+  @FunctionalInterface
+  public interface DualSideAuto {
+    Command generate(boolean leftSide);
+  }
+
+  public static void addCmd(AutoChooser chooser, String name, DualSideAuto auto) {
+    chooser.addCmd(name + " Left", () -> auto.generate(true));
+    chooser.addCmd(name + " Right", () -> auto.generate(false));
+  }
+
+  public Command test(boolean leftSide) {
+    return newAuto("test", leftSide)
         .addTrajectories(StartingOutside, FarLeft_L, Intake, FarLeft_R, Intake, CloseLeft_R, Intake)
         .build();
   }
 
-  public Command testMove() {
-    return newAuto("testMove")
+  public Command testMove(boolean leftSide) {
+    return newAuto("testMove", leftSide)
         .addTrajectoriesMoveOnly(
             StartingOutside, FarLeft_L, Intake, FarLeft_R, Intake, CloseLeft_R, Intake)
         .build();
