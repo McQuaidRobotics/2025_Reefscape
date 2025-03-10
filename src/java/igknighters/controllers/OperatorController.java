@@ -34,37 +34,38 @@ public class OperatorController {
 
     // ROW 1
     this.C1R1.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL4));
+        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL4, led));
     this.C2R1.onTrue(Commands.none());
     this.C3R1.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL4));
+        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL4, led));
     this.C4R1.onTrue(Commands.none());
 
     // ROW 2
     this.C1R2.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL3));
+        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL3, led));
     this.C2R2.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.CENTER, SuperStructureState.AlgaeL3));
+        operatorTarget.updateTargetCmd(FaceSubLocation.CENTER, SuperStructureState.AlgaeL3, led));
     this.C3R2.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL3));
+        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL3, led));
     this.C4R2.onTrue(Commands.none());
 
     // ROW 3
     this.C1R3.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL2));
+        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL2, led));
     this.C2R3.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.CENTER, SuperStructureState.AlgaeL2));
+        operatorTarget.updateTargetCmd(FaceSubLocation.CENTER, SuperStructureState.AlgaeL2, led));
     this.C3R3.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL2));
+        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL2, led));
     this.C4R3.onTrue(Commands.none());
 
     // ROW 4
     this.C1R4.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL1));
+        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL1, led));
     this.C2R4.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.CENTER, SuperStructureState.AlgaeFloor));
+        operatorTarget.updateTargetCmd(
+            FaceSubLocation.CENTER, SuperStructureState.AlgaeFloor, led));
     this.C3R4.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL1));
+        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL1, led));
     this.C4R4.onTrue(operatorTarget.clearTargetCmd());
 
     // ROW 5

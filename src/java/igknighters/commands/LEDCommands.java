@@ -1,5 +1,6 @@
 package igknighters.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -7,6 +8,7 @@ import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import igknighters.subsystems.led.Led;
+import igknighters.subsystems.led.LedUtil;
 import java.util.ArrayList;
 import java.util.List;
 import monologue.Monologue;
@@ -38,22 +40,34 @@ public class LEDCommands {
                 DriverStation.reportError(
                     "incorect lengths on offsets and patterns LED COMMANDS ", false);
               } else {
+                Monologue.log(
+                    "both patterns", "PAT 1: " + names.get(0) + " PAT 2: " + names.get(1));
                 for (int i = 0; i < patterns.size(); i++) {
-                  Monologue.log("Pattern Name", names.get(i));
                   if (index.get(i) == 0) {
+                    Monologue.log(
+                        "zone for strip 1",
+                        MathUtil.clamp(offsets.get(i), 0, 34)
+                            + " endzone: "
+                            + MathUtil.clamp(offsets.get(i) + lengths.get(i) - 1, 0, 35));
                     AddressableLEDBufferView controlledZone =
                         blankSlate.createView(
-                            Math.min(offsets.get(i), 34),
-                            Math.min(offsets.get(i) + lengths.get(i) - 1, 36 - 1));
+                            MathUtil.clamp(offsets.get(i), 0, 34),
+                            MathUtil.clamp(offsets.get(i) + lengths.get(i) - 1, 0, 35));
                     patterns.get(i).applyTo(controlledZone);
                   } else {
+                    Monologue.log(
+                        "zone for strip 2 ",
+                        MathUtil.clamp(36 + offsets.get(i), 37, 69)
+                            + " endzone: "
+                            + MathUtil.clamp(36 + offsets.get(i) + lengths.get(i) - 1, 37, 71));
                     AddressableLEDBufferView controlledZone =
                         blankSlate.createView(
-                            Math.min(offsets.get(i), 34),
-                            Math.min(offsets.get(i) + lengths.get(i) - 1, 72 - 1));
+                            MathUtil.clamp(36 + offsets.get(i), 37, 69),
+                            MathUtil.clamp(36 + offsets.get(i) + lengths.get(i) - 1, 37, 72 - 1));
                     patterns.get(i).applyTo(controlledZone);
                   }
                 }
+                LedUtil.logBuffer(blankSlate);
                 led.animate(blankSlate);
               }
             })

@@ -13,18 +13,21 @@ import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
 import igknighters.subsystems.led.LedUtil;
+import igknighters.subsystems.led.LedUtil.NamedLEDPattern;
 import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
 import java.util.Set;
+import monologue.Monologue;
 
 public class SubsystemTriggers {
   static int interpolateHeight(double elevatorHeight) {
-    double min = SuperStructureState.ScoreL1.elevatorMeters;
+    double min = SuperStructureState.AlgaeFloor.elevatorMeters - .1;
     double max = SuperStructureState.ScoreL4.elevatorMeters;
     double t = (elevatorHeight - min) / (max - min);
-    return (int) (36.0 * (0.25 + (t * 0.75)));
+    Monologue.log("elevatorHeight", elevatorHeight);
+    return Monologue.log("num LEDS", (int) (36.0 * (0.25 + (t * 0.75))));
   }
 
   @SuppressWarnings("unused")
@@ -56,53 +59,64 @@ public class SubsystemTriggers {
         .and(target.hasTarget())
         .onTrue(
             Commands.defer(
-                () ->
-                    Commands.sequence(
-                        LEDCommands.runSplitWithLEDSection(
-                                led,
-                                new LEDSection(
-                                    0,
-                                    0,
-                                    LedUtil.makeFlash(0, 0, 255, .3),
-                                    interpolateHeight(target.superStructureState().elevatorMeters),
-                                    "FLASHY Blue Elevator Height Left"),
-                                new LEDSection(
-                                    1,
-                                    0,
-                                    LEDPattern.solid(Color.kGreen),
-                                    interpolateHeight(target.superStructureState().elevatorMeters),
-                                    "blue solid on right"))
-                            .onlyIf(target.targeting(FaceSubLocation.LEFT)),
-                      LEDCommands.runSplitWithLEDSection(
-                        led,
-                        new LEDSection(
-                            1,
-                            0,
-                            LedUtil.makeFlash(0, 0, 255, .3),
-                            interpolateHeight(target.superStructureState().elevatorMeters),
-                            "FLASHY Blue Elevator Height CENTER"),
-                        new LEDSection(
-                            0,
-                            0,
-                            LedUtil.makeFlash(0, 0, 255, .3),
-                            interpolateHeight(target.superStructureState().elevatorMeters),
-                            "FLSHY BLUE ELEVATOR HEIGHT CENTER"))
-                          .onlyIf(target.targeting(FaceSubLocation.CENTER)),
-                      LEDCommands.runSplitWithLEDSection(
-                        led,
-                        new LEDSection(
-                            1,
-                            0,
-                            LedUtil.makeFlash(0, 0, 255, .3),
-                            interpolateHeight(target.superStructureState().elevatorMeters),
-                            "FLASHY Blue Elevator Height right"),
-                        new LEDSection(
-                            0,
-                            0,
-                            LEDPattern.solid(Color.kGreen),
-                            interpolateHeight(target.superStructureState().elevatorMeters),
-                            "blue solid on left"))
-                          .onlyIf(target.targeting(FaceSubLocation.RIGHT))),
-                Set.of(led)));
+                    () ->
+                        Commands.sequence(
+                            LEDCommands.runSplitWithLEDSection(
+                                    led,
+                                    new LEDSection(
+                                        0,
+                                        0,
+                                        new NamedLEDPattern(
+                                            "blinkLeft", LedUtil.makeFlash(255, 0, 0, .3)),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "FLASHY Blue Elevator Height Left"),
+                                    new LEDSection(
+                                        1,
+                                        0,
+                                        LEDPattern.solid(Color.kBlue),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "blue solid on right"))
+                                .onlyIf(target.targeting(FaceSubLocation.LEFT)),
+                            LEDCommands.runSplitWithLEDSection(
+                                    led,
+                                    new LEDSection(
+                                        1,
+                                        0,
+                                        new NamedLEDPattern(
+                                            "blinkIdk2", LedUtil.makeFlash(255, 0, 0, 1.0)),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "FLASHY Blue Elevator Height CENTER"),
+                                    new LEDSection(
+                                        0,
+                                        0,
+                                        new NamedLEDPattern(
+                                            "blinkIdk1", LedUtil.makeFlash(255, 0, 0, 1.0)),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "FLSHY BLUE ELEVATOR HEIGHT CENTER"))
+                                .onlyIf(target.targeting(FaceSubLocation.CENTER)),
+                            LEDCommands.runSplitWithLEDSection(
+                                    led,
+                                    new LEDSection(
+                                        1,
+                                        0,
+                                        new NamedLEDPattern(
+                                            "blinkRight", LedUtil.makeFlash(255, 0, 0, 1.0)),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "FLASHY Blue Elevator Height right"),
+                                    new LEDSection(
+                                        0,
+                                        0,
+                                        LEDPattern.solid(Color.kBlue),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "blue solid on left"))
+                                .onlyIf(target.targeting(FaceSubLocation.RIGHT))),
+                    Set.of(led))
+                .ignoringDisable(true));
   }
 }

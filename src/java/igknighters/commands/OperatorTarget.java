@@ -15,6 +15,7 @@ import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.led.Led;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -172,8 +173,8 @@ public class OperatorTarget implements StructSerializable {
   }
 
   public Command updateTargetCmd(
-      FaceSubLocation faceSubLocation, SuperStructureState superStructureState) {
-    return Commands.runOnce(() -> updateScoring(faceSubLocation, superStructureState))
+      FaceSubLocation faceSubLocation, SuperStructureState superStructureState, Led led) {
+    return led.runOnce(() -> updateScoring(faceSubLocation, superStructureState))
         .ignoringDisable(true)
         .withName("UpdateTargetScoring");
   }

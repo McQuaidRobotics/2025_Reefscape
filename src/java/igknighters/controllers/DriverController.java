@@ -108,9 +108,8 @@ public class DriverController {
 
     this.RS.onTrue(
         LEDCommands.runSplitWithLEDSection(
-            led,
-            new LEDSection(0, 0, LedUtil.makeRainbow(255, 100), 15, "rainbow"),
-            new LEDSection(0, 15, LedUtil.makeFlash(255, 0, 0, 0.1), 15, "blue")));
+            led, new LEDSection(0, 0, LedUtil.makeRainbow(255, 100), 72, "rainbow")));
+    // new LEDSection(0, 15, LEDPattern.solid(Color.kRed), 15, "blue")));
 
     // // TRIGGERS
     this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(localizer));
