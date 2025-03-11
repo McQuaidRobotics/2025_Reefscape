@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.commands.OperatorTarget.FaceSubLocation;
+import igknighters.constants.ConstValues.kLed;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
@@ -96,14 +97,14 @@ public class SubsystemTriggers {
                                         0,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkLeft", LedUtil.makeFlash(Color.kTeal, .3)),
+                                            "blinkLeft", LedUtil.makeFlash(kLed.TargetingColor, .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
                                     new LEDSection(
                                         1,
                                         0,
-                                        LEDPattern.solid(Color.kTeal),
+                                        LEDPattern.solid(kLed.TargetingColor),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "solid color on right"))
@@ -114,7 +115,7 @@ public class SubsystemTriggers {
                                         1,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk2", LedUtil.makeFlash(Color.kTeal, .3)),
+                                            "blinkIdk2", LedUtil.makeFlash(kLed.CoralColor, .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"),
@@ -122,7 +123,7 @@ public class SubsystemTriggers {
                                         0,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk1", LedUtil.makeFlash(Color.kTeal, .3)),
+                                            "blinkIdk1", LedUtil.makeFlash(kLed.CoralColor, .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"))
@@ -133,14 +134,14 @@ public class SubsystemTriggers {
                                         1,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkRight", LedUtil.makeFlash(Color.kTeal, 1.0)),
+                                            "blinkRight", LedUtil.makeFlash(kLed.TargetingColor, 1.0)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
                                     new LEDSection(
                                         0,
                                         0,
-                                        LEDPattern.solid(Color.kTeal),
+                                        LEDPattern.solid(kLed.TargetingColor),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "blue color on left"))
