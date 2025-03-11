@@ -5,7 +5,11 @@ import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.Trajectory;
 import choreo.util.ChoreoAllianceFlipUtil.Flipper;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -16,6 +20,7 @@ import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.commands.IntakeCommands;
 import igknighters.commands.SuperStructureCommands;
+import igknighters.commands.SuperStructureCommands.MoveOrder;
 import igknighters.commands.SwerveCommands;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
@@ -26,6 +31,8 @@ import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
+import java.util.Set;
+import java.util.function.Supplier;
 import monologue.Monologue;
 
 public class AutoCommands {
@@ -53,9 +60,9 @@ public class AutoCommands {
 
     profile.calculate(0.01, stowState, l4State);
     timeBeforeL4Move = profile.timeLeftUntil(SuperStructureState.ScoreL3.elevatorMeters);
-    System.out.println("Time before L4 move: " + timeBeforeL4Move);
-    System.out.println("Total Move Time: " + profile.totalTime());
-    System.out.println("Time after stop: " + (profile.totalTime() - timeBeforeL4Move));
+    // System.out.println("Time before L4 move: " + timeBeforeL4Move);
+    // System.out.println("Total Move Time: " + profile.totalTime());
+    // System.out.println("Time after stop: " + (profile.totalTime() - timeBeforeL4Move));
     profile.calculate(0.01, stowState, intakeStake);
     timeBeforeIntakeMove = profile.totalTime();
   }
@@ -115,17 +122,19 @@ public class AutoCommands {
         .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
     traj.atTimeBeforeEnd(timeBeforeL4Move)
         .onTrue(
-            loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.ScoreL4)));
+            loggedCmd(
+                SuperStructureCommands.holdAt(
+                    superStructure, SuperStructureState.ScoreL4, MoveOrder.ELEVATOR_FIRST)));
   }
 
   public void orchestrateIntake(AutoTrajectory traj) {
     traj.active()
         .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
     traj.atTimeBeforeEnd(
-            Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.98))
+            Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.90))
         .onTrue(
             loggedCmd(
-                SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose)))
+                SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpFar)))
         .onTrue(loggedCmd(IntakeCommands.intakeCoral(intake)));
   }
 
@@ -139,7 +148,7 @@ public class AutoCommands {
     private ReefscapeAuto(AutoRoutine routine, boolean leftSide) {
       this.routine = routine;
       this.leftSide = leftSide;
-      headCommand.addCommands(SuperStructureCommands.home(superStructure, true));
+      headCommand.addCommands(loggedCmd(SuperStructureCommands.home(superStructure, false)));
     }
 
     private AutoTrajectory getTrajectory(Waypoints start, Waypoints end) {
@@ -152,6 +161,27 @@ public class AutoCommands {
       }
     }
 
+    private Command finishAlignment(AutoTrajectory trajectory) {
+      if (trajectory.getFinalPose().isPresent()) {
+        Supplier<Command> cmdSup =
+            () -> {
+              Pose2d finalPose = trajectory.getFinalPose().get();
+              finalPose =
+                  finalPose.plus(new Transform2d(0.0, intake.gamepieceYOffset(), Rotation2d.kZero));
+              return loggedCmd(
+                      SwerveCommands.moveToSimple(swerve, localizer, finalPose)
+                          .until(localizer.near(finalPose.getTranslation(), 0.04))
+                          .withTimeout(0.5)
+                          .withName("FinishAlignment"))
+                  .andThen(SwerveCommands.stop(swerve));
+            };
+        return Commands.defer(cmdSup, Set.of(swerve));
+      } else {
+        DriverStation.reportError("womp womp", false);
+        return Commands.none();
+      }
+    }
+
     public ReefscapeAuto addScoringTrajectory(Waypoints start, Waypoints end) {
       final AutoTrajectory traj = getTrajectory(start, end);
       if (!trajectoryBeenAdded) {
@@ -161,8 +191,10 @@ public class AutoCommands {
       orchestrateScoring(traj);
       bodyCommand.addCommands(
           afterIntake(traj),
+          finishAlignment(traj),
           Commands.waitUntil(
               SuperStructureCommands.isAt(superStructure, SuperStructureState.ScoreL4)),
+          Commands.waitSeconds(0.1),
           new ScheduleCommand(loggedCmd(IntakeCommands.expel(intake))));
       return this;
     }
@@ -174,34 +206,53 @@ public class AutoCommands {
         headCommand.addCommands(traj.resetOdometry());
       }
       orchestrateIntake(traj);
-      bodyCommand.addCommands(afterScore(traj));
+      bodyCommand.addCommands(afterScore(traj), finishAlignment(traj));
       return this;
     }
 
     public ReefscapeAuto addTrajectories(Waypoints... waypoints) {
-      for (int i = 0; i < waypoints.length - 2; i += 2) {
-        addScoringTrajectory(waypoints[i], waypoints[i + 1]);
-        addIntakeTrajectory(waypoints[i + 1], waypoints[i + 2]);
+      boolean scoring = true;
+      for (int i = 0; i < waypoints.length - 1; i++) {
+        if (scoring) {
+          // System.out.println(
+          //     "Adding scoring trajectory " + waypoints[i] + " to " + waypoints[i + 1]);
+          addScoringTrajectory(waypoints[i], waypoints[i + 1]);
+        } else {
+          // System.out.println(
+          //     "Adding intake trajectory " + waypoints[i] + " to " + waypoints[i + 1]);
+          addIntakeTrajectory(waypoints[i], waypoints[i + 1]);
+        }
+        scoring = !scoring;
       }
       return this;
     }
 
     public ReefscapeAuto addTrajectoriesMoveOnly(Waypoints... waypoints) {
       headCommand.addCommands(getTrajectory(waypoints[0], waypoints[1]).resetOdometry());
+      bodyCommand.addCommands(
+          new ScheduleCommand(
+              loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))));
       for (int i = 0; i < waypoints.length - 2; i += 2) {
         bodyCommand.addCommands(
             getTrajectory(waypoints[i], waypoints[i + 1]).cmd(),
-            getTrajectory(waypoints[i + 1], waypoints[i + 2]).cmd());
+            Commands.waitSeconds(3.0),
+            getTrajectory(waypoints[i + 1], waypoints[i + 2]).cmd(),
+            Commands.waitSeconds(3.0));
       }
       return this;
     }
 
     public Command build() {
-      routine.active().onTrue(headCommand.withName(routine.name() + "_AutoHead"));
+      headCommand.addCommands(Commands.print(bodyCommand.getRequirements().toString()));
+      bodyCommand.addCommands(
+          new ScheduleCommand(
+              loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))));
       routine
           .active()
-          .and(superStructure::isHomed)
-          .onTrue(bodyCommand.withName(routine.name() + "_AutoBody"));
+          .onTrue(
+              headCommand
+                  .andThen(new ScheduleCommand(bodyCommand.withName(routine.name() + "_AutoBody")))
+                  .withName(routine.name() + "_AutoHead"));
       return routine.cmd();
     }
   }

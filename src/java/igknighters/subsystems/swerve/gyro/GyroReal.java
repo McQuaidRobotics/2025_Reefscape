@@ -16,7 +16,6 @@ public class GyroReal extends Gyro {
 
   private final Pigeon2 gyro;
   private final BaseStatusSignal rollSignal, pitchSignal;
-  private final BaseStatusSignal rollVeloSignal, pitchVeloSignal;
 
   @IgnoreLogged private final RealSwerveOdometryThread odoThread;
 
@@ -31,11 +30,7 @@ public class GyroReal extends Gyro {
     rollSignal = gyro.getRoll();
     pitchSignal = gyro.getPitch();
 
-    pitchVeloSignal = gyro.getAngularVelocityXWorld();
-    rollVeloSignal = gyro.getAngularVelocityYWorld();
-
-    CANSignalManager.registerSignals(
-        kSwerve.CANBUS, rollSignal, pitchSignal, rollVeloSignal, pitchVeloSignal);
+    CANSignalManager.registerSignals(kSwerve.CANBUS, rollSignal, pitchSignal);
 
     odoThread.addGyroStatusSignals(
         gyro.getYaw(),
@@ -71,9 +66,7 @@ public class GyroReal extends Gyro {
   @Override
   public void periodic() {
     super.pitchRads = Units.degreesToRadians(pitchSignal.getValueAsDouble());
-    super.pitchVelRadsPerSec = Units.degreesToRadians(pitchVeloSignal.getValueAsDouble());
     super.rollRads = Units.degreesToRadians(rollSignal.getValueAsDouble());
-    super.rollVelRadsPerSec = Units.degreesToRadians(rollVeloSignal.getValueAsDouble());
     super.yawRads = odoThread.getGyroYaw();
     super.yawVelRadsPerSec = odoThread.getGyroYawRate();
   }

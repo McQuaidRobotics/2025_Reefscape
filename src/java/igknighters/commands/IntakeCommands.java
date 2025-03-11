@@ -38,7 +38,7 @@ public class IntakeCommands {
   }
 
   public static Command intakeCoral(Intake intake) {
-    return runVoltage(intake, -2.6)
+    return runVoltage(intake, -3.8)
         .alongWith(Commands.run(() -> intake.setTryingToHold(Holding.CORAL)))
         .until(isHolding(intake, Holding.CORAL))
         .andThen(new ScheduleCommand(holdCoral(intake)))
@@ -55,7 +55,8 @@ public class IntakeCommands {
 
   public static Command expel(Intake intake) {
     return Commands.either(
-        runVoltage(intake, 12.0), runVoltage(intake, 3.5), isHolding(intake, Holding.ALGAE));
+            runVoltage(intake, 12.0), runVoltage(intake, 3.5), isHolding(intake, Holding.ALGAE))
+        .withName("Expel");
   }
 
   public static Command bounce(Intake intake) {

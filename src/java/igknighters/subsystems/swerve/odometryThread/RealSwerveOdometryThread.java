@@ -144,7 +144,7 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
 
         swerveDataSender.send(
             new SwerveDriveSample(
-                getModulePositions(),
+                log("ModulePositions", getModulePositions()),
                 getGyroRotation(),
                 getAcceleration(),
                 Timer.getFPGATimestamp()));

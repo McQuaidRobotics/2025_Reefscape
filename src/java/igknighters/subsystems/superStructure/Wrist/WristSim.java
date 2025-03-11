@@ -9,11 +9,13 @@ import static edu.wpi.first.units.Units.Volt;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kWrist;
+import java.util.Optional;
 import sham.ShamMechanism;
 import sham.ShamMechanism.Friction;
 import sham.ShamMechanism.HardLimits;
@@ -65,8 +67,11 @@ public class WristSim extends Wrist {
   }
 
   @Override
-  public void goToPosition(double targetPosition) {
+  public void goToPosition(double targetPosition, Optional<Constraints> constraints) {
     super.targetRadians = targetPosition;
+    var c = constraints.orElse(DEFAULT_CONSTRAINTS);
+    super.maxVelocity = c.maxVelocity;
+    super.maxAcceleration = c.maxAcceleration;
     super.controlledLastCycle = true;
     shamMCX.controlVoltage(controlLoop, Radians.of(targetPosition));
   }
@@ -78,7 +83,7 @@ public class WristSim extends Wrist {
 
   @Override
   public void voltageOut(double voltage) {
-    super.targetRadians = Double.NaN;
+    super.noTarget();
     super.controlledLastCycle = true;
     shamMCX.controlVoltage(Volts.of(voltage));
   }
@@ -86,7 +91,7 @@ public class WristSim extends Wrist {
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {
-      super.targetRadians = Double.NaN;
+      super.noTarget();
       shamMCX.controlVoltage(Volts.zero());
     }
     super.controlledLastCycle = false;

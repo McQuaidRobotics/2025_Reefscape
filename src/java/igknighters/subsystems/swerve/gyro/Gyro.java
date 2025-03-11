@@ -7,8 +7,6 @@ public abstract class Gyro extends Component {
   @Log protected double pitchRads = 0.0;
   @Log protected double rollRads = 0.0;
   @Log protected double yawRads = 0.0;
-  @Log protected double pitchVelRadsPerSec = 0.0;
-  @Log protected double rollVelRadsPerSec = 0.0;
   @Log protected double yawVelRadsPerSec = 0.0;
   @Log protected double accelX = 0.0;
   @Log protected double accelY = 0.0;

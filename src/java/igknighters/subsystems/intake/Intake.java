@@ -71,6 +71,9 @@ public class Intake implements ExclusiveSubsystem {
   }
 
   public double gamepieceYOffset() {
+    if (!rollers.isLaserTripped()) {
+      return 0;
+    }
     return rollers.gamepieceDistance();
   }
 

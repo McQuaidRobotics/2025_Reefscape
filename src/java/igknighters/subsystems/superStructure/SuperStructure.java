@@ -1,6 +1,7 @@
 package igknighters.subsystems.superStructure;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.SharedState;
@@ -13,9 +14,13 @@ import igknighters.subsystems.superStructure.SuperStructureConstants.kWrist;
 import igknighters.subsystems.superStructure.Wrist.Wrist;
 import igknighters.subsystems.superStructure.Wrist.WristReal;
 import igknighters.subsystems.superStructure.Wrist.WristSim;
+import java.util.Optional;
 import monologue.Annotations.Log;
 
 public class SuperStructure implements ExclusiveSubsystem {
+  private static final Optional<Constraints> ALGAE_WRIST_CONSTRAINTS =
+      Optional.of(new Constraints(kWrist.ALGAE_MAX_VELOCITY, kWrist.ALGAE_MAX_ACCELERATION));
+
   private final SharedState shared;
   private final SuperStructureVisualizer visualizer;
 
@@ -69,12 +74,13 @@ public class SuperStructure implements ExclusiveSubsystem {
     }
     elevatorMeters = MathUtil.clamp(elevatorMeters, kElevator.MIN_HEIGHT, kElevator.MAX_HEIGHT);
     if (shared.holdingAlgae) {
-      wristRads = MathUtil.clamp(wristRads, kWrist.MAX_ANGLE_ALGAE, kWrist.MIN_ANGLE);
+      wristRads = MathUtil.clamp(wristRads, kWrist.ALGAE_MAX_ANGLE, kWrist.MIN_ANGLE);
+      wrist.goToPosition(wristRads, ALGAE_WRIST_CONSTRAINTS);
     } else {
       wristRads = MathUtil.clamp(wristRads, kWrist.MAX_ANGLE, kWrist.MIN_ANGLE);
+      wrist.goToPosition(wristRads);
     }
     elevator.gotoPosition(elevatorMeters);
-    wrist.goToPosition(wristRads);
     visualizer.updateSetpoint(elevatorMeters, wristRads);
   }
 

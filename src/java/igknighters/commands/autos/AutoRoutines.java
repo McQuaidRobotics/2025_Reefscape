@@ -45,14 +45,15 @@ public class AutoRoutines extends AutoCommands {
 
   public Command test(boolean leftSide) {
     return newAuto("test", leftSide)
-        .addTrajectories(StartingOutside, FarLeft_L, Intake, FarLeft_R, Intake, CloseLeft_R, Intake)
+        .addTrajectories(
+            StartingOutside, FarLeft_R, Intake, CloseLeft_L, Intake, CloseLeft_R, Intake, FarLeft_L)
         .build();
   }
 
   public Command testMove(boolean leftSide) {
     return newAuto("testMove", leftSide)
         .addTrajectoriesMoveOnly(
-            StartingOutside, FarLeft_L, Intake, FarLeft_R, Intake, CloseLeft_R, Intake)
+            StartingOutside, FarLeft_R, Intake, CloseLeft_L, Intake, CloseLeft_R, Intake)
         .build();
   }
 }

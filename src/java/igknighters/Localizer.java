@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.swerve.odometryThread.SwerveDriveSample;
@@ -22,6 +23,15 @@ import wayfinder.poseEst.TwistyPoseEst;
 import wpilibExt.Tracer;
 
 public class Localizer implements Logged {
+  public static boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
+    if (Math.abs(toleranceRadians) > Math.PI) {
+      return true;
+    }
+    double dot = lhs.getCos() * rhs.getCos() + lhs.getSin() * rhs.getSin();
+    // cos(θ) >= cos(tolerance) means |θ| <= tolerance, for tolerance in [-pi, pi], as pre-checked
+    // above.
+    return dot > Math.cos(toleranceRadians);
+  }
 
   private final Channel<VisionSample> visionDataChannel = new Channel<>(new VisionSample[0]);
   private final Channel<SwerveDriveSample> swerveDataChannel =
@@ -127,5 +137,18 @@ public class Localizer implements Logged {
 
   public Translation2d translation() {
     return latestPose.getTranslation();
+  }
+
+  public Trigger near(Rotation2d target, double toleranceRadians) {
+    return new Trigger(() -> withinTolerance(rotation(), target, toleranceRadians));
+  }
+
+  public Trigger near(Translation2d target, double toleranceMeters) {
+    return new Trigger(() -> translation().getDistance(target) < toleranceMeters);
+  }
+
+  public Trigger near(Pose2d target, double toleranceMeters, double toleranceRadians) {
+    return near(target.getTranslation(), toleranceMeters)
+        .and(near(target.getRotation(), toleranceRadians));
   }
 }

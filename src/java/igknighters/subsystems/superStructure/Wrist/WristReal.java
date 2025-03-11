@@ -5,7 +5,7 @@ import static edu.wpi.first.units.Units.Radians;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -15,11 +15,13 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.SuperStructureConstants;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kWrist;
 import igknighters.util.can.CANSignalManager;
+import java.util.Optional;
 
 public class WristReal extends Wrist {
 
@@ -28,7 +30,13 @@ public class WristReal extends Wrist {
 
   private final BaseStatusSignal position, velocity, amps, voltage;
 
-  private final MotionMagicVoltage controlReq = new MotionMagicVoltage(0.0).withUpdateFreqHz(0.0);
+  private final DynamicMotionMagicVoltage controlReq =
+      new DynamicMotionMagicVoltage(
+              0.0,
+              kWrist.MAX_VELOCITY * Conv.RADIANS_TO_ROTATIONS,
+              kWrist.MAX_ACCELERATION * Conv.RADIANS_TO_ROTATIONS,
+              0.0)
+          .withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut =
       new VoltageOut(0.0).withUpdateFreqHz(0.0).withEnableFOC(true);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
@@ -106,11 +114,16 @@ public class WristReal extends Wrist {
   }
 
   @Override
-  public void goToPosition(double targetPosition) {
+  public void goToPosition(double targetPosition, Optional<Constraints> constraints) {
     super.targetRadians = targetPosition;
     super.controlledLastCycle = true;
+    final var c = constraints.orElse(DEFAULT_CONSTRAINTS);
+    super.maxVelocity = c.maxVelocity;
+    super.maxAcceleration = c.maxAcceleration;
+    controlReq
+        .withVelocity(c.maxVelocity * Conv.RADIANS_TO_ROTATIONS)
+        .withAcceleration(c.maxAcceleration * Conv.RADIANS_TO_ROTATIONS);
     wrist.setControl(controlReq.withPosition(Conv.RADIANS_TO_ROTATIONS * targetPosition));
-    log("targetDegrees", targetRadians * Conv.RADIANS_TO_DEGREES);
   }
 
   @Override
@@ -124,7 +137,7 @@ public class WristReal extends Wrist {
 
   @Override
   public void voltageOut(double voltage) {
-    super.targetRadians = Double.NaN;
+    super.noTarget();
     super.controlledLastCycle = true;
     wrist.setControl(voltageOut.withOutput(voltage));
   }
@@ -132,7 +145,7 @@ public class WristReal extends Wrist {
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {
-      super.targetRadians = Double.NaN;
+      super.noTarget();
       wrist.setControl(neutralOut);
     }
     super.controlledLastCycle = false;
@@ -140,6 +153,7 @@ public class WristReal extends Wrist {
     super.volts = voltage.getValueAsDouble();
     super.radians = position.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
+    log("targetDegrees", targetRadians * Conv.RADIANS_TO_DEGREES);
     log("degrees", radians * Conv.RADIANS_TO_DEGREES);
   }
 }

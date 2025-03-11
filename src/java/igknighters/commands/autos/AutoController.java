@@ -24,6 +24,8 @@ public class AutoController implements Consumer<SwerveSample> {
     xController.close();
     yController.close();
     rController.close();
+    Monologue.log("Auto/Controller/TranslationalError", 0.0);
+    Monologue.log("Auto/Controller/RotationalError", 0.0);
   }
 
   @Override
