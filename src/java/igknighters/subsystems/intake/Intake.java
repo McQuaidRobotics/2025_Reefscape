@@ -89,6 +89,9 @@ public class Intake implements ExclusiveSubsystem {
         currentlyHolding = tryingToHold;
         tryingToHold = Holding.NONE;
         log("branchReason", "justIntaked");
+      } else if (tryingToHold == Holding.ALGAE && rollers.isStalling()) {
+        currentlyHolding = Holding.ALGAE;
+        log("branchReason", "stalling");
       } else if (!rollers.isLaserTripped() && !rollers.isStalling()) {
         currentlyHolding = Holding.NONE;
         log("branchReason", "notTrippedNotStalling");

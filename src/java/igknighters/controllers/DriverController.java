@@ -133,7 +133,8 @@ public class DriverController {
         .or(LB)
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .and(operatorTarget.wantsAlgae())
-        .whileTrue(IntakeCommands.intakeAlgae(intake));
+        .whileTrue(IntakeCommands.intakeAlgae(intake))
+        .onFalse(IntakeCommands.holdAlgae(intake));
   }
 
   // Define the buttons on the controller

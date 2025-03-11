@@ -113,9 +113,6 @@ public class RollersReal extends Rollers {
 
   @Override
   public boolean isStalling() {
-    if (Math.abs(acceleration.getValueAsDouble()) > 40.0) {
-      return true;
-    }
     return Math.abs(radiansPerSecond) < 120.0 && Math.abs(amps) > 20.0;
   }
 

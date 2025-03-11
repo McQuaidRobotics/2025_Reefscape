@@ -48,8 +48,6 @@ public class IntakeCommands {
   public static Command intakeAlgae(Intake intake) {
     return runVoltage(intake, -10.0)
         .alongWith(Commands.run(() -> intake.setTryingToHold(Holding.ALGAE)))
-        .until(isHolding(intake, Holding.ALGAE))
-        .andThen(new ScheduleCommand(holdAlgae(intake)))
         .withName("IntakeAlgae");
   }
 

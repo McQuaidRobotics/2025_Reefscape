@@ -111,7 +111,7 @@ public class AutoCommands {
   public Command afterScore(AutoTrajectory traj) {
     return loggedCmd(
         Commands.sequence(
-                Commands.waitUntil(IntakeCommands.isHolding(intake, Holding.NONE)),
+                SwerveCommands.stop(swerve).until(IntakeCommands.isHolding(intake, Holding.NONE)),
                 traj.cmd(),
                 SwerveCommands.stop(swerve))
             .withName("AfterScore" + traj.getRawTrajectory().name()));
@@ -171,7 +171,6 @@ public class AutoCommands {
               return loggedCmd(
                       SwerveCommands.moveToSimple(swerve, localizer, finalPose)
                           .until(localizer.near(finalPose.getTranslation(), 0.04))
-                          .withTimeout(0.5)
                           .withName("FinishAlignment"))
                   .andThen(SwerveCommands.stop(swerve));
             };
@@ -192,8 +191,10 @@ public class AutoCommands {
       bodyCommand.addCommands(
           afterIntake(traj),
           finishAlignment(traj),
-          Commands.waitUntil(
-              SuperStructureCommands.isAt(superStructure, SuperStructureState.ScoreL4)),
+          loggedCmd(
+              Commands.waitUntil(
+                      SuperStructureCommands.isAt(superStructure, SuperStructureState.ScoreL4))
+                  .withName("WaitForL4")),
           Commands.waitSeconds(0.1),
           new ScheduleCommand(loggedCmd(IntakeCommands.expel(intake))));
       return this;
@@ -206,7 +207,11 @@ public class AutoCommands {
         headCommand.addCommands(traj.resetOdometry());
       }
       orchestrateIntake(traj);
-      bodyCommand.addCommands(afterScore(traj), finishAlignment(traj));
+      bodyCommand.addCommands(
+          afterScore(traj),
+          finishAlignment(traj),
+          Commands.repeatingSequence(SwerveCommands.stop(swerve))
+              .until(IntakeCommands.isHolding(intake, Holding.CORAL)));
       return this;
     }
 

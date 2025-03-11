@@ -68,7 +68,7 @@ public class SuperStructureConstants {
 
   public class kWrist {
     public static final double LENGTH = 9.0 * Conv.INCHES_TO_METERS;
-    public static final double MAX_ANGLE = -0.15 * Conv.ROTATIONS_TO_RADIANS;
+    public static final double MAX_ANGLE = -0.20 * Conv.ROTATIONS_TO_RADIANS;
     public static final double ALGAE_MAX_ANGLE = -0.07 * Conv.ROTATIONS_TO_RADIANS;
     public static final double MIN_ANGLE = 0.127 * Conv.ROTATIONS_TO_RADIANS;
 
@@ -91,7 +91,7 @@ public class SuperStructureConstants {
     public static final double ALGAE_MAX_VELOCITY = MAX_VELOCITY * 0.75;
     public static final double ALGAE_MAX_ACCELERATION = MAX_VELOCITY;
 
-    public static final double DEFAULT_TOLERANCE = 1.0 * Conv.DEGREES_TO_RADIANS;
+    public static final double DEFAULT_TOLERANCE = 1.3 * Conv.DEGREES_TO_RADIANS;
     public static final double ANGLE_OFFSET = -0.30810546875;
 
     public static final double STATOR_CURRENT_LIMIT = 50.0;
