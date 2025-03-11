@@ -97,7 +97,8 @@ public class SubsystemTriggers {
                                         1,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkLeft", LedUtil.makeFlash(kLed.TargetingColor, .3)),
+                                            "blinkLeft",
+                                            LedUtil.makeFlash(kLed.TargetingColor, .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
@@ -134,7 +135,8 @@ public class SubsystemTriggers {
                                         0,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkRight", LedUtil.makeFlash(kLed.TargetingColor, 1.0)),
+                                            "blinkRight",
+                                            LedUtil.makeFlash(kLed.TargetingColor, 1.0)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
