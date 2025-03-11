@@ -14,11 +14,6 @@ import java.util.List;
 import monologue.Monologue;
 
 public class LEDCommands {
-  private final OperatorTarget target;
-
-  public LEDCommands(OperatorTarget target) {
-    this.target = target;
-  }
 
   public record LEDSection(int index, int offset, LEDPattern pattern, int length, String name) {}
 
