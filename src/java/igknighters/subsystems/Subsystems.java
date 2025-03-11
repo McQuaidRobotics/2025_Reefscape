@@ -44,8 +44,8 @@ public class Subsystems implements Logged {
     this.intake = intake;
     this.climber = climber;
 
-    ExclusiveSubsystem[] lockedResources = {swerve, superStructure, intake, climber};
-    SharedSubsystem[] locklessResources = {led, vision};
+    ExclusiveSubsystem[] lockedResources = {swerve, superStructure, intake, climber, led};
+    SharedSubsystem[] locklessResources = {vision};
 
     CommandScheduler.getInstance().registerSubsystem(lockedResources);
     for (SharedSubsystem subsystem : locklessResources) {

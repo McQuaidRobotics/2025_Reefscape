@@ -1,8 +1,8 @@
 package igknighters.subsystems.led.driver;
 
-import igknighters.subsystems.led.LedAnimations.PartialAnimation;
+import igknighters.subsystems.Component;
 
-public class SimDriver extends Driver {
+public class SimDriver extends Component {
   @Override
-  public void animate(PartialAnimation[] animations) {}
+  public void periodic() {}
 }

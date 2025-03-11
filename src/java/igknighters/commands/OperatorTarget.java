@@ -15,6 +15,7 @@ import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.led.Led;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -65,6 +66,14 @@ public class OperatorTarget implements StructSerializable {
   public Trigger superStructureAtSetpoint() {
     return new Trigger(() -> !superStructureState.equals(SuperStructureState.Stow))
         .and(SuperStructureCommands.isAt(subsystems.superStructure, superStructureState));
+  }
+
+  public Trigger targeting(SuperStructureState state) {
+    return new Trigger(() -> state == superStructureState);
+  }
+
+  public Trigger targeting(FaceSubLocation state) {
+    return new Trigger(() -> state == faceSubLocation);
   }
 
   public Pose2d targetLocation() {
@@ -164,8 +173,8 @@ public class OperatorTarget implements StructSerializable {
   }
 
   public Command updateTargetCmd(
-      FaceSubLocation faceSubLocation, SuperStructureState superStructureState) {
-    return Commands.runOnce(() -> updateScoring(faceSubLocation, superStructureState))
+      FaceSubLocation faceSubLocation, SuperStructureState superStructureState, Led led) {
+    return led.runOnce(() -> updateScoring(faceSubLocation, superStructureState))
         .ignoringDisable(true)
         .withName("UpdateTargetScoring");
   }

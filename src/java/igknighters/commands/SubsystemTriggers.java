@@ -7,18 +7,44 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.constants.ConstValues.Conv;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.util.Color;
+import igknighters.commands.LEDCommands.LEDSection;
+import igknighters.commands.OperatorTarget.FaceSubLocation;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
+import igknighters.subsystems.led.LedUtil;
+import igknighters.subsystems.led.LedUtil.NamedLEDPattern;
 import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
+import java.util.Set;
+import monologue.Monologue;
 
 public class SubsystemTriggers {
 
   @SuppressWarnings("unused")
-  public static void setupTriggers(Subsystems subsystems, Localizer localizer) {
+  static int interpolateHeight(double elevatorHeight) {
+    double min = SuperStructureState.AlgaeFloor.elevatorMeters - .1;
+    double max = SuperStructureState.ScoreL4.elevatorMeters;
+    double t = (elevatorHeight - min) / (max - min);
+    Monologue.log("elevatorHeight", elevatorHeight);
+    return Monologue.log("num LEDS", (int) (36.0 * (0.25 + (t * 0.75))));
+  }
+  static Color getTargetingColor(){
+    if (DriverStation.getAlliance().equals(Alliance.Blue)) { 
+      return new Color(0, 0, 255);
+    } else {
+      return new Color(255, 0, 0);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  public static void setupTriggers(Subsystems subsystems, Localizer localizer, OperatorTarget target) {
     final Swerve swerve = subsystems.swerve;
     final Vision vision = subsystems.vision;
     final Led led = subsystems.led;
@@ -47,5 +73,70 @@ public class SubsystemTriggers {
         .onTrue(
             SwerveCommands.orientGyro(swerve, vision, localizer, localizer.pose().getRotation()))
         .onTrue(Commands.print("Reorienting robot to localizer pose"));
+    final Trigger ledIdle = Triggers.subsystemIdle(led);
+
+    ledIdle
+        .and(target.hasTarget())
+        .onTrue(
+            Commands.defer(
+                    () ->
+                        Commands.sequence(
+                            LEDCommands.runSplitWithLEDSection(
+                                    led,
+                                    new LEDSection(
+                                        0,
+                                        0,
+                                        new NamedLEDPattern(
+                                            "blinkLeft", LedUtil.makeFlash(getTargetingColor(), .3)),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "flashing color on left"),
+                                    new LEDSection(
+                                        1,
+                                        0,
+                                        LEDPattern.solid(getTargetingColor()),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "solid color on right"))
+                                .onlyIf(target.targeting(FaceSubLocation.LEFT)),
+                            LEDCommands.runSplitWithLEDSection(
+                                    led,
+                                    new LEDSection(
+                                        1,
+                                        0,
+                                        new NamedLEDPattern(
+                                            "blinkIdk2", LedUtil.makeFlash(getTargetingColor(), .3)),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "flashy color center"),
+                                    new LEDSection(
+                                        0,
+                                        0,
+                                        new NamedLEDPattern(
+                                            "blinkIdk1", LedUtil.makeFlash(getTargetingColor(), .3)),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "flashy color center"))
+                                .onlyIf(target.targeting(FaceSubLocation.CENTER)),
+                            LEDCommands.runSplitWithLEDSection(
+                                    led,
+                                    new LEDSection(
+                                        1,
+                                        0,
+                                        new NamedLEDPattern(
+                                            "blinkRight", LedUtil.makeFlash(getTargetingColor(), 1.0)),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "flashing color on left"),
+                                    new LEDSection(
+                                        0,
+                                        0,
+                                        LEDPattern.solid(getTargetingColor()),
+                                        interpolateHeight(
+                                            target.superStructureState().elevatorMeters),
+                                        "blue color on left"))
+                                .onlyIf(target.targeting(FaceSubLocation.RIGHT))),
+                    Set.of(led))
+                .ignoringDisable(true));
   }
 }
