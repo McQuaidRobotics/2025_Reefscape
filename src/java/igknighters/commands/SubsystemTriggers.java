@@ -2,8 +2,6 @@ package igknighters.commands;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,15 +29,7 @@ public class SubsystemTriggers {
     double max = SuperStructureState.ScoreL4.elevatorMeters;
     double t = (elevatorHeight - min) / (max - min);
     Monologue.log("elevatorHeight", elevatorHeight);
-    return Monologue.log("num LEDS", (int) (36.0 * (0.25 + (t * 0.75))));
-  }
-
-  static Color getTargetingColor() {
-    if (DriverStation.getAlliance().equals(Alliance.Blue)) {
-      return new Color(0, 0, 255);
-    } else {
-      return new Color(255, 0, 0);
-    }
+    return Monologue.log("num LEDS", (int) (37.0 * (0.25 + (t * 0.75))));
   }
 
   @SuppressWarnings("unused")
