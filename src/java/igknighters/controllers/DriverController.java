@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
@@ -59,8 +60,11 @@ public class DriverController {
                 kSwerve.CONSTRAINTS))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .onFalse(
-            IntakeCommands.bounce(intake)
-                .andThen(IntakeCommands.holdCoral(intake))
+            Commands.waitSeconds(0.33)
+                .andThen(
+                    IntakeCommands.bounce(intake),
+                    Commands.waitSeconds(0.1),
+                    new ScheduleCommand(IntakeCommands.holdCoral(intake)))
                 .withName("BounceThenHoldCoral"));
     this.A.whileTrue(
         SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose));
@@ -137,6 +141,7 @@ public class DriverController {
 
     this.LT
         .or(LB)
+        .onTrue(IntakeCommands.holdCoral(intake))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .and(operatorTarget.wantsAlgae())
         .whileTrue(IntakeCommands.intakeAlgae(intake))
