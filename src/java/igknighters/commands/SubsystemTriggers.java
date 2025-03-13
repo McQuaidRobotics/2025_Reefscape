@@ -2,8 +2,6 @@ package igknighters.commands;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,15 +33,7 @@ public class SubsystemTriggers {
     double max = SuperStructureState.ScoreL4.elevatorMeters;
     double t = (elevatorHeight - min) / (max - min);
     Monologue.log("elevatorHeight", elevatorHeight);
-    return Monologue.log("num LEDS", (int) (36.0 * (0.25 + (t * 0.75))));
-  }
-
-  static Color getTargetingColor() {
-    if (DriverStation.getAlliance().equals(Alliance.Blue)) {
-      return new Color(0, 0, 255);
-    } else {
-      return new Color(255, 0, 0);
-    }
+    return Monologue.log("num LEDS", (int) (37.0 * (0.25 + (t * 0.75))));
   }
 
   @SuppressWarnings("unused")
@@ -105,7 +95,7 @@ public class SubsystemTriggers {
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
-                                        1,
+                                        0,
                                         0,
                                         new NamedLEDPattern(
                                             "blinkLeft",
@@ -114,7 +104,7 @@ public class SubsystemTriggers {
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
                                     new LEDSection(
-                                        0,
+                                        1,
                                         0,
                                         LEDPattern.solid(kLed.TargetingColor),
                                         interpolateHeight(
@@ -124,7 +114,7 @@ public class SubsystemTriggers {
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
-                                        0,
+                                        1,
                                         0,
                                         new NamedLEDPattern(
                                             "blinkIdk2", LedUtil.makeFlash(kLed.CoralColor, .3)),
@@ -132,7 +122,7 @@ public class SubsystemTriggers {
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"),
                                     new LEDSection(
-                                        1,
+                                        0,
                                         0,
                                         new NamedLEDPattern(
                                             "blinkIdk1", LedUtil.makeFlash(kLed.CoralColor, .3)),
@@ -143,7 +133,7 @@ public class SubsystemTriggers {
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
-                                        0,
+                                        1,
                                         0,
                                         new NamedLEDPattern(
                                             "blinkRight",
@@ -152,7 +142,7 @@ public class SubsystemTriggers {
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
                                     new LEDSection(
-                                        1,
+                                        0,
                                         0,
                                         LEDPattern.solid(kLed.TargetingColor),
                                         interpolateHeight(

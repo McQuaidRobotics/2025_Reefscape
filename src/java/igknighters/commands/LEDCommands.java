@@ -24,7 +24,7 @@ public class LEDCommands {
       List<Integer> lengths,
       List<Integer> index,
       List<String> names) {
-    final AddressableLEDBuffer blankSlate = new AddressableLEDBuffer(72);
+    final AddressableLEDBuffer blankSlate = new AddressableLEDBuffer(73);
     final LEDPattern eraser = LEDPattern.solid(Color.kBlack);
     return led.startRun(
             () -> {
@@ -52,13 +52,19 @@ public class LEDCommands {
                   } else {
                     Monologue.log(
                         "zone for strip 2 ",
-                        MathUtil.clamp(36 + offsets.get(i), 37, 69)
+                        MathUtil.clamp(36 + offsets.get(i), 37, blankSlate.getLength() - 1)
                             + " endzone: "
-                            + MathUtil.clamp(36 + offsets.get(i) + lengths.get(i) - 1, 37, 71));
+                            + MathUtil.clamp(
+                                36 + offsets.get(i) + lengths.get(i) - 1,
+                                37,
+                                blankSlate.getLength() - 1));
                     AddressableLEDBufferView controlledZone =
                         blankSlate.createView(
-                            MathUtil.clamp(36 + offsets.get(i), 37, 69),
-                            MathUtil.clamp(36 + offsets.get(i) + lengths.get(i) - 1, 37, 72 - 1));
+                            MathUtil.clamp(36 + offsets.get(i), 37, blankSlate.getLength() - 1),
+                            MathUtil.clamp(
+                                36 + offsets.get(i) + lengths.get(i) - 1,
+                                37,
+                                blankSlate.getLength() - 1));
                     patterns.get(i).applyTo(controlledZone);
                   }
                 }
