@@ -57,6 +57,8 @@ public class SubsystemTriggers {
 
     final Trigger ledIdle = Triggers.subsystemIdle(led);
 
+
+
     final Trigger ledTriggerAutonomous =
         RobotModeTriggers.autonomous()
             .whileTrue(
@@ -74,7 +76,7 @@ public class SubsystemTriggers {
             new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s2"));
     RobotModeTriggers.disabled().whileTrue(ledDisabledLed);
     ledDisabledLed.schedule();
-    
+
     ledIdle
         .and(target.hasTarget())
         .onTrue(
@@ -106,7 +108,7 @@ public class SubsystemTriggers {
                                         1,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk2", LedUtil.makeFlash(kLed.CoralColor, .05)),
+                                            "blinkIdk2", LedUtil.makeFlash(kLed.AlgaeColor, .05)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"),
@@ -114,7 +116,7 @@ public class SubsystemTriggers {
                                         0,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk1", LedUtil.makeFlash(kLed.CoralColor, .05)),
+                                            "blinkIdk1", LedUtil.makeFlash(kLed.AlgaeColor, .05)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"))
