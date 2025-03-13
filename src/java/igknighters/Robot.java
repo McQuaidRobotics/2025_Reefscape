@@ -100,7 +100,11 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     final AutoFactory autoFactory =
         new AutoFactory(
             localizer::pose,
-            localizer::reset,
+            pose -> {
+              localizer.reset(pose);
+              subsystems.vision.resetHeading();
+              subsystems.swerve.setYaw(pose.getRotation());
+            },
             new AutoController(subsystems.swerve, localizer),
             true,
             subsystems.swerve,
