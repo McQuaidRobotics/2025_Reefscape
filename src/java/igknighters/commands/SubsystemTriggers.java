@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -76,14 +77,13 @@ public class SubsystemTriggers {
                     new LEDSection(
                         1, 0, LedUtil.makeRainbow(255, 100), 36, "autonomous rainbow s2")));
 
-    final Trigger ledTriggerDissabled =
-        RobotModeTriggers.disabled()
-            .whileTrue(
-                LEDCommands.runSplitWithLEDSection(
-                    led,
-                    new LEDSection(0, 0, LEDPattern.solid(Color.kRed), 36, "autonomous rainbow s1"),
-                    new LEDSection(
-                        1, 0, LEDPattern.solid(Color.kRed), 36, "autonomous rainbow s2")));
+    final Command ledDisabledLed =
+        LEDCommands.runSplitWithLEDSection(
+            led,
+            new LEDSection(0, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s1"),
+            new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s2"));
+    RobotModeTriggers.disabled().whileTrue(ledDisabledLed);
+    ledDisabledLed.schedule();
 
     ledIdle
         .and(target.hasTarget())
