@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WrapperCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.commands.IntakeCommands;
@@ -99,6 +100,10 @@ public class AutoCommands {
     };
   }
 
+  protected Trigger movingSlowerThan(Swerve swerve, double speed) {
+    return new Trigger(() -> swerve.getRobotSpeeds().magnitude() < speed);
+  }
+
   public Command afterIntake(AutoTrajectory traj) {
     return loggedCmd(
         Commands.sequence(
@@ -167,10 +172,17 @@ public class AutoCommands {
             () -> {
               Pose2d finalPose = trajectory.getFinalPose().get();
               finalPose =
-                  finalPose.plus(new Transform2d(0.0, intake.gamepieceYOffset(), Rotation2d.kZero));
+                  finalPose.plus(
+                      new Transform2d(
+                          0.0,
+                          Monologue.log("gpOffset", intake.gamepieceYOffset()),
+                          Rotation2d.kZero));
               return loggedCmd(
                       SwerveCommands.moveToSimple(swerve, localizer, finalPose)
-                          .until(localizer.near(finalPose.getTranslation(), 0.04))
+                          .until(
+                              localizer
+                                  .near(finalPose.getTranslation(), 0.04)
+                                  .and(movingSlowerThan(swerve, 0.1)))
                           .withName("FinishAlignment"))
                   .andThen(SwerveCommands.stop(swerve));
             };
@@ -196,7 +208,8 @@ public class AutoCommands {
                       SuperStructureCommands.isAt(superStructure, SuperStructureState.ScoreL4))
                   .withName("WaitForL4")),
           Commands.waitSeconds(0.1),
-          new ScheduleCommand(loggedCmd(IntakeCommands.expel(intake))));
+          new ScheduleCommand(loggedCmd(IntakeCommands.expel(intake))),
+          Commands.waitSeconds(0.25));
       return this;
     }
 

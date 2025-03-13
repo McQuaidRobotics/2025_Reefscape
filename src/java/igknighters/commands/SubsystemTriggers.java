@@ -2,17 +2,17 @@ package igknighters.commands;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
-import igknighters.constants.ConstValues.Conv;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.LEDPattern;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.util.Color;
 import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.commands.OperatorTarget.FaceSubLocation;
+import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
@@ -35,8 +35,9 @@ public class SubsystemTriggers {
     Monologue.log("elevatorHeight", elevatorHeight);
     return Monologue.log("num LEDS", (int) (36.0 * (0.25 + (t * 0.75))));
   }
-  static Color getTargetingColor(){
-    if (DriverStation.getAlliance().equals(Alliance.Blue)) { 
+
+  static Color getTargetingColor() {
+    if (DriverStation.getAlliance().equals(Alliance.Blue)) {
       return new Color(0, 0, 255);
     } else {
       return new Color(255, 0, 0);
@@ -44,7 +45,8 @@ public class SubsystemTriggers {
   }
 
   @SuppressWarnings("unused")
-  public static void setupTriggers(Subsystems subsystems, Localizer localizer, OperatorTarget target) {
+  public static void setupTriggers(
+      Subsystems subsystems, Localizer localizer, OperatorTarget target) {
     final Swerve swerve = subsystems.swerve;
     final Vision vision = subsystems.vision;
     final Led led = subsystems.led;
@@ -87,7 +89,8 @@ public class SubsystemTriggers {
                                         0,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkLeft", LedUtil.makeFlash(getTargetingColor(), .3)),
+                                            "blinkLeft",
+                                            LedUtil.makeFlash(getTargetingColor(), .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
@@ -105,7 +108,8 @@ public class SubsystemTriggers {
                                         1,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk2", LedUtil.makeFlash(getTargetingColor(), .3)),
+                                            "blinkIdk2",
+                                            LedUtil.makeFlash(getTargetingColor(), .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"),
@@ -113,7 +117,8 @@ public class SubsystemTriggers {
                                         0,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk1", LedUtil.makeFlash(getTargetingColor(), .3)),
+                                            "blinkIdk1",
+                                            LedUtil.makeFlash(getTargetingColor(), .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"))
@@ -124,7 +129,8 @@ public class SubsystemTriggers {
                                         1,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkRight", LedUtil.makeFlash(getTargetingColor(), 1.0)),
+                                            "blinkRight",
+                                            LedUtil.makeFlash(getTargetingColor(), 1.0)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),

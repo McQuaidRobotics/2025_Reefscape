@@ -20,9 +20,9 @@ public enum SuperStructureState implements StructSerializable {
   Stow(MIN_HEIGHT + STAGES[2].rangeOfMotion() - 3.0 * INCHES_TO_METERS, MAX_ANGLE, 2.0),
   ScoreStaged(L3.height + 0.29, -45.0 * DEGREES_TO_RADIANS, 2.0),
   Processor(15.0 * INCHES_TO_METERS, 0.0, 1.5),
-  Net(MAX_HEIGHT, MAX_ANGLE, 1.0),
-  IntakeHpClose(26.85 * INCHES_TO_METERS, -69.0 * DEGREES_TO_RADIANS),
-  IntakeHpFar(26.4 * INCHES_TO_METERS, -56.0 * DEGREES_TO_RADIANS),
+  Net(MAX_HEIGHT, -1.0, 1.0),
+  IntakeHpClose(26.85 * INCHES_TO_METERS, -63.0 * DEGREES_TO_RADIANS),
+  IntakeHpFar(26.2 * INCHES_TO_METERS, -56.0 * DEGREES_TO_RADIANS),
   AntiTilt(MIN_HEIGHT, MAX_ANGLE, 1.0);
 
   public final double elevatorMeters;

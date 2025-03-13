@@ -138,6 +138,13 @@ public class CameraRealPhoton extends Camera {
       poseEstimator.setPrimaryStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
     }
     for (var result : results) {
+      ArrayList<PhotonTrackedTarget> newTargets = new ArrayList<>();
+      for (var target : result.targets) {
+        if (AprilTags.observalbleTag(target.fiducialId)) {
+          newTargets.add(target);
+        }
+      }
+      result.targets = newTargets;
       if (result.hasTargets()) {
         var estRoboPose =
             poseEstimator.update(

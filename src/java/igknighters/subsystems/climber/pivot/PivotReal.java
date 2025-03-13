@@ -34,7 +34,7 @@ public class PivotReal extends Pivot {
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
 
-  private final PIDController pidController = new PIDController(60.0, 10.0, 0.0);
+  private final PIDController pidController = new PIDController(20.0, 0.0, 0.0);
 
   public PivotReal() {
     leader.getConfigurator().apply(motorConfiguration());
@@ -67,14 +67,14 @@ public class PivotReal extends Pivot {
   private final TalonFXConfiguration motorConfiguration() {
     var cfg = new TalonFXConfiguration();
 
-    // cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-    // cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-    //     PivotConstants.FORWARD_LIMIT * Conv.RADIANS_TO_ROTATIONS;
-    // cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-    // cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-    //     PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
+    cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        PivotConstants.FORWARD_LIMIT * Conv.RADIANS_TO_ROTATIONS;
+    cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+        PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
 
-    cfg.Voltage.PeakReverseVoltage = 3.0;
+    cfg.Voltage.PeakReverseVoltage = -5.0;
 
     // cfg.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.MAX_VELOCITY;
     // cfg.MotionMagic.MotionMagicAcceleration = PivotConstants.MAX_ACCELERATION;
@@ -105,10 +105,13 @@ public class PivotReal extends Pivot {
   }
 
   @Override
-  public void setPositionRads(double targetRads) {
-    super.targetRads = targetRads;
+  public void setPositionRads(double moveToRads) {
+    super.targetRads = moveToRads;
     controlledLastCycle = true;
-    leader.setControl(controlReq.withOutput(pidController.calculate(radians, targetRads)));
+    log("moveToRads", moveToRads);
+    leader.setControl(
+        controlReq.withOutput(
+            log("controllerOutput", pidController.calculate(radians, moveToRads))));
   }
 
   @Override
