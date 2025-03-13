@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -13,6 +14,7 @@ import igknighters.Localizer;
 import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.commands.OperatorTarget.FaceSubLocation;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.constants.ConstValues.kLed;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
@@ -77,6 +79,24 @@ public class SubsystemTriggers {
         .onTrue(Commands.print("Reorienting robot to localizer pose"));
     final Trigger ledIdle = Triggers.subsystemIdle(led);
 
+    final Trigger ledTriggerAutonomous =
+        RobotModeTriggers.autonomous()
+            .whileTrue(
+                LEDCommands.runSplitWithLEDSection(
+                    led,
+                    new LEDSection(
+                        0, 0, LedUtil.makeRainbow(255, 100), 36, "autonomous rainbow s1"),
+                    new LEDSection(
+                        1, 0, LedUtil.makeRainbow(255, 100), 36, "autonomous rainbow s2")));
+
+    final Command ledDisabledLed =
+        LEDCommands.runSplitWithLEDSection(
+            led,
+            new LEDSection(0, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s1"),
+            new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s2"));
+    RobotModeTriggers.disabled().whileTrue(ledDisabledLed);
+    ledDisabledLed.schedule();
+
     ledIdle
         .and(target.hasTarget())
         .onTrue(
@@ -86,18 +106,18 @@ public class SubsystemTriggers {
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
-                                        0,
+                                        1,
                                         0,
                                         new NamedLEDPattern(
                                             "blinkLeft",
-                                            LedUtil.makeFlash(getTargetingColor(), .3)),
+                                            LedUtil.makeFlash(kLed.TargetingColor, .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
                                     new LEDSection(
-                                        1,
                                         0,
-                                        LEDPattern.solid(getTargetingColor()),
+                                        0,
+                                        LEDPattern.solid(kLed.TargetingColor),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "solid color on right"))
@@ -105,20 +125,18 @@ public class SubsystemTriggers {
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
-                                        1,
+                                        0,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk2",
-                                            LedUtil.makeFlash(getTargetingColor(), .3)),
+                                            "blinkIdk2", LedUtil.makeFlash(kLed.CoralColor, .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"),
                                     new LEDSection(
-                                        0,
+                                        1,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk1",
-                                            LedUtil.makeFlash(getTargetingColor(), .3)),
+                                            "blinkIdk1", LedUtil.makeFlash(kLed.CoralColor, .3)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"))
@@ -126,18 +144,18 @@ public class SubsystemTriggers {
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
-                                        1,
+                                        0,
                                         0,
                                         new NamedLEDPattern(
                                             "blinkRight",
-                                            LedUtil.makeFlash(getTargetingColor(), 1.0)),
+                                            LedUtil.makeFlash(kLed.TargetingColor, 1.0)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
                                     new LEDSection(
+                                        1,
                                         0,
-                                        0,
-                                        LEDPattern.solid(getTargetingColor()),
+                                        LEDPattern.solid(kLed.TargetingColor),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "blue color on left"))

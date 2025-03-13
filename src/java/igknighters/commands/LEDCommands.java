@@ -14,6 +14,7 @@ import java.util.List;
 import monologue.Monologue;
 
 public class LEDCommands {
+
   public record LEDSection(int index, int offset, LEDPattern pattern, int length, String name) {}
 
   public static Command runSplit(

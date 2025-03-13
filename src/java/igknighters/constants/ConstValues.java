@@ -1,5 +1,7 @@
 package igknighters.constants;
 
+import edu.wpi.first.wpilibj.util.Color;
+
 public final class ConstValues {
   private static final double TAU = 2 * Math.PI;
 
@@ -64,5 +66,7 @@ public final class ConstValues {
   public static final class kLed {
     public static final int LED_COUNT = 38;
     public static final int CANDLE_LEDS = 8;
+    public static final Color TargetingColor = Color.kPurple;
+    public static final Color CoralColor = Color.kSeaGreen;
   }
 }
