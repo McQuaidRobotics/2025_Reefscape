@@ -56,8 +56,14 @@ public class SubsystemTriggers {
         .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
 
     final Trigger ledIdle = Triggers.subsystemIdle(led);
-
-
+    Monologue.log("is robot disabled", RobotModeTriggers.disabled().getAsBoolean());
+    final Trigger ledEnabled =
+        RobotModeTriggers.disabled()
+            .onFalse(
+                LEDCommands.runSplitWithLEDSection(
+                    led,
+                    new LEDSection(0, 0, LEDPattern.solid(new Color(0, 255, 0)), 36, "enabled index 0"),
+                    new LEDSection(1, 0, LEDPattern.solid(new Color(0, 255, 0)), 37, "enabled index 1")));
 
     final Trigger ledTriggerAutonomous =
         RobotModeTriggers.autonomous()
@@ -73,7 +79,7 @@ public class SubsystemTriggers {
         LEDCommands.runSplitWithLEDSection(
             led,
             new LEDSection(0, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s1"),
-            new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s2"));
+            new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 37, "disabled red s2"));
     RobotModeTriggers.disabled().whileTrue(ledDisabledLed);
     ledDisabledLed.schedule();
 
@@ -141,6 +147,7 @@ public class SubsystemTriggers {
                                         "blue color on left"))
                                 .onlyIf(target.targeting(FaceSubLocation.RIGHT))),
                     Set.of(led))
+                .onlyIf(() -> RobotModeTriggers.disabled().getAsBoolean() == false)
                 .ignoringDisable(true));
   }
 }
