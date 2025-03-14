@@ -2,7 +2,7 @@
 
 package choreo.trajectory;
 
-import choreo.util.ChoreoAllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil.Flipper;
 import choreo.util.ChoreoArrayUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -189,14 +189,14 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   }
 
   @Override
-  public SwerveSample flipped() {
-    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED ->
+  public SwerveSample flipped(Flipper flipper) {
+    return switch (flipper) {
+      case MIRRORED_Y ->
           new SwerveSample(
               this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
+              flipper.flipX(this.x),
+              flipper.flipY(this.y),
+              flipper.flipHeading(this.heading),
               -this.vx,
               this.vy,
               -this.omega,
@@ -221,12 +221,42 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
                 this.moduleForcesY()[3],
                 this.moduleForcesY()[2]
               });
+      case MIRRORED_X ->
+          new SwerveSample(
+              this.t,
+              flipper.flipX(this.x),
+              flipper.flipY(this.y),
+              flipper.flipHeading(this.heading),
+              this.vx,
+              -this.vy,
+              -this.omega,
+              this.ax,
+              -this.ay,
+              -this.alpha,
+              // FL, FR, BL, BR
+              // Mirrored
+              // -BL, -BR, -FL, -FR
+              new double[] {
+                -this.moduleForcesX()[2],
+                -this.moduleForcesX()[3],
+                -this.moduleForcesX()[0],
+                -this.moduleForcesX()[1]
+              },
+              // FL, FR, BL, BR
+              // Mirrored
+              // BL, BR, FL, FR
+              new double[] {
+                this.moduleForcesY()[2],
+                this.moduleForcesY()[3],
+                this.moduleForcesY()[0],
+                this.moduleForcesY()[1]
+              });
       case ROTATE_AROUND ->
           new SwerveSample(
               this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
+              flipper.flipX(this.x),
+              flipper.flipY(this.y),
+              flipper.flipHeading(this.heading),
               -this.vx,
               -this.vy,
               this.omega,

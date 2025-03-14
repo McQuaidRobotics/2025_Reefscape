@@ -17,6 +17,7 @@ import igknighters.subsystems.vision.Vision;
 import igknighters.util.plumbing.TunableValues;
 import java.util.function.Supplier;
 import monologue.GlobalField;
+import monologue.Monologue;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.TranslationController;
@@ -24,7 +25,7 @@ import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
 import wayfinder.controllers.Types.ControllerMode;
 import wayfinder.repulsorField.RepulsorFieldPlanner;
-import wpilibExt.AllianceFlipper;
+import wpilibExt.AllianceSymmetry;
 import wpilibExt.Speeds;
 import wpilibExt.Speeds.RobotSpeeds;
 
@@ -47,20 +48,22 @@ public class SwerveCommands {
     return swerve.runOnce(() -> swerve.drive(RobotSpeeds.kZero)).withName("commandStopDrives");
   }
 
-  public static Command orientGyro(Swerve swerve, Vision vision, Localizer localizer) {
+  public static Command orientGyro(
+      Swerve swerve, Vision vision, Localizer localizer, Rotation2d orientation) {
     return swerve.runOnce(
         () -> {
           vision.resetHeading();
-          if (AllianceFlipper.isBlue()) {
-            swerve.setYaw(Rotation2d.kZero);
-            var pose = new Pose2d(localizer.pose().getTranslation(), Rotation2d.kZero);
-            localizer.reset(pose);
-          } else {
-            swerve.setYaw(Rotation2d.kPi);
-            var pose = new Pose2d(localizer.pose().getTranslation(), Rotation2d.kPi);
-            localizer.reset(pose);
-          }
+          swerve.setYaw(orientation);
+          var pose = new Pose2d(localizer.pose().getTranslation(), orientation);
+          localizer.reset(pose);
         });
+  }
+
+  public static Command orientGyro(Swerve swerve, Vision vision, Localizer localizer) {
+    return Commands.either(
+        orientGyro(swerve, vision, localizer, Rotation2d.kZero),
+        orientGyro(swerve, vision, localizer, Rotation2d.kPi),
+        AllianceSymmetry::isBlue);
   }
 
   public static Command drive(Swerve swerve, final Speeds speeds) {
@@ -127,22 +130,26 @@ public class SwerveCommands {
   }
 
   public static Command moveToSimple(Swerve swerve, Localizer localizer, Pose2d target) {
+    Monologue.log("adjustOffset", 0.0);
     final ChassisConstraints constraints =
         new ChassisConstraints(
             new Constraints(
                 kSwerve.MAX_DRIVE_VELOCITY * 0.8,
-                SharedState.maximumAcceleration(SuperStructureState.ScoreL3.elevatorMeters)),
+                SharedState.maximumAcceleration(SuperStructureState.ScoreL4.elevatorMeters)),
             new Constraints(
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
     final PositionalController roughController =
         new PositionalController(
-            new TranslationController(2.0, 0.0, 0.0, ControllerMode.UNPROFILED),
+            new TranslationController(5.0, 0.0, 0.0, ControllerMode.UNPROFILED),
             new RotationalController(2.0, 0.0, ControllerMode.UNPROFILED));
     return Commands.sequence(
         swerve.runOnce(
             () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
         swerve.run(
             () -> {
+              Monologue.log(
+                  "adjustOffset",
+                  localizer.pose().getTranslation().getDistance(target.getTranslation()));
               var speeds =
                   roughController.calculate(
                       ConstValues.PERIODIC_TIME,

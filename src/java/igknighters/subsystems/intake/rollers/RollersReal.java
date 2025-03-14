@@ -12,7 +12,6 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
@@ -26,15 +25,15 @@ public class RollersReal extends Rollers {
   private static final double CORAL_WIDTH = 2.25 * Conv.INCHES_TO_METERS;
   private static final LerpTable DISTANCE_LERP =
       new LerpTable(
-          new LerpTable.LerpTableEntry(1.9 * Conv.INCHES_TO_METERS, 0.4 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(3.7 * Conv.INCHES_TO_METERS, 2.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(4.64 * Conv.INCHES_TO_METERS, 3.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(5.98 * Conv.INCHES_TO_METERS, 4.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(7.08 * Conv.INCHES_TO_METERS, 5.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(8.0 * Conv.INCHES_TO_METERS, 6.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(8.58 * Conv.INCHES_TO_METERS, 7.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(9.65 * Conv.INCHES_TO_METERS, 8.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(10.5 * Conv.INCHES_TO_METERS, 8.75 * Conv.INCHES_TO_METERS));
+          new LerpTable.LerpTableEntry(2.5 * Conv.INCHES_TO_METERS, 1.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(4.45 * Conv.INCHES_TO_METERS, 2.5 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(5.25 * Conv.INCHES_TO_METERS, 3.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(5.8 * Conv.INCHES_TO_METERS, 4.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(7.36 * Conv.INCHES_TO_METERS, 5.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(8.937 * Conv.INCHES_TO_METERS, 6.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(9.68 * Conv.INCHES_TO_METERS, 7.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(11.65 * Conv.INCHES_TO_METERS, 8.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(13.5 * Conv.INCHES_TO_METERS, 9.25 * Conv.INCHES_TO_METERS));
 
   private final TalonFX intakeMotor =
       new TalonFX(RollerConstants.INTAKE_MOTOR_ID, IntakeConstants.CANBUS);
@@ -57,14 +56,14 @@ public class RollersReal extends Rollers {
     cfg.HardwareLimitSwitch.ReverseLimitSource = ReverseLimitSourceValue.RemoteCANrange;
     cfg.HardwareLimitSwitch.ReverseLimitRemoteSensorID = distanceSensor.getDeviceID();
 
-    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     return cfg;
   }
 
   private CANrangeConfiguration intakeSensorConfiguration() {
     var cfg = new CANrangeConfiguration();
-    cfg.ProximityParams.ProximityThreshold = 0.28;
+    cfg.ProximityParams.ProximityThreshold = 0.365;
     cfg.ProximityParams.ProximityHysteresis = 0.01;
     cfg.FovParams.FOVRangeX = 7.0;
     cfg.FovParams.FOVRangeY = 7.0;
@@ -114,9 +113,7 @@ public class RollersReal extends Rollers {
 
   @Override
   public boolean isStalling() {
-    return !MathUtil.isNear(
-            radiansPerSecond, motor.KvRadPerSecPerVolt * volts, motor.KvRadPerSecPerVolt * 1.0)
-        || !MathUtil.isNear(amps, motor.getCurrent(radiansPerSecond, volts), 5.0);
+    return Math.abs(radiansPerSecond) < 120.0 && Math.abs(amps) > 20.0;
   }
 
   @Override

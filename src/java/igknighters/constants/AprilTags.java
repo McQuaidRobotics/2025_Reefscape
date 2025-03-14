@@ -148,15 +148,27 @@ public class AprilTags {
                     new Quaternion(-0.8660254037844387, -0.0, 0.0, 0.49999999999999994))))
       };
 
-  public static final Pose2d[] TAGS_POSE2D;
+  public static final Pose2d[] TAGS_POSE2D = new Pose2d[TAGS.length];
+  public static final int[] TAG_IDS = new int[TAGS.length];
 
   static {
-    TAGS_POSE2D = new Pose2d[TAGS.length];
     for (int i = 0; i < TAGS.length; i++) {
       TAGS_POSE2D[i] =
           new Pose2d(
               TAGS[i].pose.getTranslation().toTranslation2d(),
               TAGS[i].pose.getRotation().toRotation2d());
     }
+    for (int i = 0; i < TAGS.length; i++) {
+      TAG_IDS[i] = TAGS[i].ID;
+    }
+  }
+
+  public static boolean observalbleTag(int id) {
+    for (int i : TAG_IDS) {
+      if (i == id) {
+        return true;
+      }
+    }
+    return false;
   }
 }

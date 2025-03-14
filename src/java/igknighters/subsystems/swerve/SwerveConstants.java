@@ -50,7 +50,7 @@ public class SwerveConstants {
       public static final double kV = kKrakenX60Foc.kV * GEAR_RATIO;
 
       public static final double STATOR_CURRENT_LIMIT = 120.0;
-      public static final double SUPPLY_CURRENT_LIMIT = 60.0;
+      public static final double SUPPLY_CURRENT_LIMIT = 50.0;
 
       public static final double MAX_VELOCITY = (12.0 - kS) / kV;
     }
@@ -59,7 +59,7 @@ public class SwerveConstants {
       public static final double GEAR_RATIO = SwerveGearRatios.STEER;
 
       public static final boolean INVERT = true;
-      public static final boolean NEUTRAL_MODE_BRAKE = false;
+      public static final boolean NEUTRAL_MODE_BRAKE = true;
 
       public static final double kP = 30.0;
       public static final double kI = 0.0;

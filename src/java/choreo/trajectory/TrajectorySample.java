@@ -2,6 +2,8 @@
 
 package choreo.trajectory;
 
+import choreo.util.ChoreoAllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil.Flipper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -38,9 +40,19 @@ public interface TrajectorySample<Self extends TrajectorySample<Self>>
   /**
    * Returns this sample, mirrored across the field midline.
    *
+   * @param flipper the flipper to use.
    * @return this sample, mirrored across the field midline.
    */
-  Self flipped();
+  Self flipped(Flipper flipper);
+
+  /**
+   * Returns this sample, mirrored across the field midline.
+   *
+   * @return this sample, mirrored across the field midline.
+   */
+  default Self flipped() {
+    return flipped(ChoreoAllianceFlipUtil.getFlipper());
+  }
 
   /**
    * Returns this sample, offset by the given timestamp.

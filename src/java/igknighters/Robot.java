@@ -92,7 +92,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     driverController.bind(localizer, subsystems, operatorTarget);
     operatorController = new OperatorController(1);
     operatorController.bind(localizer, subsystems, operatorTarget);
-    SubsystemTriggers.setupTriggers(subsystems, operatorTarget);
+    SubsystemTriggers.setupTriggers(subsystems, localizer, operatorTarget);
 
     subsystems.swerve.setDefaultCommand(
         new TeleopSwerveTraditionalCmd(subsystems.swerve, driverController));
@@ -100,7 +100,11 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     final AutoFactory autoFactory =
         new AutoFactory(
             localizer::pose,
-            localizer::reset,
+            pose -> {
+              localizer.reset(pose);
+              subsystems.vision.resetHeading();
+              subsystems.swerve.setYaw(pose.getRotation());
+            },
             new AutoController(subsystems.swerve, localizer),
             true,
             subsystems.swerve,
@@ -117,7 +121,9 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             });
 
     final var routines = new AutoRoutines(subsystems, localizer, autoFactory);
-    autoChooser.addRoutine("test", routines::test);
+    AutoRoutines.addCmd(autoChooser, "test", routines::test);
+    AutoRoutines.addCmd(autoChooser, "testMove", routines::testMove);
+    autoChooser.addCmd("straight", routines.trajTest("Straight"));
     setupAutoChooser();
 
     testManager = new TestManager();

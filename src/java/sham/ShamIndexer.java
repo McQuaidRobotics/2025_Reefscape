@@ -46,9 +46,9 @@ public class ShamIndexer {
    * @return if the game piece was successfully inserted
    */
   public boolean insertGamePiece(ShamGamePiece gamePiece) {
-    if (gamePiece.isLibraryControlled()) {
-      return false;
-    }
+    // if (gamePiece.isLibraryControlled()) {
+    //   return false;
+    // }
     return forceInsertGamePiece(gamePiece);
   }
 

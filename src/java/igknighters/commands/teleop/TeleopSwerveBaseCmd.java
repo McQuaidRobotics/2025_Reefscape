@@ -13,7 +13,7 @@ import igknighters.util.plumbing.TunableValues;
 import igknighters.util.plumbing.TunableValues.TunableDouble;
 import java.util.function.DoubleSupplier;
 import monologue.ProceduralStructGenerator;
-import wpilibExt.AllianceFlipper;
+import wpilibExt.AllianceSymmetry;
 
 public abstract class TeleopSwerveBaseCmd extends Command {
   protected final Swerve swerve;
@@ -63,7 +63,7 @@ public abstract class TeleopSwerveBaseCmd extends Command {
     if (Robot.isDemo()) magnitude *= translationMod.value();
     double processedX = magnitude * Math.cos(angle);
     double processedY = magnitude * Math.sin(angle);
-    if (AllianceFlipper.isRed()) {
+    if (AllianceSymmetry.isRed()) {
       return new Translation2d(-processedY, processedX);
     } else {
       return new Translation2d(processedY, -processedX);

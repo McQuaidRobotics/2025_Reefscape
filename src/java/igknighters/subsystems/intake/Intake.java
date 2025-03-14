@@ -27,11 +27,14 @@ public class Intake implements ExclusiveSubsystem {
     public static final Struct<Holding> struct = ProceduralStructGenerator.genEnum(Holding.class);
   }
 
-  public enum ControlType {
+  public enum ControlType implements StructSerializable {
     VOLTAGE,
     CURRENT,
     TORQUE,
-    VELOCITY
+    VELOCITY;
+
+    public static final Struct<ControlType> struct =
+        ProceduralStructGenerator.genEnum(ControlType.class);
   }
 
   private final Rollers rollers;
@@ -49,6 +52,8 @@ public class Intake implements ExclusiveSubsystem {
     if (value > -0.01) {
       currentlyHolding = Holding.NONE;
     }
+    log("ControlType", controlType);
+    log("Value", value);
     switch (controlType) {
       case VOLTAGE -> rollers.voltageOut(value);
       case CURRENT -> rollers.currentOut(value);
@@ -66,6 +71,9 @@ public class Intake implements ExclusiveSubsystem {
   }
 
   public double gamepieceYOffset() {
+    if (!rollers.isLaserTripped()) {
+      return 0;
+    }
     return rollers.gamepieceDistance();
   }
 
@@ -81,6 +89,9 @@ public class Intake implements ExclusiveSubsystem {
         currentlyHolding = tryingToHold;
         tryingToHold = Holding.NONE;
         log("branchReason", "justIntaked");
+      } else if (tryingToHold == Holding.ALGAE && rollers.isStalling()) {
+        currentlyHolding = Holding.ALGAE;
+        log("branchReason", "stalling");
       } else if (!rollers.isLaserTripped() && !rollers.isStalling()) {
         currentlyHolding = Holding.NONE;
         log("branchReason", "notTrippedNotStalling");

@@ -8,8 +8,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import igknighters.Localizer;
 import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.commands.OperatorTarget.FaceSubLocation;
+import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.kLed;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
@@ -24,6 +26,8 @@ import java.util.Set;
 import monologue.Monologue;
 
 public class SubsystemTriggers {
+
+  @SuppressWarnings("unused")
   static int interpolateHeight(double elevatorHeight) {
     double min = SuperStructureState.AlgaeFloor.elevatorMeters - .1;
     double max = SuperStructureState.ScoreL4.elevatorMeters;
@@ -33,7 +37,8 @@ public class SubsystemTriggers {
   }
 
   @SuppressWarnings("unused")
-  public static void setupTriggers(Subsystems subsystems, OperatorTarget target) {
+  public static void setupTriggers(
+      Subsystems subsystems, Localizer localizer, OperatorTarget target) {
     final Swerve swerve = subsystems.swerve;
     final Vision vision = subsystems.vision;
     final Led led = subsystems.led;
@@ -55,6 +60,13 @@ public class SubsystemTriggers {
             })
         .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
 
+    localizer
+        .near(swerve.getYaw(), 1.0 * Conv.DEGREES_TO_RADIANS)
+        .negate()
+        .and(RobotModeTriggers.disabled())
+        .onTrue(
+            SwerveCommands.orientGyro(swerve, vision, localizer, localizer.pose().getRotation()))
+        .onTrue(Commands.print("Reorienting robot to localizer pose"));
     final Trigger ledIdle = Triggers.subsystemIdle(led);
     Monologue.log("is robot disabled", RobotModeTriggers.disabled().getAsBoolean());
     final Trigger ledEnabled =
@@ -80,8 +92,8 @@ public class SubsystemTriggers {
         LEDCommands.runSplitWithLEDSection(
             led,
             new LEDSection(0, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s1"),
-            new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 37, "disabled red s2"));
-    final Trigger disabledLedTrigger = RobotModeTriggers.disabled().whileTrue(ledDisabledLed);
+            new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s2"));
+    Triggers.falseOnce().and(RobotModeTriggers.disabled()).whileTrue(ledDisabledLed);
 
     ledIdle
         .and(target.hasTarget())
