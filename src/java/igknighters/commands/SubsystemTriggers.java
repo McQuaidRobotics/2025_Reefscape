@@ -62,9 +62,10 @@ public class SubsystemTriggers {
             .onFalse(
                 LEDCommands.runSplitWithLEDSection(
                     led,
-                    new LEDSection(0, 0, LEDPattern.solid(new Color(0, 255, 0)), 36, "enabled index 0"),
-                    new LEDSection(1, 0, LEDPattern.solid(new Color(0, 255, 0)), 37, "enabled index 1")));
-
+                    new LEDSection(
+                        0, 0, LEDPattern.solid(new Color(0, 255, 0)), 36, "enabled index 0"),
+                    new LEDSection(
+                        1, 0, LEDPattern.solid(new Color(0, 255, 0)), 37, "enabled index 1")));
     final Trigger ledTriggerAutonomous =
         RobotModeTriggers.autonomous()
             .whileTrue(
@@ -80,8 +81,7 @@ public class SubsystemTriggers {
             led,
             new LEDSection(0, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s1"),
             new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 37, "disabled red s2"));
-    RobotModeTriggers.disabled().whileTrue(ledDisabledLed);
-    ledDisabledLed.schedule();
+    final Trigger disabledLedTrigger = RobotModeTriggers.disabled().whileTrue(ledDisabledLed);
 
     ledIdle
         .and(target.hasTarget())
