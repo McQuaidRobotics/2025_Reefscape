@@ -68,7 +68,16 @@ public class SubsystemTriggers {
             SwerveCommands.orientGyro(swerve, vision, localizer, localizer.pose().getRotation()))
         .onTrue(Commands.print("Reorienting robot to localizer pose"));
     final Trigger ledIdle = Triggers.subsystemIdle(led);
-
+    Monologue.log("is robot disabled", RobotModeTriggers.disabled().getAsBoolean());
+    final Trigger ledEnabled =
+        RobotModeTriggers.disabled()
+            .onFalse(
+                LEDCommands.runSplitWithLEDSection(
+                    led,
+                    new LEDSection(
+                        0, 0, LEDPattern.solid(new Color(0, 255, 0)), 36, "enabled index 0"),
+                    new LEDSection(
+                        1, 0, LEDPattern.solid(new Color(0, 255, 0)), 37, "enabled index 1")));
     final Trigger ledTriggerAutonomous =
         RobotModeTriggers.autonomous()
             .whileTrue(
@@ -99,7 +108,7 @@ public class SubsystemTriggers {
                                         0,
                                         new NamedLEDPattern(
                                             "blinkLeft",
-                                            LedUtil.makeFlash(kLed.TargetingColor, .3)),
+                                            LedUtil.makeFlash(kLed.TargetingColor, .05)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
@@ -110,14 +119,20 @@ public class SubsystemTriggers {
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "solid color on right"))
-                                .onlyIf(target.targeting(FaceSubLocation.LEFT)),
+                                .onlyIf(
+                                    target
+                                        .targeting(FaceSubLocation.LEFT)
+                                        .and(
+                                            target
+                                                .targeting(SuperStructureState.ScoreL1)
+                                                .negate())),
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
                                         1,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk2", LedUtil.makeFlash(kLed.CoralColor, .3)),
+                                            "blinkIdk2", LedUtil.makeFlash(kLed.AlgaeColor, .05)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"),
@@ -125,11 +140,17 @@ public class SubsystemTriggers {
                                         0,
                                         0,
                                         new NamedLEDPattern(
-                                            "blinkIdk1", LedUtil.makeFlash(kLed.CoralColor, .3)),
+                                            "blinkIdk1", LedUtil.makeFlash(kLed.AlgaeColor, .05)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"))
-                                .onlyIf(target.targeting(FaceSubLocation.CENTER)),
+                                .onlyIf(
+                                    target
+                                        .targeting(FaceSubLocation.CENTER)
+                                        .and(
+                                            target
+                                                .targeting(SuperStructureState.ScoreL1)
+                                                .negate())),
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
@@ -137,7 +158,7 @@ public class SubsystemTriggers {
                                         0,
                                         new NamedLEDPattern(
                                             "blinkRight",
-                                            LedUtil.makeFlash(kLed.TargetingColor, 1.0)),
+                                            LedUtil.makeFlash(kLed.TargetingColor, 0.05)),
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashing color on left"),
@@ -148,8 +169,21 @@ public class SubsystemTriggers {
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "blue color on left"))
-                                .onlyIf(target.targeting(FaceSubLocation.RIGHT))),
+                                .onlyIf(
+                                    target
+                                        .targeting(FaceSubLocation.RIGHT)
+                                        .and(
+                                            target
+                                                .targeting(SuperStructureState.ScoreL1)
+                                                .negate())),
+                            LEDCommands.runSplitWithLEDSection(
+                                    led,
+                                    new LEDSection(
+                                        0, 0, LedUtil.makeFlash(Color.kYellow, .05), 36, "L1INGS1"),
+                                    new LEDSection(
+                                        1, 0, LedUtil.makeFlash(Color.kYellow, .05), 37, "L1INGS2"))
+                                .onlyIf(target.targeting(SuperStructureState.ScoreL1))),
                     Set.of(led))
-                .ignoringDisable(true));
+                .ignoringDisable(false));
   }
 }

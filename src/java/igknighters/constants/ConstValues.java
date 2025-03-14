@@ -67,6 +67,6 @@ public final class ConstValues {
     public static final int LED_COUNT = 38;
     public static final int CANDLE_LEDS = 8;
     public static final Color TargetingColor = Color.kPurple;
-    public static final Color CoralColor = Color.kSeaGreen;
+    public static final Color AlgaeColor = Color.kGreen;
   }
 }
