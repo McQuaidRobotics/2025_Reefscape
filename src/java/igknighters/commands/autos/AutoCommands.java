@@ -213,7 +213,7 @@ public class AutoCommands {
                       SuperStructureCommands.isAt(superStructure, SuperStructureState.ScoreL4))
                   .withName("WaitForL4")),
           Commands.waitSeconds(0.1),
-          new ScheduleCommand(loggedCmd(IntakeCommands.expel(intake))),
+          new ScheduleCommand(loggedCmd(IntakeCommands.expel(intake, () -> false))),
           Commands.waitSeconds(0.25));
       return this;
     }

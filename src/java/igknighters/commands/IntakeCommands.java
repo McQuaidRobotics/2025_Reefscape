@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.intake.Intake.ControlType;
 import igknighters.subsystems.intake.Intake.Holding;
+import java.util.function.BooleanSupplier;
 
 public class IntakeCommands {
   public static Trigger isHolding(Intake intake, Holding holding) {
@@ -51,9 +52,11 @@ public class IntakeCommands {
         .withName("IntakeAlgae");
   }
 
-  public static Command expel(Intake intake) {
+  public static Command expel(Intake intake, BooleanSupplier isL1) {
     return Commands.either(
-            runVoltage(intake, 5.0), runVoltage(intake, 3.5), isHolding(intake, Holding.ALGAE))
+            runVoltage(intake, 5.0),
+            Commands.either(runVoltage(intake, 2.0), runVoltage(intake, 3.5), isL1),
+            isHolding(intake, Holding.ALGAE))
         .withName("Expel");
   }
 

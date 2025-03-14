@@ -89,7 +89,10 @@ public class DriverController {
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
-    this.RB.whileTrue(IntakeCommands.expel(intake));
+    this.RB.whileTrue(
+        IntakeCommands.expel(
+            intake,
+            () -> operatorTarget.superStructureState().equals(SuperStructureState.ScoreL1)));
 
     this.LB.whileTrue(operatorTarget.gotoSuperStructureTargetCmd());
 
