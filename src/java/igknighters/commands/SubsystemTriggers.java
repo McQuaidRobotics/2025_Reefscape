@@ -184,6 +184,7 @@ public class SubsystemTriggers {
                                         1, 0, LedUtil.makeFlash(Color.kYellow, .1), 37, "L1INGS2"))
                                 .onlyIf(target.targeting(SuperStructureState.ScoreL1))),
                     Set.of(led))
-                .ignoringDisable(false));
+                .ignoringDisable(false)
+                .until(target.isUpdated()));
   }
 }
