@@ -122,8 +122,10 @@ public class SubsystemTriggers {
                                 .onlyIf(
                                     target
                                         .targeting(FaceSubLocation.LEFT)
-                                        .and(target.targeting(SuperStructureState.ScoreL1))
-                                        .negate()),
+                                        .and(
+                                            target
+                                                .targeting(SuperStructureState.ScoreL1)
+                                                .negate())),
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
@@ -145,8 +147,10 @@ public class SubsystemTriggers {
                                 .onlyIf(
                                     target
                                         .targeting(FaceSubLocation.CENTER)
-                                        .and(target.targeting(SuperStructureState.ScoreL1))
-                                        .negate()),
+                                        .and(
+                                            target
+                                                .targeting(SuperStructureState.ScoreL1)
+                                                .negate())),
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
@@ -168,8 +172,10 @@ public class SubsystemTriggers {
                                 .onlyIf(
                                     target
                                         .targeting(FaceSubLocation.RIGHT)
-                                        .and(target.targeting(SuperStructureState.ScoreL1))
-                                        .negate()),
+                                        .and(
+                                            target
+                                                .targeting(SuperStructureState.ScoreL1)
+                                                .negate())),
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
@@ -178,7 +184,6 @@ public class SubsystemTriggers {
                                         1, 0, LedUtil.makeFlash(Color.kYellow, .05), 37, "L1INGS2"))
                                 .onlyIf(target.targeting(SuperStructureState.ScoreL1))),
                     Set.of(led))
-                .onlyIf(() -> RobotModeTriggers.disabled().getAsBoolean() == false)
-                .ignoringDisable(true));
+                .ignoringDisable(false));
   }
 }
