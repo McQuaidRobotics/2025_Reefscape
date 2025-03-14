@@ -33,10 +33,14 @@ import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import monologue.GlobalField;
 import monologue.Monologue;
 
 public class AutoCommands {
+
+  private static final AtomicInteger counter = new AtomicInteger();
 
   protected final AutoFactory factory;
   protected final Localizer localizer;
@@ -139,7 +143,7 @@ public class AutoCommands {
             Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.90))
         .onTrue(
             loggedCmd(
-                SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpFar)))
+                SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose)))
         .onTrue(loggedCmd(IntakeCommands.intakeCoral(intake)));
   }
 
@@ -175,8 +179,9 @@ public class AutoCommands {
                   finalPose.plus(
                       new Transform2d(
                           0.0,
-                          Monologue.log("gpOffset", intake.gamepieceYOffset()),
+                          Monologue.log("gpOffset", -intake.gamepieceYOffset()),
                           Rotation2d.kZero));
+              GlobalField.setObject("FinishAlignment" + counter.incrementAndGet(), finalPose);
               return loggedCmd(
                       SwerveCommands.moveToSimple(swerve, localizer, finalPose)
                           .until(
@@ -222,8 +227,9 @@ public class AutoCommands {
       orchestrateIntake(traj);
       bodyCommand.addCommands(
           afterScore(traj),
-          finishAlignment(traj),
-          Commands.repeatingSequence(SwerveCommands.stop(swerve))
+          Commands.sequence(
+                  SwerveCommands.driveVolts(swerve, Rotation2d.kZero, 1.0).withTimeout(0.33),
+                  Commands.repeatingSequence(SwerveCommands.stop(swerve)))
               .until(IntakeCommands.isHolding(intake, Holding.CORAL)));
       return this;
     }

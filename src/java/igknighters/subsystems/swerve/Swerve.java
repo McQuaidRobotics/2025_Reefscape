@@ -201,6 +201,12 @@ public class Swerve implements ExclusiveSubsystem {
     setModuleStates(setpoint.moduleStates());
   }
 
+  public void driveVolts(Rotation2d wheelAngleRobotRelative, double volts) {
+    for (var module : swerveMods) {
+      module.setVoltageOut(volts, wheelAngleRobotRelative);
+    }
+  }
+
   /**
    * Offsets the gyro to define the current yaw as the supplied value
    *

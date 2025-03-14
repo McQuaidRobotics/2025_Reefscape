@@ -259,12 +259,12 @@
    },
    "Intake":{
     "x":{
-     "exp":"1.6 m",
-     "val":1.6
+     "exp":"1.5 m",
+     "val":1.5
     },
     "y":{
-     "exp":"7.32 m",
-     "val":7.32
+     "exp":"7.42 m",
+     "val":7.42
     },
     "heading":{
      "exp":"126 deg",
@@ -301,12 +301,12 @@
    },
    "StartingOutside":{
     "x":{
-     "exp":"FarLeft_L.x + 1.95 m",
-     "val":7.268129194164811
+     "exp":"7.2 m",
+     "val":7.2
     },
     "y":{
-     "exp":"FarLeft_L.y",
-     "val":5.131215843830736
+     "exp":"5.4 m",
+     "val":5.4
     },
     "heading":{
      "exp":"pi rad",

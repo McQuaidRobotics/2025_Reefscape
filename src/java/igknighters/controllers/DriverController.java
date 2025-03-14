@@ -10,15 +10,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.ClimberCommands;
 import igknighters.commands.IntakeCommands;
-import igknighters.commands.LEDCommands;
-import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
-import igknighters.subsystems.led.LedUtil;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
@@ -106,12 +103,9 @@ public class DriverController {
     this.Start.onTrue(SwerveCommands.orientGyro(swerve, vision, localizer));
 
     // STICKS
-    // this.LS.onTrue(LEDCommands.rainbow(led, 255, 0, 72, 100, 0, 1));
+    this.LS.onTrue(Commands.none());
 
-    this.RS.onTrue(
-        LEDCommands.runSplitWithLEDSection(
-            led, new LEDSection(0, 0, LedUtil.makeRainbow(255, 100), 72, "rainbow")));
-    // new LEDSection(0, 15, LEDPattern.solid(Color.kRed), 15, "blue")));
+    this.RS.onTrue(Commands.none());
 
     // // TRIGGERS
     this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(localizer));

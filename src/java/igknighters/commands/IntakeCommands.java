@@ -53,7 +53,7 @@ public class IntakeCommands {
 
   public static Command expel(Intake intake) {
     return Commands.either(
-            runVoltage(intake, 12.0), runVoltage(intake, 3.5), isHolding(intake, Holding.ALGAE))
+            runVoltage(intake, 5.0), runVoltage(intake, 3.5), isHolding(intake, Holding.ALGAE))
         .withName("Expel");
   }
 
