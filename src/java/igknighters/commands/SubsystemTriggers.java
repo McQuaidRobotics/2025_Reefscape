@@ -119,7 +119,11 @@ public class SubsystemTriggers {
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "solid color on right"))
-                                .onlyIf(target.targeting(FaceSubLocation.LEFT)),
+                                .onlyIf(
+                                    target
+                                        .targeting(FaceSubLocation.LEFT)
+                                        .and(target.targeting(SuperStructureState.ScoreL1))
+                                        .negate()),
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
@@ -138,7 +142,11 @@ public class SubsystemTriggers {
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "flashy color center"))
-                                .onlyIf(target.targeting(FaceSubLocation.CENTER)),
+                                .onlyIf(
+                                    target
+                                        .targeting(FaceSubLocation.CENTER)
+                                        .and(target.targeting(SuperStructureState.ScoreL1))
+                                        .negate()),
                             LEDCommands.runSplitWithLEDSection(
                                     led,
                                     new LEDSection(
@@ -157,7 +165,18 @@ public class SubsystemTriggers {
                                         interpolateHeight(
                                             target.superStructureState().elevatorMeters),
                                         "blue color on left"))
-                                .onlyIf(target.targeting(FaceSubLocation.RIGHT))),
+                                .onlyIf(
+                                    target
+                                        .targeting(FaceSubLocation.RIGHT)
+                                        .and(target.targeting(SuperStructureState.ScoreL1))
+                                        .negate()),
+                            LEDCommands.runSplitWithLEDSection(
+                                    led,
+                                    new LEDSection(
+                                        0, 0, LedUtil.makeFlash(Color.kYellow, .05), 36, "L1INGS1"),
+                                    new LEDSection(
+                                        1, 0, LedUtil.makeFlash(Color.kYellow, .05), 37, "L1INGS2"))
+                                .onlyIf(target.targeting(SuperStructureState.ScoreL1))),
                     Set.of(led))
                 .onlyIf(() -> RobotModeTriggers.disabled().getAsBoolean() == false)
                 .ignoringDisable(true));
