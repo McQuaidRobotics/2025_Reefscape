@@ -2,6 +2,7 @@ package igknighters.commands;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,9 +24,13 @@ import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import monologue.Monologue;
 
 public class SubsystemTriggers {
+
+  private static FaceSubLocation fsl;
+  private static SuperStructureState sss;
 
   @SuppressWarnings("unused")
   static int interpolateHeight(double elevatorHeight) {
@@ -95,95 +100,98 @@ public class SubsystemTriggers {
             new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s2"));
     Triggers.falseOnce().and(RobotModeTriggers.disabled()).whileTrue(ledDisabledLed);
 
+    final Command yellowFlash =
+        LEDCommands.runSplitWithLEDSection(
+                led,
+                new LEDSection(0, 0, LedUtil.makeFlash(Color.kYellow, .1), 36, "L1INGS1"),
+                new LEDSection(1, 0, LedUtil.makeFlash(Color.kYellow, .1), 37, "L1INGS2"))
+            .onlyIf(target.targeting(SuperStructureState.ScoreL1));
+
+    final Command algaeFlasg = Commands.defer(
+        () -> {
+          return LEDCommands.runSplitWithLEDSection(
+                led,
+                new LEDSection(
+                    1,
+                    0,
+                    new NamedLEDPattern("blinkIdk2", LedUtil.makeFlash(kLed.AlgaeColor, .1)),
+                    interpolateHeight(target.superStructureState().elevatorMeters),
+                    "flashy color center"),
+                new LEDSection(
+                    0,
+                    0,
+                    new NamedLEDPattern("blinkIdk1", LedUtil.makeFlash(kLed.AlgaeColor, .1)),
+                    interpolateHeight(target.superStructureState().elevatorMeters),
+                    "flashy color center"))
+            .onlyIf(target.wantsAlgae());
+        }, Set.of(led));
+
+    final Command leftFlash =
+        Commands.defer(
+            () -> {
+              return LEDCommands.runSplitWithLEDSection(
+                      led,
+                      new LEDSection(
+                          0,
+                          0,
+                          new NamedLEDPattern(
+                              "blinkLeft", LedUtil.makeFlash(kLed.TargetingColor, .1)),
+                          interpolateHeight(target.superStructureState().elevatorMeters),
+                          "flashing color on left"),
+                      new LEDSection(
+                          1,
+                          0,
+                          LEDPattern.solid(kLed.TargetingColor),
+                          interpolateHeight(target.superStructureState().elevatorMeters),
+                          "solid color on right"))
+                  .onlyIf(target.targeting(FaceSubLocation.LEFT));
+            },
+            Set.of(led));
+
+    final Command flashRight =
+        Commands.defer(
+            () -> {
+              return LEDCommands.runSplitWithLEDSection(
+                      led,
+                      new LEDSection(
+                          1,
+                          0,
+                          new NamedLEDPattern(
+                              "blinkRight", LedUtil.makeFlash(kLed.TargetingColor, 0.1)),
+                          interpolateHeight(target.superStructureState().elevatorMeters),
+                          "flashing color on left"),
+                      new LEDSection(
+                          0,
+                          0,
+                          LEDPattern.solid(kLed.TargetingColor),
+                          interpolateHeight(target.superStructureState().elevatorMeters),
+                          "blue color on left"))
+                  .onlyIf(target.targeting(FaceSubLocation.RIGHT));
+            },
+            Set.of(led));
+
     ledIdle
         .and(target.hasTarget())
         .onTrue(
-            Commands.defer(
-                    () ->
-                        Commands.sequence(
-                            LEDCommands.runSplitWithLEDSection(
-                                    led,
-                                    new LEDSection(
-                                        0,
-                                        0,
-                                        new NamedLEDPattern(
-                                            "blinkLeft",
-                                            LedUtil.makeFlash(kLed.TargetingColor, .05)),
-                                        interpolateHeight(
-                                            target.superStructureState().elevatorMeters),
-                                        "flashing color on left"),
-                                    new LEDSection(
-                                        1,
-                                        0,
-                                        LEDPattern.solid(kLed.TargetingColor),
-                                        interpolateHeight(
-                                            target.superStructureState().elevatorMeters),
-                                        "solid color on right"))
-                                .onlyIf(
-                                    target
-                                        .targeting(FaceSubLocation.LEFT)
-                                        .and(
-                                            target
-                                                .targeting(SuperStructureState.ScoreL1)
-                                                .negate())),
-                            LEDCommands.runSplitWithLEDSection(
-                                    led,
-                                    new LEDSection(
-                                        1,
-                                        0,
-                                        new NamedLEDPattern(
-                                            "blinkIdk2", LedUtil.makeFlash(kLed.AlgaeColor, .05)),
-                                        interpolateHeight(
-                                            target.superStructureState().elevatorMeters),
-                                        "flashy color center"),
-                                    new LEDSection(
-                                        0,
-                                        0,
-                                        new NamedLEDPattern(
-                                            "blinkIdk1", LedUtil.makeFlash(kLed.AlgaeColor, .05)),
-                                        interpolateHeight(
-                                            target.superStructureState().elevatorMeters),
-                                        "flashy color center"))
-                                .onlyIf(
-                                    target
-                                        .targeting(FaceSubLocation.CENTER)
-                                        .and(
-                                            target
-                                                .targeting(SuperStructureState.ScoreL1)
-                                                .negate())),
-                            LEDCommands.runSplitWithLEDSection(
-                                    led,
-                                    new LEDSection(
-                                        1,
-                                        0,
-                                        new NamedLEDPattern(
-                                            "blinkRight",
-                                            LedUtil.makeFlash(kLed.TargetingColor, 0.05)),
-                                        interpolateHeight(
-                                            target.superStructureState().elevatorMeters),
-                                        "flashing color on left"),
-                                    new LEDSection(
-                                        0,
-                                        0,
-                                        LEDPattern.solid(kLed.TargetingColor),
-                                        interpolateHeight(
-                                            target.superStructureState().elevatorMeters),
-                                        "blue color on left"))
-                                .onlyIf(
-                                    target
-                                        .targeting(FaceSubLocation.RIGHT)
-                                        .and(
-                                            target
-                                                .targeting(SuperStructureState.ScoreL1)
-                                                .negate())),
-                            LEDCommands.runSplitWithLEDSection(
-                                    led,
-                                    new LEDSection(
-                                        0, 0, LedUtil.makeFlash(Color.kYellow, .05), 36, "L1INGS1"),
-                                    new LEDSection(
-                                        1, 0, LedUtil.makeFlash(Color.kYellow, .05), 37, "L1INGS2"))
-                                .onlyIf(target.targeting(SuperStructureState.ScoreL1))),
-                    Set.of(led))
+            Commands.sequence(
+                    Commands.runOnce(
+                        () -> {
+                          fsl = target.faceSubLocation();
+                          sss = target.superStructureState();
+                        }),
+                    yellowFlash,
+                    leftFlash,
+                    algaeFlasg,
+                    flashRight)
+                .until(
+                    new BooleanSupplier() {
+                      @Override
+                      public boolean getAsBoolean() {
+                        return !fsl.equals(target.faceSubLocation())
+                            || !sss.equals(target.superStructureState())
+                            || DriverStation.isDisabled();
+                      }
+                    })
                 .ignoringDisable(false));
   }
 }

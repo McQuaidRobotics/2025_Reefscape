@@ -65,7 +65,7 @@ public class LedUtil {
 
   public static LEDPattern makeFlash(Color color, double flashSpeed) {
     final LEDPattern baseColor = LEDPattern.solid(color);
-    return baseColor.blink(Seconds.of(flashSpeed), Seconds.of(.05));
+    return baseColor.blink(Seconds.of(flashSpeed), Seconds.of(flashSpeed));
   }
 
   public static void logBuffer(AddressableLEDBuffer buffer) {

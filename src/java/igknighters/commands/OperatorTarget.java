@@ -50,6 +50,10 @@ public class OperatorTarget implements StructSerializable {
     logThis();
   }
 
+  public FaceSubLocation faceSubLocation() {
+    return faceSubLocation;
+  }
+
   private void logThis() {
     loggingNode.log("OperatorTarget", this);
     GlobalField.setObject("OperatorTarget", targetLocation());
