@@ -70,6 +70,10 @@ public class SwerveCommands {
     return Commands.run(() -> swerve.drive(speeds), swerve);
   }
 
+  public static Command driveVolts(Swerve swerve, Rotation2d robotRelativeRotation, double volts) {
+    return Commands.run(() -> swerve.driveVolts(robotRelativeRotation, volts), swerve);
+  }
+
   public static Command stop(Swerve swerve) {
     return Commands.runOnce(() -> swerve.drive(RobotSpeeds.kZero), swerve);
   }

@@ -4,20 +4,18 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.ClimberCommands;
 import igknighters.commands.IntakeCommands;
-import igknighters.commands.LEDCommands;
-import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
-import igknighters.subsystems.led.LedUtil;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
@@ -59,8 +57,11 @@ public class DriverController {
                 kSwerve.CONSTRAINTS))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .onFalse(
-            IntakeCommands.bounce(intake)
-                .andThen(IntakeCommands.holdCoral(intake))
+            Commands.waitSeconds(0.33)
+                .andThen(
+                    IntakeCommands.bounce(intake),
+                    Commands.waitSeconds(0.1),
+                    new ScheduleCommand(IntakeCommands.holdCoral(intake)))
                 .withName("BounceThenHoldCoral"));
     this.A.whileTrue(
         SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose));
@@ -102,12 +103,9 @@ public class DriverController {
     this.Start.onTrue(SwerveCommands.orientGyro(swerve, vision, localizer));
 
     // STICKS
-    // this.LS.onTrue(LEDCommands.rainbow(led, 255, 0, 72, 100, 0, 1));
+    this.LS.onTrue(Commands.none());
 
-    this.RS.onTrue(
-        LEDCommands.runSplitWithLEDSection(
-            led, new LEDSection(0, 0, LedUtil.makeRainbow(255, 100), 72, "rainbow")));
-    // new LEDSection(0, 15, LEDPattern.solid(Color.kRed), 15, "blue")));
+    this.RS.onTrue(Commands.none());
 
     // // TRIGGERS
     this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(localizer));
@@ -137,6 +135,7 @@ public class DriverController {
 
     this.LT
         .or(LB)
+        .onTrue(IntakeCommands.holdCoral(intake))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .and(operatorTarget.wantsAlgae())
         .whileTrue(IntakeCommands.intakeAlgae(intake))

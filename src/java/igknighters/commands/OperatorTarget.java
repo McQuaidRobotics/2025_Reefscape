@@ -95,25 +95,21 @@ public class OperatorTarget implements StructSerializable {
     return superStructureState;
   }
 
-  public void updateSide(Reef.Side side) {
-    if (!this.side.equals(side)) {
+  public void updateSide(Reef.Side side, FaceSubLocation fsl) {
+    if (!this.side.equals(side) || !this.faceSubLocation.equals(fsl)) {
       wasUpdated = true;
     }
     this.side = side;
+    this.faceSubLocation = fsl;
     hasTarget = true;
     logThis();
   }
 
-  public void updateScoring(
-      FaceSubLocation faceSubLocation, SuperStructureState superStructureState) {
-    if (!this.faceSubLocation.equals(faceSubLocation)
-        || !this.superStructureState.equals(superStructureState)) {
+  public void updateScoring(SuperStructureState superStructureState) {
+    if (!this.superStructureState.equals(superStructureState)) {
       wasUpdated = true;
     }
-    this.faceSubLocation = faceSubLocation;
     this.superStructureState = superStructureState;
-    wasUpdated = true;
-    hasTarget = true;
     logThis();
   }
 
@@ -172,15 +168,14 @@ public class OperatorTarget implements StructSerializable {
     return makeRefreshableCmd(c, subsystems.superStructure).withName("TeleopSuperStructureAlign");
   }
 
-  public Command updateTargetCmd(
-      FaceSubLocation faceSubLocation, SuperStructureState superStructureState, Led led) {
-    return led.runOnce(() -> updateScoring(faceSubLocation, superStructureState))
+  public Command updateTargetCmd(SuperStructureState superStructureState, Led led) {
+    return led.runOnce(() -> updateScoring(superStructureState))
         .ignoringDisable(true)
         .withName("UpdateTargetScoring");
   }
 
-  public Command updateTargetCmd(Reef.Side side) {
-    return Commands.runOnce(() -> updateSide(side))
+  public Command updateTargetCmd(Reef.Side side, FaceSubLocation faceSubLocation) {
+    return Commands.runOnce(() -> updateSide(side, faceSubLocation))
         .ignoringDisable(true)
         .withName("UpdateTargetFace");
   }

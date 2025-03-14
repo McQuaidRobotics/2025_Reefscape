@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.OperatorTarget;
 import igknighters.commands.OperatorTarget.FaceSubLocation;
-import igknighters.constants.FieldConstants.Reef;
+import igknighters.constants.FieldConstants.Reef.Side;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.util.logging.BootupLogger;
@@ -33,52 +33,40 @@ public class OperatorController {
     // 6|12|18|24
 
     // ROW 1
-    this.C1R1.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL4, led));
-    this.C2R1.onTrue(Commands.none());
-    this.C3R1.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL4, led));
-    this.C4R1.onTrue(Commands.none());
+    this.C1R1.onTrue(operatorTarget.updateTargetCmd(Side.CLOSE_LEFT, FaceSubLocation.RIGHT));
+    this.C2R1.onTrue(operatorTarget.updateTargetCmd(Side.CLOSE_LEFT, FaceSubLocation.LEFT));
+    this.C3R1.onTrue(operatorTarget.updateTargetCmd(Side.FAR_LEFT, FaceSubLocation.RIGHT));
+    this.C4R1.onTrue(operatorTarget.updateTargetCmd(Side.FAR_LEFT, FaceSubLocation.LEFT));
 
     // ROW 2
-    this.C1R2.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL3, led));
-    this.C2R2.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.CENTER, SuperStructureState.AlgaeL3, led));
-    this.C3R2.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL3, led));
-    this.C4R2.onTrue(Commands.none());
+    this.C1R2.onTrue(operatorTarget.updateTargetCmd(Side.CLOSE_MID, FaceSubLocation.LEFT));
+    this.C2R2.onTrue(Commands.none());
+    this.C3R2.onTrue(Commands.none());
+    this.C4R2.onTrue(operatorTarget.updateTargetCmd(Side.FAR_MID, FaceSubLocation.RIGHT));
 
     // ROW 3
-    this.C1R3.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL2, led));
-    this.C2R3.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.CENTER, SuperStructureState.AlgaeL2, led));
-    this.C3R3.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL2, led));
-    this.C4R3.onTrue(Commands.none());
+    this.C1R3.onTrue(operatorTarget.updateTargetCmd(Side.CLOSE_MID, FaceSubLocation.RIGHT));
+    this.C2R3.onTrue(Commands.none());
+    this.C3R3.onTrue(Commands.none());
+    this.C4R3.onTrue(operatorTarget.updateTargetCmd(Side.FAR_MID, FaceSubLocation.LEFT));
 
     // ROW 4
-    this.C1R4.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.LEFT, SuperStructureState.ScoreL1, led));
-    this.C2R4.onTrue(
-        operatorTarget.updateTargetCmd(
-            FaceSubLocation.CENTER, SuperStructureState.AlgaeFloor, led));
-    this.C3R4.onTrue(
-        operatorTarget.updateTargetCmd(FaceSubLocation.RIGHT, SuperStructureState.ScoreL1, led));
-    this.C4R4.onTrue(operatorTarget.clearTargetCmd());
+    this.C1R4.onTrue(operatorTarget.updateTargetCmd(Side.CLOSE_RIGHT, FaceSubLocation.LEFT));
+    this.C2R4.onTrue(operatorTarget.updateTargetCmd(Side.CLOSE_RIGHT, FaceSubLocation.RIGHT));
+    this.C3R4.onTrue(operatorTarget.updateTargetCmd(Side.FAR_RIGHT, FaceSubLocation.LEFT));
+    this.C4R4.onTrue(operatorTarget.updateTargetCmd(Side.FAR_RIGHT, FaceSubLocation.RIGHT));
 
     // ROW 5
-    this.C1R5.onTrue(operatorTarget.updateTargetCmd(Reef.Side.FAR_LEFT));
-    this.C2R5.onTrue(operatorTarget.updateTargetCmd(Reef.Side.FAR_MID));
-    this.C3R5.onTrue(operatorTarget.updateTargetCmd(Reef.Side.FAR_RIGHT));
+    this.C1R5.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.AlgaeFloor, led));
+    this.C2R5.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.AlgaeL2, led));
+    this.C3R5.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.AlgaeL3, led));
     this.C4R5.onTrue(Commands.none());
 
     // ROW 6
-    this.C1R6.onTrue(operatorTarget.updateTargetCmd(Reef.Side.CLOSE_LEFT));
-    this.C2R6.onTrue(operatorTarget.updateTargetCmd(Reef.Side.CLOSE_MID));
-    this.C3R6.onTrue(operatorTarget.updateTargetCmd(Reef.Side.CLOSE_RIGHT));
-    this.C4R6.onTrue(Commands.none());
+    this.C1R6.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.ScoreL1, led));
+    this.C2R6.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.ScoreL2, led));
+    this.C3R6.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.ScoreL3, led));
+    this.C4R6.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.ScoreL4, led));
 
     // this.C1R1.onTrue(Commands.print("C1R1"));
     // this.C1R2.onTrue(Commands.print("C1R2"));
