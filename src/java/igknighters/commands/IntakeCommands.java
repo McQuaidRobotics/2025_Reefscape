@@ -60,6 +60,10 @@ public class IntakeCommands {
         .withName("Expel");
   }
 
+  public static Command expel(Intake intake) {
+    return expel(intake, () -> false);
+  }
+
   public static Command bounce(Intake intake) {
     return Commands.sequence(
             IntakeCommands.runVoltage(intake, 1.0).withTimeout(0.1),

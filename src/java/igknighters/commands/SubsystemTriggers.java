@@ -107,24 +107,26 @@ public class SubsystemTriggers {
                 new LEDSection(1, 0, LedUtil.makeFlash(Color.kYellow, .1), 37, "L1INGS2"))
             .onlyIf(target.targeting(SuperStructureState.ScoreL1));
 
-    final Command algaeFlasg = Commands.defer(
-        () -> {
-          return LEDCommands.runSplitWithLEDSection(
-                led,
-                new LEDSection(
-                    1,
-                    0,
-                    new NamedLEDPattern("blinkIdk2", LedUtil.makeFlash(kLed.AlgaeColor, .1)),
-                    interpolateHeight(target.superStructureState().elevatorMeters),
-                    "flashy color center"),
-                new LEDSection(
-                    0,
-                    0,
-                    new NamedLEDPattern("blinkIdk1", LedUtil.makeFlash(kLed.AlgaeColor, .1)),
-                    interpolateHeight(target.superStructureState().elevatorMeters),
-                    "flashy color center"))
-            .onlyIf(target.wantsAlgae());
-        }, Set.of(led));
+    final Command algaeFlasg =
+        Commands.defer(
+            () -> {
+              return LEDCommands.runSplitWithLEDSection(
+                      led,
+                      new LEDSection(
+                          1,
+                          0,
+                          new NamedLEDPattern("blinkIdk2", LedUtil.makeFlash(kLed.AlgaeColor, .1)),
+                          interpolateHeight(target.superStructureState().elevatorMeters),
+                          "flashy color center"),
+                      new LEDSection(
+                          0,
+                          0,
+                          new NamedLEDPattern("blinkIdk1", LedUtil.makeFlash(kLed.AlgaeColor, .1)),
+                          interpolateHeight(target.superStructureState().elevatorMeters),
+                          "flashy color center"))
+                  .onlyIf(target.wantsAlgae());
+            },
+            Set.of(led));
 
     final Command leftFlash =
         Commands.defer(

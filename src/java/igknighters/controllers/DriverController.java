@@ -54,7 +54,9 @@ public class DriverController {
                         : Rotation2d.fromDegrees(-angle);
                   }
                 },
-                kSwerve.CONSTRAINTS))
+                kSwerve.CONSTRAINTS)
+            // .unless(TunableValues.getBoolean("intakeAlign", false)::value)
+            )
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .onFalse(
             Commands.waitSeconds(0.33)
@@ -109,6 +111,7 @@ public class DriverController {
     this.LS.onTrue(Commands.none());
 
     this.RS.onTrue(Commands.none());
+    // this.RS.onTrue(new WheelRadiusCharacterization(swerve, Direction.COUNTER_CLOCKWISE));
 
     // // TRIGGERS
     this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(localizer));
@@ -143,6 +146,18 @@ public class DriverController {
         .and(operatorTarget.wantsAlgae())
         .whileTrue(IntakeCommands.intakeAlgae(intake))
         .onFalse(IntakeCommands.holdAlgae(intake));
+
+    this.RB
+        .and(Y)
+        .onTrue(
+            Commands.parallel(
+                Commands.sequence(
+                    SuperStructureCommands.moveTo(superStructure, SuperStructureState.Net_FLICKED),
+                    new ScheduleCommand(
+                        SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))),
+                Commands.sequence(
+                    IntakeCommands.holdAlgae(intake).withTimeout(0.14),
+                    IntakeCommands.expel(intake).withTimeout(0.25))));
   }
 
   // Define the buttons on the controller

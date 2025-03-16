@@ -211,6 +211,7 @@ public class AutoCommands {
           loggedCmd(
               Commands.waitUntil(
                       SuperStructureCommands.isAt(superStructure, SuperStructureState.ScoreL4))
+                  .withTimeout(1.0)
                   .withName("WaitForL4")),
           Commands.waitSeconds(0.1),
           new ScheduleCommand(loggedCmd(IntakeCommands.expel(intake, () -> false))),

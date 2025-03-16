@@ -89,7 +89,7 @@ public class SuperStructureConstants {
     public static final double MAX_VELOCITY = (12.0 - KS - KG) / KV;
     public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.1;
     public static final double ALGAE_MAX_VELOCITY = MAX_VELOCITY * 0.75;
-    public static final double ALGAE_MAX_ACCELERATION = MAX_VELOCITY;
+    public static final double ALGAE_MAX_ACCELERATION = MAX_ACCELERATION * 0.5;
 
     public static final double DEFAULT_TOLERANCE = 1.3 * Conv.DEGREES_TO_RADIANS;
     public static final double ANGLE_OFFSET = -0.30810546875;
