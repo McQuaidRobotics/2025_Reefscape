@@ -15,6 +15,8 @@ public class SwerveConstants {
   /** The gear ratios for the swerve modules for easier constant definition. */
   @SuppressWarnings("unused")
   private static final class SwerveGearRatios {
+    static final double L1_DRIVE = (50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0);
+    static final double L1_DRIVE_KRAKEN = (50.0 / 16.0) * (19.0 / 25.0) * (45.0 / 15.0);
     static final double L2_DRIVE = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
     static final double L2_DRIVE_KRAKEN = (50.0 / 16.0) * (17.0 / 27.0) * (45.0 / 15.0);
     static final double L3_DRIVE = (50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0);

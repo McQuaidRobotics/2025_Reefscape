@@ -69,6 +69,9 @@ public sealed interface Speeds extends StructSerializable {
     }
 
     public double magnitudeInDirection(Rotation2d direction) {
+      if (MathUtil.isNear(0, magnitude(), 0.0001)) {
+        return 0;
+      }
       return vx * direction.getCos() + vy * direction.getSin();
     }
 
@@ -86,6 +89,10 @@ public sealed interface Speeds extends StructSerializable {
 
     public LinearVelocity magnitudeMeasure() {
       return MetersPerSecond.of(magnitude());
+    }
+
+    public Velocity2d toVelocity2d() {
+      return new Velocity2d(vx, vy);
     }
 
     @Override

@@ -2,11 +2,9 @@ package wayfinder.repulsorField;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.ArrayList;
 import java.util.List;
-import monologue.Monologue;
 import wayfinder.controllers.CircularSlewRateLimiter;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.Types.ChassisConstraints;
@@ -70,14 +68,12 @@ public class RepulsorFieldPlanner {
       Pose2d target,
       ChassisConstraints constraints) {
     double straightDist = measurement.getTranslation().getDistance(target.getTranslation());
-    Monologue.log("straightDist", straightDist);
     if (straightDist < 0.375) {
       return controller.calculate(
           period,
           measurement,
-          measurementVelo,
+          measurementVelo.asFieldRelative(measurement.getRotation()),
           target,
-          new Transform2d(0.01, 0.01, Rotation2d.kZero),
           constraints);
     } else {
       getForce(measurement.getTranslation(), target.getTranslation(), netForceVec);
@@ -88,13 +84,12 @@ public class RepulsorFieldPlanner {
       return controller.calculate(
           period,
           measurement,
-          measurementVelo,
+          measurementVelo.asFieldRelative(measurement.getRotation()),
           new Pose2d(
               measurement
                   .getTranslation()
                   .plus(netForceVec.rotateBy(limited.minus(targetDirection))),
               target.getRotation()),
-          Transform2d.kZero,
           constraints);
     }
   }

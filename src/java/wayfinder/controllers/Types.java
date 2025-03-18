@@ -35,12 +35,62 @@ public class Types {
     }
   }
 
-  public enum ControllerMode {
-    STRICT,
-    REPLANNING,
-    UNPROFILED;
+  public interface Controller<MEASUREMENT, RATE, TARGET, LIMITS> {
+    public RATE calculate(
+        double period,
+        MEASUREMENT measurement,
+        RATE measurementRate,
+        TARGET target,
+        LIMITS constraints);
 
-    public static final Struct<ControllerMode> struct =
-        ProceduralStructGenerator.genEnum(ControllerMode.class);
+    public void reset(MEASUREMENT measurement, RATE measurementRate, TARGET target);
+
+    public boolean isDone(MEASUREMENT measurement, TARGET target);
+  }
+
+  public interface Receiver<RATE, LIMITS> {
+    public void control(RATE rate, LIMITS constraints);
+  }
+
+  public static class ControllerSequence<MEASUREMENT, RATE, TARGET, LIMITS>
+      implements Controller<MEASUREMENT, RATE, TARGET, LIMITS> {
+    private final Controller<MEASUREMENT, RATE, TARGET, LIMITS>[] controllers;
+    private int currentController = 0;
+
+    @SuppressWarnings("unchecked")
+    public ControllerSequence(Controller<MEASUREMENT, RATE, TARGET, LIMITS>... controllers) {
+      this.controllers = controllers;
+    }
+
+    @Override
+    public RATE calculate(
+        double period,
+        MEASUREMENT measurement,
+        RATE measurementRate,
+        TARGET target,
+        LIMITS constraints) {
+      RATE rate = measurementRate;
+      for (int i = 0; i < controllers.length; i++) {
+        rate = controllers[i].calculate(period, measurement, rate, target, constraints);
+        if (controllers[i].isDone(measurement, target)) {
+          currentController = i + 1;
+        }
+      }
+      return rate;
+    }
+
+    @Override
+    public void reset(MEASUREMENT measurement, RATE measurementRate, TARGET target) {
+      currentController = 0;
+      for (Controller<MEASUREMENT, RATE, TARGET, LIMITS> controller : controllers) {
+        controller.reset(measurement, measurementRate, target);
+      }
+    }
+
+    @Override
+    public boolean isDone(MEASUREMENT measurement, TARGET target) {
+      return currentController == controllers.length - 1
+          && controllers[currentController].isDone(measurement, target);
+    }
   }
 }

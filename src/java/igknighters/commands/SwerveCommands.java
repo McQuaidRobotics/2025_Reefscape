@@ -11,19 +11,17 @@ import igknighters.constants.ConstValues;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.SharedState;
 import igknighters.subsystems.superStructure.SuperStructureState;
+import igknighters.subsystems.swerve.ControllerFactories;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.vision.Vision;
 import igknighters.util.plumbing.TunableValues;
 import java.util.function.Supplier;
 import monologue.GlobalField;
-import monologue.Monologue;
 import wayfinder.controllers.PositionalController;
-import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.TranslationController;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
-import wayfinder.controllers.Types.ControllerMode;
 import wayfinder.repulsorField.RepulsorFieldPlanner;
 import wpilibExt.AllianceSymmetry;
 import wpilibExt.Speeds;
@@ -106,15 +104,16 @@ public class SwerveCommands {
                 SharedState.maximumAcceleration(SuperStructureState.ScoreL3.elevatorMeters)),
             new Constraints(
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
+
     final PositionalController preciseController =
         new PositionalController(
-            new TranslationController(4.0, 0.00, 0.5, ControllerMode.UNPROFILED),
-            new RotationalController(4.0, 0.2, ControllerMode.STRICT));
+            ControllerFactories.longRangeTranslationController(),
+            ControllerFactories.basicRotationalController());
+
     final PositionalController roughController =
         new PositionalController(
-            new TranslationController(
-                kSwerve.MAX_DRIVE_VELOCITY, 0.0, 0.0, ControllerMode.UNPROFILED),
-            new RotationalController(4.0, 0.2, ControllerMode.STRICT));
+            TranslationController.unprofiled(5.0, 0.0, 0.0, 0.0),
+            ControllerFactories.basicRotationalController());
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(preciseController, obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
@@ -134,7 +133,6 @@ public class SwerveCommands {
   }
 
   public static Command moveToSimple(Swerve swerve, Localizer localizer, Pose2d target) {
-    Monologue.log("adjustOffset", 0.0);
     final ChassisConstraints constraints =
         new ChassisConstraints(
             new Constraints(
@@ -144,23 +142,19 @@ public class SwerveCommands {
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
     final PositionalController roughController =
         new PositionalController(
-            new TranslationController(5.0, 0.0, 0.0, ControllerMode.UNPROFILED),
-            new RotationalController(2.0, 0.0, ControllerMode.UNPROFILED));
+            ControllerFactories.shortRangeTranslationController(),
+            ControllerFactories.basicRotationalController());
     return Commands.sequence(
         swerve.runOnce(
             () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
         swerve.run(
             () -> {
-              Monologue.log(
-                  "adjustOffset",
-                  localizer.pose().getTranslation().getDistance(target.getTranslation()));
               var speeds =
                   roughController.calculate(
                       ConstValues.PERIODIC_TIME,
                       localizer.pose(),
                       swerve.getFieldSpeeds(),
                       target,
-                      new Transform2d(),
                       constraints);
               swerve.drive(speeds, constraints);
             }));

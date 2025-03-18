@@ -121,8 +121,7 @@ public class OperatorTarget implements StructSerializable {
     return Commands.repeatingSequence(
         Commands.runOnce(() -> wasUpdated = false),
         Commands.defer(cmdSupplier, Set.of(requirements))
-            .until(isUpdated())
-            .unless(hasTarget().negate()));
+            .until(isUpdated()));
   }
 
   private Trigger isNearPose(Localizer localizer, Translation2d translation, double dist) {
@@ -163,6 +162,7 @@ public class OperatorTarget implements StructSerializable {
                         subsystems.superStructure, superStructureState, MoveOrder.ELEVATOR_FIRST)));
     return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure)
         .unless(wantsAlgae())
+        .unless(hasTarget().negate())
         .withName("TeleopAlignFull");
   }
 

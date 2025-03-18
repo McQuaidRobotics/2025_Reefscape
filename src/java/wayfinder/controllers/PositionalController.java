@@ -1,14 +1,19 @@
 package wayfinder.controllers;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import wayfinder.controllers.Types.ChassisConstraints;
-import wpilibExt.Speeds;
+import wayfinder.controllers.Types.Constraints;
+import wayfinder.controllers.Types.Controller;
 import wpilibExt.Speeds.FieldSpeeds;
+import wpilibExt.Velocity2d;
 
-public class PositionalController {
-  private final TranslationController translationController;
-  private final RotationalController rotationalController;
+public class PositionalController
+    implements Controller<Pose2d, FieldSpeeds, Pose2d, ChassisConstraints> {
+  private final Controller<Translation2d, Velocity2d, Translation2d, Constraints>
+      translationController;
+  private final Controller<Rotation2d, Double, Rotation2d, Constraints> rotationalController;
 
   public PositionalController(
       TranslationController translationController, RotationalController rotationalController) {
@@ -16,37 +21,48 @@ public class PositionalController {
     this.rotationalController = rotationalController;
   }
 
+  public PositionalController(
+      Controller<Translation2d, Velocity2d, Translation2d, Constraints> translationController,
+      Controller<Rotation2d, Double, Rotation2d, Constraints> rotationalController) {
+    this.translationController = translationController;
+    this.rotationalController = rotationalController;
+  }
+
+  @Override
   public FieldSpeeds calculate(
       double period,
       Pose2d measurement,
-      Speeds measurementVelo,
+      FieldSpeeds measurementRate,
       Pose2d target,
-      Transform2d deadband,
       ChassisConstraints constraints) {
-    FieldSpeeds translation =
+    var translation =
         translationController.calculate(
             period,
             measurement.getTranslation(),
-            measurementVelo.asFieldRelative(measurement.getRotation()),
+            measurementRate.toVelocity2d(),
             target.getTranslation(),
-            deadband.getTranslation().getNorm(),
             constraints.translation());
-
-    double rotation =
+    var rotation =
         rotationalController.calculate(
             period,
-            measurement.getRotation().getRadians(),
-            measurementVelo.asFieldRelative(measurement.getRotation()).omega(),
-            target.getRotation().getRadians(),
-            deadband.getRotation().getRadians(),
+            measurement.getRotation(),
+            measurementRate.omega(),
+            target.getRotation(),
             constraints.rotation());
-
-    return new FieldSpeeds(translation.vx(), translation.vy(), rotation);
+    return new FieldSpeeds(translation.getVX(), translation.getVY(), rotation);
   }
 
-  public void reset(Pose2d measurement, FieldSpeeds measurementVelo, Pose2d target) {
+  @Override
+  public boolean isDone(Pose2d measurement, Pose2d target) {
+    return translationController.isDone(measurement.getTranslation(), target.getTranslation())
+        && rotationalController.isDone(measurement.getRotation(), target.getRotation());
+  }
+
+  @Override
+  public void reset(Pose2d measurement, FieldSpeeds measurementRate, Pose2d target) {
     translationController.reset(
-        measurement.getTranslation(), measurementVelo, target.getTranslation());
-    rotationalController.reset(measurement.getRotation().getRadians(), measurementVelo.omega());
+        measurement.getTranslation(), measurementRate.toVelocity2d(), target.getTranslation());
+    rotationalController.reset(
+        measurement.getRotation(), measurementRate.omega(), target.getRotation());
   }
 }

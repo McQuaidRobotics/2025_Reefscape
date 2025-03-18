@@ -116,6 +116,13 @@ public class Velocity2d implements Interpolatable<Velocity2d>, StructSerializabl
     return Math.hypot(m_vx, m_vy);
   }
 
+  public double speedInDirection(Rotation2d direction) {
+    if (MathUtil.isNear(0, getSpeed(), 0.0001)) {
+      return 0;
+    }
+    return m_vx * direction.getCos() + m_vy * direction.getSin();
+  }
+
   /**
    * Returns the angle this velocity forms with the positive X axis.
    *
@@ -279,4 +286,6 @@ public class Velocity2d implements Interpolatable<Velocity2d>, StructSerializabl
       return true;
     }
   }
+
+  public static final Velocity2d kZero = new Velocity2d(0.0, 0.0);
 }
