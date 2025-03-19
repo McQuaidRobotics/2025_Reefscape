@@ -1,9 +1,9 @@
 package igknighters.commands.swerve.teleop;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import igknighters.constants.ConstValues.kSwerve;
 import igknighters.controllers.DriverController;
 import igknighters.subsystems.swerve.Swerve;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import wpilibExt.Speeds;
 
 public class TeleopSwerveTraditionalCmd extends TeleopSwerveBaseCmd {
@@ -14,21 +14,13 @@ public class TeleopSwerveTraditionalCmd extends TeleopSwerveBaseCmd {
 
   @Override
   public void execute() {
-    Translation2d vt = orientForUser(getTranslation()).times(kSwerve.MAX_DRIVE_VELOCITY);
-
-    // ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-    //         vt.getX(),
-    //         vt.getY(),
-    //         -getRotationX() * kSwerve.MAX_ANGULAR_VELOCITY, // invert because CCW is positive
-    //         new Rotation2d(swerve.getYawRads())
-    // );
+    super.execute();
+    Translation2d vt = translationStick().times(kSwerve.MAX_DRIVE_VELOCITY);
 
     Speeds fieldSpeeds =
         Speeds.fromFieldRelative(
-            vt.getX(), vt.getY(), -getRotationX() * kSwerve.MAX_ANGULAR_VELOCITY);
+            vt.getX(), vt.getY(), rotationStick().getX() * kSwerve.MAX_ANGULAR_VELOCITY);
 
     swerve.drive(fieldSpeeds);
   }
-
-  public static final TeleopSwerveBaseStruct struct = new TeleopSwerveBaseStruct();
 }

@@ -32,8 +32,8 @@ public abstract class Wrist extends Component {
    * Returns the current angle of the wrist
    *
    * @param position The angle of the wrist in radians.
-   * @param tolerance The tolerance of the wrist in radians, use {@link
-   *     WristConstants#DEFAULT_TOLERANCE} if you are unsure.
+   * @param tolerance The tolerance of the wrist in radians, use {@link kWrist#DEFAULT_TOLERANCE} if
+   *     you are unsure.
    * @return True if the wrist is at the desired position, false otherwise.
    */
   public boolean isAtPosition(double position, double tolerance) {

@@ -3,6 +3,7 @@ package sham.shamController.unitSafeControl;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radian;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 
@@ -40,35 +41,35 @@ public class UnitFeedback {
     }
 
     public static <O extends Unit> LinearPIDFeedback<O> forLinear(
-        O outputUnit, DistanceUnit inputUnit, double kP, double kD) {
+        O outputUnit, double kP, double kD) {
       return new LinearPIDFeedback<O>(
-          PerUnit.combine(outputUnit, inputUnit).ofNative(kP),
-          PerUnit.combine(outputUnit, inputUnit).ofNative(0.0),
-          PerUnit.combine(outputUnit, inputUnit.per(Second)).ofNative(kD));
+          PerUnit.combine(outputUnit, Meters).ofNative(kP),
+          PerUnit.combine(outputUnit, Meters).ofNative(0.0),
+          PerUnit.combine(outputUnit, Meters.per(Second)).ofNative(kD));
     }
 
     public static <O extends Unit> AngularPIDFeedback<O> forAngular(
-        O outputUnit, AngleUnit inputUnit, double kP, double kD) {
+        O outputUnit, double kP, double kD) {
       return new AngularPIDFeedback<O>(
-          PerUnit.combine(outputUnit, inputUnit).ofNative(kP),
-          PerUnit.combine(outputUnit, inputUnit).ofNative(0.0),
-          PerUnit.combine(outputUnit, inputUnit.per(Second)).ofNative(kD));
+          PerUnit.combine(outputUnit, Radians).ofNative(kP),
+          PerUnit.combine(outputUnit, Radians).ofNative(0.0),
+          PerUnit.combine(outputUnit, Radians.per(Second)).ofNative(kD));
     }
 
     public static <O extends Unit> LinearVelocityPIDFeedback<O> forLinearVelocity(
-        O outputUnit, LinearVelocityUnit inputUnit, double kP) {
+        O outputUnit, double kP) {
       return new LinearVelocityPIDFeedback<O>(
-          PerUnit.combine(outputUnit, inputUnit).ofNative(kP),
-          PerUnit.combine(outputUnit, inputUnit).ofNative(0.0),
-          PerUnit.combine(outputUnit, inputUnit.per(Second)).ofNative(0.0));
+          PerUnit.combine(outputUnit, MetersPerSecond).ofNative(kP),
+          PerUnit.combine(outputUnit, MetersPerSecond).ofNative(0.0),
+          PerUnit.combine(outputUnit, MetersPerSecond.per(Second)).ofNative(0.0));
     }
 
     public static <O extends Unit> AngularVelocityPIDFeedback<O> forAngularVelocity(
-        O outputUnit, AngularVelocityUnit inputUnit, double kP) {
+        O outputUnit, double kP) {
       return new AngularVelocityPIDFeedback<O>(
-          PerUnit.combine(outputUnit, inputUnit).ofNative(kP),
-          PerUnit.combine(outputUnit, inputUnit).ofNative(0.0),
-          PerUnit.combine(outputUnit, inputUnit.per(Second)).ofNative(0.0));
+          PerUnit.combine(outputUnit, RadiansPerSecond).ofNative(kP),
+          PerUnit.combine(outputUnit, RadiansPerSecond).ofNative(0.0),
+          PerUnit.combine(outputUnit, RadiansPerSecond.per(Second)).ofNative(0.0));
     }
 
     public void logGains(EpilogueBackend logger) {

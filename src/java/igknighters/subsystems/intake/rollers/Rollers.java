@@ -7,11 +7,12 @@ import monologue.Annotations.Log;
 public abstract class Rollers extends Component {
   private final double kt, kv;
 
-  @Log protected double current;
+  @Log protected double amps;
   @Log protected double volts;
   @Log protected boolean hasAlgae;
   @Log protected boolean hasCoral;
   @Log protected double radiansPerSecond;
+  @Log protected boolean controlledLastCycle;
 
   protected Rollers(DCMotor motor) {
     kt = motor.KtNMPerAmp;
@@ -23,22 +24,22 @@ public abstract class Rollers extends Component {
    *
    * @param voltage the voltage to set
    */
-  public abstract void setVoltage(double voltage);
+  public abstract void voltageOut(double voltage);
 
   /**
    * Sets the current of the rollers.
    *
    * @param current the current to set
    */
-  public abstract void setCurrent(double current);
+  public abstract void currentOut(double current);
 
   /**
    * Sets the torque of the rollers.
    *
    * @param torque the torque to set in newton-meters
    */
-  public void setTorque(double torque) {
-    setCurrent(torque / kt);
+  public void torqueOut(double torque) {
+    currentOut(torque / kt);
   }
 
   /**
@@ -46,8 +47,8 @@ public abstract class Rollers extends Component {
    *
    * @param velocity the velocity to set in radians per second
    */
-  public void setVelocity(double velocity) {
-    setVoltage(velocity / kv);
+  public void velocityOut(double velocity) {
+    voltageOut(velocity / kv);
   }
 
   /**

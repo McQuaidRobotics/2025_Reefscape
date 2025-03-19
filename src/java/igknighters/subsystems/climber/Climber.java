@@ -18,19 +18,22 @@ public class Climber implements ExclusiveSubsystem {
     if (Robot.isReal()) {
       pivot = new PivotReal();
       magnet = new ElectroMagnetReal();
-
     } else {
       pivot = new PivotSim(simCtx);
       magnet = new ElectroMagnetSim();
     }
   }
 
-  public void enableMagnet(boolean enable) {
+  public void setMagnetPower(boolean enable) {
     magnet.setOn(enable);
   }
 
   public void setPivotPosition(double position) {
     pivot.setPositionRads(position);
+  }
+
+  public void voltageOut(double voltage) {
+    pivot.voltageOut(voltage);
   }
 
   @Override

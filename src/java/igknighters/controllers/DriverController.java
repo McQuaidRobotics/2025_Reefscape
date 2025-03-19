@@ -3,12 +3,15 @@ package igknighters.controllers;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
+import igknighters.commands.intake.IntakeCommands;
 import igknighters.commands.superStructure.StateManager;
 import igknighters.commands.swerve.SwerveCommands;
 import igknighters.subsystems.Subsystems;
+import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.util.logging.BootupLogger;
 import java.util.function.DoubleSupplier;
@@ -20,22 +23,27 @@ public class DriverController {
     final var swerve = subsystems.swerve;
     final var vision = subsystems.vision;
     final var led = subsystems.led;
+    final var climber = subsystems.climber;
 
     final StateManager stateManager = new StateManager(subsystems.superStructure);
 
     /// FACE BUTTONS
-    this.A.onTrue(stateManager.holdAt(SuperStructureState.IntakeHp));
+    this.A.onTrue(stateManager.holdAt(SuperStructureState.ScoreL2));
 
-    this.B.onTrue(stateManager.holdAt(SuperStructureState.ScoreL4));
+    this.B.onTrue(stateManager.holdAt(SuperStructureState.ScoreL3));
 
     this.X.onTrue(stateManager.holdAt(SuperStructureState.Processor));
 
-    this.Y.whileTrue(stateManager.holdAt(SuperStructureState.ScoreL2));
+    this.Y.onTrue(stateManager.holdAt(SuperStructureState.ScoreL4));
 
     // BUMPER
-    this.RB.onTrue(Commands.none());
+    this.RB.onTrue(
+        IntakeCommands.intakeCoral(subsystems.intake)
+            .alongWith(stateManager.holdAt(SuperStructureState.IntakeHp))
+            .until(subsystems.intake.isHolding(Holding.CORAL))
+            .andThen(new ScheduleCommand(stateManager.holdAt(SuperStructureState.Stow))));
 
-    this.LB.onTrue(Commands.none());
+    this.LB.onTrue(IntakeCommands.runVoltage(subsystems.intake, 4.0).withTimeout(0.45));
 
     // CENTER BUTTONS
     this.Back.onTrue(Commands.none());
@@ -53,13 +61,16 @@ public class DriverController {
     this.RT.onTrue(Commands.none());
 
     // DPAD
-    this.DPR.onTrue(Commands.none());
+    this.DPR.whileTrue(
+        climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    this.DPD.onTrue(Commands.none());
+    this.DPD.whileTrue(
+        climber.run(() -> climber.voltageOut(-6.0)).finallyDo(() -> climber.voltageOut(0.0)));
 
-    this.DPL.onTrue(Commands.none());
+    this.DPL.onTrue(stateManager.home());
 
-    this.DPU.onTrue(Commands.none());
+    this.DPU.whileTrue(
+        climber.run(() -> climber.voltageOut(6.0)).finallyDo(() -> climber.voltageOut(0.0)));
   }
 
   // Define the buttons on the controller
@@ -197,7 +208,7 @@ public class DriverController {
    * @return A supplier for the value of the left stick x axis
    */
   public DoubleSupplier leftStickX() {
-    return () -> -controller.getLeftX();
+    return controller::getLeftX;
   }
 
   /**
@@ -216,7 +227,7 @@ public class DriverController {
    * @return A supplier for the value of the left stick y axis
    */
   public DoubleSupplier leftStickY() {
-    return controller::getLeftY;
+    return () -> -controller.getLeftY();
   }
 
   /**

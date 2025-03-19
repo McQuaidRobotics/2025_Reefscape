@@ -1,80 +1,81 @@
 package igknighters.subsystems.superStructure.Elevator;
 
 import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.ReverseLimitValue;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.subsystems.superStructure.SuperStructureConstants;
+import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
 import igknighters.util.can.CANSignalManager;
 
 public class ElevatorReal extends Elevator {
-  private final TalonFX elevatorFollower;
-  private final TalonFX elevatorLeader;
+  private final TalonFX follower;
+  private final TalonFX leader;
 
-  private final MotionMagicTorqueCurrentFOC controlReq =
-      new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
+  private final MotionMagicVoltage controlReq = new MotionMagicVoltage(0.0).withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
 
   private final BaseStatusSignal position, velocity, voltage, current;
-  private final StatusSignal<ReverseLimitValue> reverseLimit;
+  private final DigitalInput limitSwitch;
 
   public ElevatorReal() {
-    elevatorLeader = new TalonFX(ElevatorConstants.LEADER_ID, ElevatorConstants.CANBUS);
-    elevatorFollower = new TalonFX(ElevatorConstants.FOLLOWER_ID, ElevatorConstants.CANBUS);
-    elevatorLeader.getConfigurator().apply(elevatorConfiguration());
-    elevatorFollower.getConfigurator().apply(elevatorConfiguration());
-    elevatorFollower.setControl(new Follower(ElevatorConstants.LEADER_ID, true));
+    leader = new TalonFX(kElevator.LEADER_ID, SuperStructureConstants.CANBUS);
+    follower = new TalonFX(kElevator.FOLLOWER_ID, SuperStructureConstants.CANBUS);
+    leader.getConfigurator().apply(elevatorConfiguration());
+    follower.getConfigurator().apply(elevatorConfiguration());
+    follower.setControl(new Follower(kElevator.LEADER_ID, true));
 
-    position = elevatorLeader.getPosition();
-    velocity = elevatorLeader.getVelocity();
-    voltage = elevatorLeader.getMotorVoltage();
-    current = elevatorLeader.getTorqueCurrent();
+    position = leader.getPosition();
+    velocity = leader.getVelocity();
+    voltage = leader.getMotorVoltage();
+    current = leader.getTorqueCurrent();
 
-    reverseLimit = elevatorLeader.getReverseLimit();
-    reverseLimit.setUpdateFrequency(1000); // hehe
+    limitSwitch = new DigitalInput(kElevator.LIMIT_SWITCH_ID);
 
     CANSignalManager.registerSignals(
-        ElevatorConstants.CANBUS, position, velocity, voltage, current);
+        SuperStructureConstants.CANBUS, position, velocity, voltage, current);
 
-    CANSignalManager.registerDevices(elevatorLeader, elevatorFollower);
+    CANSignalManager.registerDevices(leader, follower);
+
+    leader.setPosition(kElevator.MIN_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE);
   }
 
   private TalonFXConfiguration elevatorConfiguration() {
 
     var cfg = new TalonFXConfiguration();
 
-    cfg.Slot0.kP = ElevatorConstants.KP * Conv.RADIANS_TO_ROTATIONS;
-    cfg.Slot0.kD = ElevatorConstants.KD * Conv.RADIANS_TO_ROTATIONS;
-    cfg.Slot0.kS = ElevatorConstants.KS;
-    cfg.Slot0.kG = ElevatorConstants.KG;
-    cfg.Slot0.kV = ElevatorConstants.KV * Conv.RADIANS_TO_ROTATIONS;
+    cfg.Slot0.kP = kElevator.kP;
+    cfg.Slot0.kD = kElevator.kD;
+    cfg.Slot0.kS = kElevator.kS;
+    cfg.Slot0.kG = kElevator.kG;
+    cfg.Slot0.kV = kElevator.kV / Conv.RADIANS_TO_ROTATIONS;
 
-    cfg.Feedback.SensorToMechanismRatio = ElevatorConstants.GEAR_RATIO;
+    cfg.Feedback.SensorToMechanismRatio = kElevator.GEAR_RATIO;
 
     cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        ElevatorConstants.FORWARD_LIMIT / ElevatorConstants.PULLEY_CIRCUMFERENCE;
+        kElevator.MAX_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE;
 
     cfg.HardwareLimitSwitch.ReverseLimitEnable = true;
 
-    cfg.MotionMagic.MotionMagicCruiseVelocity = ElevatorConstants.MAX_VELOCITY;
-    cfg.MotionMagic.MotionMagicAcceleration = ElevatorConstants.MAX_ACCELERATION;
+    cfg.MotionMagic.MotionMagicCruiseVelocity = kElevator.MAX_VELOCITY;
+    cfg.MotionMagic.MotionMagicAcceleration = kElevator.MAX_ACCELERATION;
 
-    cfg.CurrentLimits.StatorCurrentLimit = ElevatorConstants.STATOR_CURRENT_LIMIT;
-    cfg.CurrentLimits.SupplyCurrentLimit = ElevatorConstants.SUPPLY_CURRENT_LIMIT;
+    cfg.CurrentLimits.StatorCurrentLimit = kElevator.STATOR_CURRENT_LIMIT;
+    cfg.CurrentLimits.SupplyCurrentLimit = kElevator.SUPPLY_CURRENT_LIMIT;
 
-    cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     cfg.MotorOutput.Inverted =
-        ElevatorConstants.INVERT_LEADER
+        kElevator.INVERT_LEADER
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
 
@@ -85,25 +86,28 @@ public class ElevatorReal extends Elevator {
   public void gotoPosition(double targetPosition) {
     super.targetMeters = targetPosition;
     super.controlledLastCycle = true;
-    elevatorLeader.setControl(
-        controlReq.withPosition(targetPosition / ElevatorConstants.PULLEY_RADIUS));
+    if (isLimitTripped && targetPosition < meters) {
+      voltageOut(0.0);
+    } else {
+      leader.setControl(controlReq.withPosition(targetPosition / kElevator.PULLEY_CIRCUMFERENCE));
+    }
   }
 
   @Override
   public void setNeutralMode(boolean coast) {
     if (coast) {
-      elevatorLeader.setNeutralMode(NeutralModeValue.Coast);
-      elevatorFollower.setNeutralMode(NeutralModeValue.Coast);
+      leader.setNeutralMode(NeutralModeValue.Coast);
+      follower.setNeutralMode(NeutralModeValue.Coast);
     } else {
-      elevatorLeader.setNeutralMode(NeutralModeValue.Brake);
-      elevatorFollower.setNeutralMode(NeutralModeValue.Brake);
+      leader.setNeutralMode(NeutralModeValue.Brake);
+      follower.setNeutralMode(NeutralModeValue.Brake);
     }
   }
 
   @Override
   public boolean home() {
     if (!isHomed && super.home()) {
-      elevatorLeader.setPosition(ElevatorConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS);
+      leader.setPosition(kElevator.MIN_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE);
     }
     return isHomed;
   }
@@ -112,20 +116,23 @@ public class ElevatorReal extends Elevator {
   public void voltageOut(double voltage) {
     super.targetMeters = Double.NaN;
     super.controlledLastCycle = true;
-    elevatorLeader.setControl(voltageOut.withOutput(voltage));
+    if (isLimitTripped && voltage < 0.0) {
+      voltage = 0.0;
+    }
+    leader.setControl(voltageOut.withOutput(voltage));
   }
 
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {
       super.targetMeters = Double.NaN;
-      elevatorLeader.setControl(neutralOut);
+      leader.setControl(neutralOut);
     }
     super.controlledLastCycle = false;
-    super.meters = position.getValueAsDouble() * ElevatorConstants.PULLEY_CIRCUMFERENCE;
-    super.metersPerSecond = velocity.getValueAsDouble() * ElevatorConstants.PULLEY_CIRCUMFERENCE;
+    super.meters = position.getValueAsDouble() * kElevator.PULLEY_CIRCUMFERENCE;
+    super.metersPerSecond = velocity.getValueAsDouble() * kElevator.PULLEY_CIRCUMFERENCE;
     super.volts = voltage.getValueAsDouble();
     super.amps = current.getValueAsDouble();
-    super.isLimitTripped = reverseLimit.getValue() == ReverseLimitValue.ClosedToGround;
+    super.isLimitTripped = limitSwitch.get();
   }
 }

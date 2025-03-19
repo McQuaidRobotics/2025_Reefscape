@@ -2,10 +2,10 @@ package igknighters.commands.superStructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import igknighters.subsystems.superStructure.Elevator.ElevatorConstants;
 import igknighters.subsystems.superStructure.SuperStructure;
+import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
+import igknighters.subsystems.superStructure.SuperStructureConstants.kWrist;
 import igknighters.subsystems.superStructure.SuperStructureState;
-import igknighters.subsystems.superStructure.Wrist.WristConstants;
 import java.util.EnumMap;
 import java.util.Set;
 
@@ -16,35 +16,19 @@ public class StateManager {
   private final EnumMap<SuperStructureState, EnumMap<SuperStructureState, Transition>> transitions =
       new EnumMap<>(SuperStructureState.class);
 
-  private static Command basicHoldAt(
-      SuperStructure superStructure, double elevatorMeters, double wristRads) {
-    return superStructure.run(() -> superStructure.goTo(elevatorMeters, wristRads));
+  public StateManager(SuperStructure superStructure) {
+    this.superStructure = superStructure;
   }
 
-  private static Command basicMoveTo(
-      SuperStructure superStructure,
-      double elevatorMeters,
-      double wristRads,
-      double toleranceScalar) {
-    return basicHoldAt(superStructure, elevatorMeters, wristRads)
-        .until(
-            () ->
-                superStructure.isAt(
-                    elevatorMeters,
-                    wristRads,
-                    ElevatorConstants.DEFAULT_TOLERANCE * toleranceScalar,
-                    WristConstants.DEFAULT_TOLERANCE * toleranceScalar));
+  private Command basicHoldAt(
+      SuperStructure superStructure, double elevatorMeters, double wristRads) {
+    return superStructure.run(() -> superStructure.goTo(elevatorMeters, wristRads));
   }
 
   @FunctionalInterface
   public interface Transition {
     Command getCommand(
         SuperStructure superStructure, SuperStructureState from, SuperStructureState to);
-
-    public static Transition DEFAULT =
-        (superStructure, from, to) -> {
-          return basicMoveTo(superStructure, to.elevatorMeters, to.wristRads, to.toleranceScalar);
-        };
   }
 
   @SuppressWarnings("unused")
@@ -54,16 +38,12 @@ public class StateManager {
     transitions.get(from).put(to, transition);
   }
 
-  public StateManager(SuperStructure superStructure) {
-    this.superStructure = superStructure;
-  }
-
   private Command getTransitionCmd(
       SuperStructure superStructure, SuperStructureState from, SuperStructureState to) {
     if (transitions.containsKey(from) && transitions.get(from).containsKey(to)) {
       return transitions.get(from).get(to).getCommand(superStructure, from, to);
     } else {
-      return Transition.DEFAULT.getCommand(superStructure, from, to);
+      return basicHoldAt(superStructure, to.elevatorMeters, to.wristRads);
     }
   }
 
@@ -71,6 +51,13 @@ public class StateManager {
     return Commands.defer(
             () -> getTransitionCmd(superStructure, this.lastState, to), Set.of(superStructure))
         .finallyDo(() -> this.lastState = to)
+        .until(
+            () ->
+                superStructure.isAt(
+                    to.elevatorMeters,
+                    to.wristRads,
+                    kElevator.DEFAULT_TOLERANCE * to.toleranceScalar,
+                    kWrist.DEFAULT_TOLERANCE * to.toleranceScalar))
         .withName("MoveTo(" + to.name() + ")");
   }
 
@@ -78,6 +65,15 @@ public class StateManager {
     // return moveTo(to)
     //     .andThen(basicHoldAt(superStructure, to.elevatorMeters, to.wristRads))
     //     .withName("HoldAt(" + to.name() + ")");
-    return basicHoldAt(superStructure, to.elevatorMeters, to.wristRads);
+    return basicHoldAt(superStructure, to.elevatorMeters, to.wristRads)
+        .withName("HoldAt(" + to.name() + ")");
+  }
+
+  public Command home() {
+    return superStructure
+        .run(() -> superStructure.home(kWrist.MAX_ANGLE, 0.1))
+        .until(superStructure::isHomed)
+        .unless(superStructure::isHomed)
+        .withName("HomeSuperStructure");
   }
 }

@@ -5,8 +5,9 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-import igknighters.constants.ConstValues.kSwerve;
 import igknighters.subsystems.swerve.Swerve;
+import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.plumbing.TunableValues;
 import igknighters.util.plumbing.TunableValues.TunableDouble;
 import java.util.Arrays;
@@ -45,14 +46,14 @@ public class WheelRadiusCharacterization extends Command {
 
   private double[] wheelPositions() {
     return Arrays.stream(swerve.getModulePositions())
-        .mapToDouble(s -> s.distanceMeters / kSwerve.WHEEL_CIRCUMFERENCE)
+        .mapToDouble(s -> s.distanceMeters / kWheel.CIRCUMFERENCE)
         .toArray();
   }
 
   public WheelRadiusCharacterization(Swerve swerve, Direction omegaDirection) {
     this.swerve = swerve;
     this.omegaDirection = omegaDirection;
-    this.gyroYawRadsSupplier = swerve::getYawRads;
+    this.gyroYawRadsSupplier = () -> swerve.getYaw().getRadians();
     addRequirements(swerve);
   }
 

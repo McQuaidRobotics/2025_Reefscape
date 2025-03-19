@@ -53,128 +53,6 @@ public class FieldConstants {
         new Pose2d(inchesToMeters(48), inchesToMeters(86.5), new Rotation2d());
   }
 
-  // public static class Reef {
-  //   public static final Translation2d CENTER =
-  //       new Translation2d(inchesToMeters(176.746), inchesToMeters(158.501));
-  //   public static final double faceToZoneLine =
-  //       inchesToMeters(12); // Side of the reef to the inside of the reef zone line
-
-  //   public static final Pose2d[] CENTER_FACES;
-  //   public static final List<Map<ReefHeight, Pose3d>> BRANCH_POSITIONS =
-  //       new ArrayList<>(); // Starting at the right branch facing the driver station in clockwise
-
-  //   public static final Pose2d CLOSE_MID_FACE;
-  //   public static final Pose2d CLOSE_LEFT_FACE;
-  //   public static final Pose2d FAR_LEFT_FACE;
-  //   public static final Pose2d FAR_MID_FACE;
-  //   public static final Pose2d FAR_RIGHT_FACE;
-  //   public static final Pose2d CLOSE_RIGHT_FACE;
-
-  //   static {
-  //     // Initialize faces
-  //     CLOSE_MID_FACE =
-  //         new Pose2d(
-  //             inchesToMeters(144.003),
-  //             inchesToMeters(158.500),
-  //             Rotation2d.fromDegrees(180).plus(Rotation2d.kPi));
-  //     // close left
-  //     CLOSE_LEFT_FACE =
-  //         new Pose2d(
-  //             inchesToMeters(160.373),
-  //             inchesToMeters(186.857),
-  //             Rotation2d.fromDegrees(120).plus(Rotation2d.kPi));
-  //     // far left
-  //     FAR_LEFT_FACE =
-  //         new Pose2d(
-  //             inchesToMeters(193.116),
-  //             inchesToMeters(186.858),
-  //             Rotation2d.fromDegrees(60).plus(Rotation2d.kPi));
-  //     // far mid
-  //     FAR_MID_FACE =
-  //         new Pose2d(
-  //             inchesToMeters(209.489),
-  //             inchesToMeters(158.502),
-  //             Rotation2d.fromDegrees(0).plus(Rotation2d.kPi));
-  //     // far right
-  //     FAR_RIGHT_FACE =
-  //         new Pose2d(
-  //             inchesToMeters(193.118),
-  //             inchesToMeters(130.145),
-  //             Rotation2d.fromDegrees(-60).plus(Rotation2d.kPi));
-  //     // close right
-  //     CLOSE_RIGHT_FACE =
-  //         new Pose2d(
-  //             inchesToMeters(160.375),
-  //             inchesToMeters(130.144),
-  //             Rotation2d.fromDegrees(-120).plus(Rotation2d.kPi));
-
-  //     CENTER_FACES =
-  //         new Pose2d[] {
-  //           CLOSE_MID_FACE, CLOSE_LEFT_FACE, FAR_LEFT_FACE,
-  //           FAR_MID_FACE, FAR_RIGHT_FACE, CLOSE_RIGHT_FACE
-  //         };
-
-  //     // Initialize branch positions
-  //     for (int face = 0; face < 6; face++) {
-  //       Map<ReefHeight, Pose3d> fillRight = new HashMap<>();
-  //       Map<ReefHeight, Pose3d> fillLeft = new HashMap<>();
-  //       for (var level : ReefHeight.values()) {
-  //         Pose2d poseDirection = new Pose2d(CENTER, Rotation2d.fromDegrees(180 - (60 * face)));
-  //         double adjustX = inchesToMeters(30.738);
-  //         double adjustY = inchesToMeters(6.469);
-
-  //         fillRight.put(
-  //             level,
-  //             new Pose3d(
-  //                 new Translation3d(
-  //                     poseDirection
-  //                         .transformBy(new Transform2d(adjustX, adjustY, new Rotation2d()))
-  //                         .getX(),
-  //                     poseDirection
-  //                         .transformBy(new Transform2d(adjustX, adjustY, new Rotation2d()))
-  //                         .getY(),
-  //                     level.height),
-  //                 new Rotation3d(
-  //                     0,
-  //                     Units.degreesToRadians(level.pitch),
-  //                     poseDirection.getRotation().getRadians())));
-  //         fillLeft.put(
-  //             level,
-  //             new Pose3d(
-  //                 new Translation3d(
-  //                     poseDirection
-  //                         .transformBy(new Transform2d(adjustX, -adjustY, new Rotation2d()))
-  //                         .getX(),
-  //                     poseDirection
-  //                         .transformBy(new Transform2d(adjustX, -adjustY, new Rotation2d()))
-  //                         .getY(),
-  //                     level.height),
-  //                 new Rotation3d(
-  //                     0,
-  //                     Units.degreesToRadians(level.pitch),
-  //                     poseDirection.getRotation().getRadians())));
-  //       }
-  //       // BRANCH_POSITIONS.add((face * 2) + 1, fillRight);
-  //       // BRANCH_POSITIONS.add((face * 2) + 2, fillLeft);
-  //     }
-  //   }
-  // }
-
-  // public enum ReefHeight {
-  //   L4(inchesToMeters(72), -90),
-  //   L3(inchesToMeters(47.625), -35),
-  //   L2(inchesToMeters(31.875), -35),
-  //   L1(inchesToMeters(18), 0);
-
-  //   ReefHeight(double height, double pitch) {
-  //     this.height = height;
-  //     this.pitch = pitch; // in degrees
-  //   }
-
-  //   public final double height;
-  //   public final double pitch;
-  // }
-
   public static final class Reef {
     public static final Translation2d CENTER =
         new Translation2d(inchesToMeters(176.746), inchesToMeters(158.501));
@@ -182,9 +60,9 @@ public class FieldConstants {
     private static final Translation2d FACE_OFFSET = new Translation2d(inchesToMeters(32.75), 0.0);
 
     public enum BranchHeight {
-      L4(inchesToMeters(72), -90 * Conv.DEGREES_TO_RADIANS),
-      L3(inchesToMeters(47.625), -35 * Conv.DEGREES_TO_RADIANS),
-      L2(inchesToMeters(31.875), -35 * Conv.DEGREES_TO_RADIANS),
+      L4(inchesToMeters(72), 90 * Conv.DEGREES_TO_RADIANS),
+      L3(inchesToMeters(47.625), 35 * Conv.DEGREES_TO_RADIANS),
+      L2(inchesToMeters(31.875), 35 * Conv.DEGREES_TO_RADIANS),
       L1(inchesToMeters(18), 0 * Conv.DEGREES_TO_RADIANS);
 
       BranchHeight(double height, double pitch) {
@@ -235,15 +113,15 @@ public class FieldConstants {
         return new Pose2d(t, this.face.getRotation().rotateBy(Rotation2d.kPi));
       }
 
-      public Pose2d scoreLeft(double distFromFace) {
+      public Pose2d alignScoreLeft(double distFromFace) {
         return scorePose(distFromFace, -BRANCH_OFFSET);
       }
 
-      public Pose2d scoreRight(double distFromFace) {
+      public Pose2d alignScoreRight(double distFromFace) {
         return scorePose(distFromFace, BRANCH_OFFSET);
       }
 
-      public Pose2d scoreCenter(double distFromFace) {
+      public Pose2d alignScoreCenter(double distFromFace) {
         return scorePose(distFromFace, 0.0);
       }
     }

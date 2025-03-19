@@ -2,6 +2,7 @@ package igknighters.subsystems.swerve.odometryThread;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
@@ -44,6 +45,9 @@ public class SimSwerveOdometryThread extends SwerveOdometryThread {
   }
 
   private void run() {
+    if (DriverStation.isTestEnabled()) {
+      return;
+    }
     long startTime = RobotController.getFPGATime();
     var accel = accelerationSupplier.get();
     swerveDataSender.send(
