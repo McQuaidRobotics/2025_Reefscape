@@ -3,6 +3,7 @@ package monologue;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
@@ -95,17 +96,6 @@ public class Monologue extends GlobalLogged {
     }
 
     /**
-     * Updates the lazyLogging flag.
-     *
-     * @param lazyLogging The new lazyLogging flag
-     * @return A new MonologueConfig object with the updated lazyLogging flag
-     */
-    public MonologueConfig withLazyLogging(boolean lazyLogging) {
-      return new MonologueConfig(
-          optimizeBandwidthSupplier, datalogPrefix, throwOnWarn, allowNonFinalLoggedFields);
-    }
-
-    /**
      * Updates the datalogPrefix.
      *
      * @param datalogPrefix The new datalogPrefix
@@ -164,8 +154,10 @@ public class Monologue extends GlobalLogged {
 
     GlobalField.publish();
 
+    DataLogManager.logNetworkTables(false);
     NetworkTableInstance.getDefault()
         .startEntryDataLog(DataLogManager.getLog(), "", config.datalogPrefix);
+    DriverStation.startDataLog(DataLogManager.getLog(), true);
 
     // create and start a timer to time the setup process
     Timer timer = new Timer();
@@ -266,8 +258,6 @@ public class Monologue extends GlobalLogged {
     Logged.addNode(loggable, node);
 
     trees.add(node);
-
-    updateAll();
   }
 
   /**

@@ -483,19 +483,6 @@ public class LoggingTree {
       this.err = path + " is null";
     }
 
-    // @SuppressWarnings("unchecked")
-    // public OptionalNode(ObjectNode node) {
-    //   super(node.getPath(), node.getter, node.seenTypes);
-    //   isPresentNode = new BooleanValueNode(
-    //       node.getPath() + "/isPresent",
-    //       LogSink.NT,
-    //       _v -> ((Optional<Object>) _v).isPresent());
-    //   this.err = node.getPath() + " is null";
-    //   for (LoggingNode child : node.children) {
-    //     addChild(child);
-    //   }
-    // }
-
     @SuppressWarnings("unchecked")
     public void log(Object obj) {
       Optional<Object> oo = (Optional<Object>) getter.apply(obj);
