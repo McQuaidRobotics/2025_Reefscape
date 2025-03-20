@@ -16,7 +16,8 @@ public class SuperStructureConstants {
     public static final int LIMIT_SWITCH_ID = 9;
 
     public static final boolean INVERT_LEADER = false;
-    public static final double GEAR_RATIO = (54.0 / 18.0) * (54.0 / 18.0);
+    public static final double GEAR_RATIO = 6.0;
+    // public static final double GEAR_RATIO = (54.0 / 18.0) * (54.0 / 18.0);
     public static final double PULLEY_RADIUS = Conv.INCHES_TO_METERS * 1.106;
     public static final double PULLEY_CIRCUMFERENCE = 2.0 * Math.PI * PULLEY_RADIUS;
 
@@ -58,7 +59,11 @@ public class SuperStructureConstants {
     public static final double kA = 0.00;
 
     public static final double MAX_VELOCITY = (12.0 - kS - kG) / kV;
-    public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.8;
+    public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.135;
+
+    public static final double MAX_VELOCITY_LINEAR = MAX_VELOCITY * PULLEY_RADIUS;
+    public static final double MAX_ACCELERATION_LINEAR = MAX_ACCELERATION * PULLEY_RADIUS;
+
 
     public static final double HOMING_VOLTAGE = -kS - 2.0;
 
