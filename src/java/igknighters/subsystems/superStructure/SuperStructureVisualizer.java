@@ -22,7 +22,7 @@ public class SuperStructureVisualizer {
   private final Color8Bit backgroundColor = new Color8Bit(0, 0, 0);
   private final Translation2d pivotOrigin = new Translation2d(1.25, Conv.INCHES_TO_METERS * 3.75);
   private final double elevatorWidth = 15.0;
-  private final double reefWidth = 10.0;
+  private final double reefWidth = 7.0;
 
   public void visualizeReef() {
     final MechanismRoot2d rootReef = mechanism.getRoot("Reef", pivotOrigin.getX() + 1.0, 0.0);
@@ -53,10 +53,10 @@ public class SuperStructureVisualizer {
     final MechanismLigament2d reefL4Arm =
         l4Branch.append(new MechanismLigament2d("reefL1Arm", .20536295, -45.0));
 
-    reefL1.setColor(new Color8Bit(0, 0, 255));
-    reefL2.setColor(new Color8Bit(0, 0, 255));
-    reefL3.setColor(new Color8Bit(0, 0, 255));
-    reefL4.setColor(new Color8Bit(0, 0, 255));
+    reefL1.setColor(new Color8Bit(127, 0, 255));
+    reefL2.setColor(new Color8Bit(127, 0, 255));
+    reefL3.setColor(new Color8Bit(127, 0, 255));
+    reefL4.setColor(new Color8Bit(127, 0, 255));
 
     l1Branch.setColor(new Color8Bit(0, 0, 255));
     l1Branch2.setColor(new Color8Bit(0, 0, 255));

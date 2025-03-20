@@ -82,7 +82,10 @@ public class SwerveCommands {
       Localizer localizer,
       Pose2d target,
       Supplier<ChassisConstraints> constraints) {
-    return swerve.run(
+    return swerve.startRun(
+        () -> {
+          planner.reset(localizer.pose(), swerve.getFieldSpeeds(), target);
+        },
         () -> {
           if (TunableValues.getBoolean("ShowArrows", false).value()) {
             GlobalField.setObject("arrows", planner.getArrows(target.getTranslation(), 20, 10));
@@ -95,40 +98,34 @@ public class SwerveCommands {
         });
   }
 
-  public static Command moveTo(
+  public static Command lineupReef(
       Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
     final ChassisConstraints constraints =
         new ChassisConstraints(
             new Constraints(
-                kSwerve.MAX_DRIVE_VELOCITY * 0.5,
+                kSwerve.MAX_DRIVE_VELOCITY * 0.85,
                 SharedState.maximumAcceleration(SuperStructureState.ScoreL3.elevatorMeters)),
             new Constraints(
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
 
-    final PositionalController preciseController =
-        new PositionalController(
-            ControllerFactories.longRangeTranslationController(),
-            ControllerFactories.basicRotationalController());
-
-    final PositionalController roughController =
-        new PositionalController(
-            TranslationController.unprofiled(5.0, 0.0, 0.0, 0.0),
-            ControllerFactories.basicRotationalController());
     final RepulsorFieldPlanner precisePlanner =
-        new RepulsorFieldPlanner(preciseController, obstacles.obstacles);
+        new RepulsorFieldPlanner(
+            ControllerFactories.longRangeTranslationController(),
+            ControllerFactories.lowToleranceRotationalController(),
+            ControllerFactories.basicRotationalController(),
+            obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
-        new RepulsorFieldPlanner(roughController, PathObstacles.Other.obstacles);
+        new RepulsorFieldPlanner(
+            TranslationController.unprofiled(5.0, 0.0, 0.0, 0.0),
+            ControllerFactories.lowToleranceRotationalController(),
+            ControllerFactories.basicRotationalController(),
+            PathObstacles.Other.obstacles);
 
     final Transform2d roughPoseOffset = new Transform2d(1.0, 0, Rotation2d.kZero);
     return Commands.sequence(
-        swerve.runOnce(
-            () ->
-                roughController.reset(
-                    localizer.pose(), swerve.getFieldSpeeds(), target.plus(roughPoseOffset))),
-        followRepulsor(roughPlanner, swerve, localizer, target, () -> constraints)
+        followRepulsor(
+                roughPlanner, swerve, localizer, target.plus(roughPoseOffset), () -> constraints)
             .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
-        swerve.runOnce(
-            () -> preciseController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
         followRepulsor(precisePlanner, swerve, localizer, target, () -> constraints));
   }
 

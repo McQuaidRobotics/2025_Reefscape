@@ -69,12 +69,11 @@ public class Types {
         RATE measurementRate,
         TARGET target,
         LIMITS constraints) {
-      RATE rate = measurementRate;
-      for (int i = 0; i < controllers.length; i++) {
-        rate = controllers[i].calculate(period, measurement, rate, target, constraints);
-        if (controllers[i].isDone(measurement, target)) {
-          currentController = i + 1;
-        }
+      final var controller = controllers[currentController];
+      RATE rate = controller.calculate(period, measurement, measurementRate, target, constraints);
+      if (controller.isDone(measurement, target)) {
+        currentController = Math.min(currentController + 1, controllers.length - 1);
+        controllers[currentController].reset(measurement, measurementRate, target);
       }
       return rate;
     }
@@ -91,6 +90,35 @@ public class Types {
     public boolean isDone(MEASUREMENT measurement, TARGET target) {
       return currentController == controllers.length - 1
           && controllers[currentController].isDone(measurement, target);
+    }
+  }
+
+  public abstract static class WrapperController<MEASUREMENT, RATE, TARGET, LIMITS>
+      implements Controller<MEASUREMENT, RATE, TARGET, LIMITS> {
+    private final Controller<MEASUREMENT, RATE, TARGET, LIMITS> controller;
+
+    public WrapperController(Controller<MEASUREMENT, RATE, TARGET, LIMITS> controller) {
+      this.controller = controller;
+    }
+
+    @Override
+    public RATE calculate(
+        double period,
+        MEASUREMENT measurement,
+        RATE measurementRate,
+        TARGET target,
+        LIMITS constraints) {
+      return controller.calculate(period, measurement, measurementRate, target, constraints);
+    }
+
+    @Override
+    public void reset(MEASUREMENT measurement, RATE measurementRate, TARGET target) {
+      controller.reset(measurement, measurementRate, target);
+    }
+
+    @Override
+    public boolean isDone(MEASUREMENT measurement, TARGET target) {
+      return controller.isDone(measurement, target);
     }
   }
 }

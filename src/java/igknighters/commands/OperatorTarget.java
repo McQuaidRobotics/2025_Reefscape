@@ -120,8 +120,7 @@ public class OperatorTarget implements StructSerializable {
   private Command makeRefreshableCmd(Supplier<Command> cmdSupplier, Subsystem... requirements) {
     return Commands.repeatingSequence(
         Commands.runOnce(() -> wasUpdated = false),
-        Commands.defer(cmdSupplier, Set.of(requirements))
-            .until(isUpdated()));
+        Commands.defer(cmdSupplier, Set.of(requirements)).until(isUpdated()));
   }
 
   private Trigger isNearPose(Localizer localizer, Translation2d translation, double dist) {
@@ -144,7 +143,7 @@ public class OperatorTarget implements StructSerializable {
     Supplier<Command> c =
         () ->
             Commands.parallel(
-                SwerveCommands.moveTo(
+                SwerveCommands.lineupReef(
                     subsystems.swerve,
                     localizer,
                     targetLocation(),
