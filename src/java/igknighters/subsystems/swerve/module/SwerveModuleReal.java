@@ -3,7 +3,7 @@ package igknighters.subsystems.swerve.module;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -34,7 +34,7 @@ public class SwerveModuleReal extends SwerveModule {
 
   private final TalonFX steerMotor;
   private final BaseStatusSignal steerVoltSignal, steerAmpSignal;
-  private final PositionDutyCycle steerMotorReq = new PositionDutyCycle(0).withUpdateFreqHz(0);
+  private final MotionMagicVoltage steerMotorReq = new MotionMagicVoltage(0).withUpdateFreqHz(0);
 
   private final CANcoder steerEncoder;
   private final BaseStatusSignal steerAbsoluteSignal, steerAbsoluteVeloSignal;
@@ -142,6 +142,10 @@ public class SwerveModuleReal extends SwerveModule {
     cfg.Slot0.kP = kSteerMotor.kP;
     cfg.Slot0.kI = kSteerMotor.kI;
     cfg.Slot0.kD = kSteerMotor.kD;
+    cfg.Slot0.kV = kSteerMotor.kV / Conv.RADIANS_TO_ROTATIONS;
+
+    cfg.MotionMagic.MotionMagicCruiseVelocity = kSteerMotor.MAX_VELOCITY;
+    cfg.MotionMagic.MotionMagicAcceleration = kSteerMotor.MAX_ACCELERATION;
 
     cfg.Feedback.FeedbackRemoteSensorID = encoderId;
     cfg.Feedback.RotorToSensorRatio = kSteerMotor.GEAR_RATIO;

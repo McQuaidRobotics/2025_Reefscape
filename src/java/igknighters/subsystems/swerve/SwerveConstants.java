@@ -70,10 +70,11 @@ public class SwerveConstants {
       public static final double kS = 0.0;
       public static final double kV = kKrakenX60Foc.kV * GEAR_RATIO;
 
-      public static final double STATOR_CURRENT_LIMIT = 60.0;
+      public static final double STATOR_CURRENT_LIMIT = 80.0;
       public static final double SUPPLY_CURRENT_LIMIT = 20.0;
 
       public static final double MAX_VELOCITY = (12.0 - kS) / kV;
+      public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.04;
     }
 
     public static final class kSteerEncoder {

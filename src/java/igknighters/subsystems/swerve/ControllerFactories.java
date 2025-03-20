@@ -28,7 +28,7 @@ public class ControllerFactories {
   public static Controller<Translation2d, Velocity2d, Translation2d, Constraints>
       longRangeTranslationController() {
     return new ControllerSequence<>(
-        TranslationController.profiled(8.5, 0, 0, false),
+        TranslationController.profiled(1.0, 0, 0, false),
         TranslationController.unprofiled(4.0, 0.0, 0.05, 0.01));
   }
 
