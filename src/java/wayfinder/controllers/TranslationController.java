@@ -3,6 +3,7 @@ package wayfinder.controllers;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import monologue.Monologue;
 import wayfinder.controllers.Types.Constraints;
 import wayfinder.controllers.Types.Controller;
 import wayfinder.controllers.Types.State;
@@ -79,6 +80,8 @@ public abstract class TranslationController
         Translation2d target,
         Constraints constraints) {
 
+      Monologue.log("TranslationController", "Profiled");
+
       if (isDone(measurement, target)) {
         return Velocity2d.kZero;
       }
@@ -98,6 +101,9 @@ public abstract class TranslationController
               constraints.maxAcceleration());
 
       double positionError = distance + prevSetpoint.position();
+
+      Monologue.log("ProfiledError", positionError);
+
       double errorDerivative = (positionError - prevError) / period;
       if (kI > 0) {
         totalError +=
@@ -144,6 +150,8 @@ public abstract class TranslationController
         Translation2d target,
         Constraints constraints) {
 
+      Monologue.log("TranslationController", "UnProfiled");
+
       if (isDone(measurement, target)) {
         return Velocity2d.kZero;
       }
@@ -152,6 +160,7 @@ public abstract class TranslationController
       final Rotation2d direction = target.minus(measurement).getAngle();
 
       double positionError = distance;
+      Monologue.log("UnProfiledError", positionError);
       double errorDerivative = (positionError - prevError) / period;
       if (kI > 0) {
         totalError += positionError * period;

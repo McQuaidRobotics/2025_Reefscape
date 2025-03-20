@@ -28,12 +28,12 @@ public class ControllerFactories {
   public static Controller<Translation2d, Velocity2d, Translation2d, Constraints>
       longRangeTranslationController() {
     return new ControllerSequence<>(
-        TranslationController.profiled(5.5, 0, 0, false),
-        TranslationController.unprofiled(4.0, 0.0, 0.05, 0.04));
+        TranslationController.profiled(8.5, 0, 0, false),
+        TranslationController.unprofiled(4.0, 0.0, 0.05, 0.01));
   }
 
   public static Controller<Translation2d, Velocity2d, Translation2d, Constraints>
       shortRangeTranslationController() {
-    return TranslationController.unprofiled(3.0, 0.0, 0.05, 0.04);
+    return TranslationController.unprofiled(3.0, 0.0, 0.05, 0.01);
   }
 }

@@ -16,7 +16,6 @@ import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.vision.Vision;
 import igknighters.util.plumbing.TunableValues;
-import java.util.function.Supplier;
 import monologue.GlobalField;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.TranslationController;
@@ -81,7 +80,7 @@ public class SwerveCommands {
       Swerve swerve,
       Localizer localizer,
       Pose2d target,
-      Supplier<ChassisConstraints> constraints) {
+      ChassisConstraints constraints) {
     return swerve.startRun(
         () -> {
           planner.reset(localizer.pose(), swerve.getFieldSpeeds(), target);
@@ -90,43 +89,54 @@ public class SwerveCommands {
           if (TunableValues.getBoolean("ShowArrows", false).value()) {
             GlobalField.setObject("arrows", planner.getArrows(target.getTranslation(), 20, 10));
           }
-          var c = constraints.get();
           swerve.drive(
               planner.calculate(
-                  ConstValues.PERIODIC_TIME, localizer.pose(), swerve.getFieldSpeeds(), target, c),
-              c);
+                  ConstValues.PERIODIC_TIME,
+                  localizer.pose(),
+                  swerve.getFieldSpeeds(),
+                  target,
+                  constraints),
+              constraints);
         });
   }
 
   public static Command lineupReef(
       Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
-    final ChassisConstraints constraints =
+    final ChassisConstraints preciseConstraints =
         new ChassisConstraints(
             new Constraints(
-                kSwerve.MAX_DRIVE_VELOCITY * 0.85,
+                kSwerve.MAX_DRIVE_VELOCITY * 0.45,
                 SharedState.maximumAcceleration(SuperStructureState.ScoreL3.elevatorMeters)),
             new Constraints(
-                kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
+                kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.65));
+    final ChassisConstraints roughConstraints =
+        new ChassisConstraints(
+            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.70, kSwerve.MAX_DRIVE_ACCELERATION),
+            new Constraints(
+                kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.65));
 
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(
-            ControllerFactories.longRangeTranslationController(),
-            ControllerFactories.lowToleranceRotationalController(),
-            ControllerFactories.basicRotationalController(),
+            new PositionalController(
+                ControllerFactories.longRangeTranslationController(),
+                ControllerFactories.basicRotationalController()),
             obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
         new RepulsorFieldPlanner(
-            TranslationController.unprofiled(5.0, 0.0, 0.0, 0.0),
-            ControllerFactories.lowToleranceRotationalController(),
-            ControllerFactories.basicRotationalController(),
+            new PositionalController(
+                TranslationController.unprofiled(3.0, 0.0, 0.0, 0.0),
+                ControllerFactories.basicRotationalController()),
             PathObstacles.Other.obstacles);
 
-    final Transform2d roughPoseOffset = new Transform2d(1.0, 0, Rotation2d.kZero);
+    final Transform2d roughPoseOffset = new Transform2d(-0.4, 0, Rotation2d.kZero);
     return Commands.sequence(
         followRepulsor(
-                roughPlanner, swerve, localizer, target.plus(roughPoseOffset), () -> constraints)
-            .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
-        followRepulsor(precisePlanner, swerve, localizer, target, () -> constraints));
+                roughPlanner, swerve, localizer, target.plus(roughPoseOffset), roughConstraints)
+            .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation()))
+            .unless(
+                () ->
+                    localizer.pose().getTranslation().getDistance(target.getTranslation()) < 0.375),
+        followRepulsor(precisePlanner, swerve, localizer, target, preciseConstraints));
   }
 
   public static Command moveToSimple(Swerve swerve, Localizer localizer, Pose2d target) {

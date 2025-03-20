@@ -5,45 +5,25 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import java.util.ArrayList;
 import java.util.List;
+import monologue.GlobalField;
 import wayfinder.controllers.CircularSlewRateLimiter;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.Types.ChassisConstraints;
-import wayfinder.controllers.Types.Constraints;
-import wayfinder.controllers.Types.Controller;
-import wayfinder.controllers.Types.ControllerSequence;
-import wayfinder.controllers.Types.WrapperController;
 import wpilibExt.MutTranslation2d;
 import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
-import wpilibExt.Velocity2d;
 
 public class RepulsorFieldPlanner {
+  private final PositionalController controller;
   private final CircularSlewRateLimiter rotationRateLimiter =
       new CircularSlewRateLimiter(Math.PI * 5.0);
-  private final Controller<Pose2d, FieldSpeeds, Pose2d, ChassisConstraints> controller;
   private final List<Obstacle> fixedObstacles = new ArrayList<>();
 
   private final MutTranslation2d netForceVec = new MutTranslation2d();
 
-  @SuppressWarnings("unchecked")
-  public RepulsorFieldPlanner(
-      Controller<Translation2d, Velocity2d, Translation2d, Constraints> translationController,
-      Controller<Rotation2d, Double, Rotation2d, Constraints> dynamicRotationController,
-      Controller<Rotation2d, Double, Rotation2d, Constraints> staticRotationController,
-      Obstacle... obstacles) {
+  public RepulsorFieldPlanner(PositionalController controller, Obstacle... obstacles) {
     fixedObstacles.addAll(List.of(obstacles));
-    var firstController =
-        new PositionalController(translationController, dynamicRotationController);
-    var secondController =
-        new PositionalController(translationController, staticRotationController);
-    controller =
-        new ControllerSequence<>(
-            new WrapperController<>(firstController) {
-              public boolean isDone(Pose2d measurement, Pose2d target) {
-                return measurement.getTranslation().getDistance(target.getTranslation()) < 0.375;
-              }
-            },
-            secondController);
+    this.controller = controller;
   }
 
   void getForce(Translation2d curLocation, Translation2d goal, MutTranslation2d out) {
@@ -89,34 +69,33 @@ public class RepulsorFieldPlanner {
       Pose2d target,
       ChassisConstraints constraints) {
     double straightDist = measurement.getTranslation().getDistance(target.getTranslation());
-    Pose2d intermediateTarget = target;
+    Pose2d intermediatePose = target;
     if (straightDist > 0.375) {
       getForce(measurement.getTranslation(), target.getTranslation(), netForceVec);
       netForceVec.timesMut(straightDist / netForceVec.getNorm());
-      Rotation2d forceDirection = netForceVec.getAngle();
+      Rotation2d targetDirection = netForceVec.getAngle();
       Rotation2d limited =
-          new Rotation2d(rotationRateLimiter.calculate(forceDirection.getRadians()));
-      Rotation2d targetDirection =
-          target.getTranslation().minus(measurement.getTranslation()).getAngle();
-      intermediateTarget =
+          new Rotation2d(rotationRateLimiter.calculate(targetDirection.getRadians()));
+      intermediatePose =
           new Pose2d(
               measurement
                   .getTranslation()
-                  .plus(netForceVec.rotateBy(limited.minus(forceDirection))),
+                  .plus(netForceVec.rotateBy(limited.minus(targetDirection))),
               target.getRotation());
     }
+    GlobalField.setObject("intermediatePose", intermediatePose);
     return controller.calculate(
         period,
         measurement,
         measurementVelo.asFieldRelative(measurement.getRotation()),
-        intermediateTarget,
+        intermediatePose,
         constraints);
   }
 
   public void reset(Pose2d measurement, FieldSpeeds measurementVelo, Pose2d target) {
     controller.reset(measurement, measurementVelo, target);
     rotationRateLimiter.reset(
-        measurement.getTranslation().minus(target.getTranslation()).getAngle().getRadians());
+        target.getTranslation().minus(measurement.getTranslation()).getAngle().getRadians());
   }
 
   public Pose2d[] getArrows(Translation2d goal, double xCount, double yCount) {
