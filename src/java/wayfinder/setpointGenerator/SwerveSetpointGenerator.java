@@ -136,6 +136,9 @@ public class SwerveSetpointGenerator {
     // Make sure desiredState respects velocity limits.
     SwerveDriveKinematics.desaturateWheelSpeeds(desiredModuleStates, maxSpeed);
     desiredRobotRelativeSpeeds = kinematics.toChassisSpeeds(desiredModuleStates);
+    for (int m = 0; m < NUM_MODULES; m++) {
+      desiredModuleStates[m].optimize(prevSetpoint.moduleStates()[m].angle);
+    }
 
     final LocalVars vars = VARS_TEMPLATE.reset();
     vars.dt = dt;
@@ -332,7 +335,6 @@ public class SwerveSetpointGenerator {
       double reverseModuleTorque = driveMotor.getTorque(reverseCurrentDraw);
 
       double prevSpeed = vars.prevModuleStates[m].speedMetersPerSecond;
-      vars.desiredModuleStates[m].optimize(vars.prevModuleStates[m].angle);
       double desiredSpeed = vars.desiredModuleStates[m].speedMetersPerSecond;
 
       int forceSign;

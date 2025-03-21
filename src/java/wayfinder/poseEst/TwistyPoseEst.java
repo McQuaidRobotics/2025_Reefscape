@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.Kinematics;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.Optional;
 import java.util.TreeMap;
 
 public class TwistyPoseEst {
@@ -95,6 +96,9 @@ public class TwistyPoseEst {
   public void resetPose(Pose2d pose) {
     rootPose = pose;
     samples.clear();
+    prevGyroAngle = null;
+    samples.put(
+        Timer.getFPGATimestamp(), new TimestampedTwist2d(0.0, 0.0, 0.0, Timer.getFPGATimestamp()));
   }
 
   private PrimitivePose poseAtTimestampPrimitive(double timestamp) {
@@ -125,7 +129,7 @@ public class TwistyPoseEst {
 
   private double oldestTimestamp() {
     if (samples.isEmpty()) {
-      return Timer.getFPGATimestamp();
+      return 0.0;
     } else {
       return samples.firstKey();
     }
@@ -144,10 +148,6 @@ public class TwistyPoseEst {
       return;
     }
     Pose2d lastPose = poseAtTimestamp(timestamp);
-    if (lastPose.getTranslation().getDistance(pose.getTranslation()) < 0.01) {
-      forcePrune(timestamp, pose);
-      return;
-    }
     Twist2d twist = lastPose.log(pose);
     twist.dx *= weight;
     twist.dy *= weight;
@@ -162,6 +162,9 @@ public class TwistyPoseEst {
       Rotation2d gyroAngle,
       double timestamp,
       double weight) {
+    if (timestamp < oldestTimestamp()) {
+      return;
+    }
     weight = MathUtil.clamp(weight, 0.0, 1.0);
     if (prevWheelPositions == null || prevGyroAngle == null) {
       prevWheelPositions = wheelPositions;
@@ -184,7 +187,11 @@ public class TwistyPoseEst {
     return poseAtTimestamp(Timer.getFPGATimestamp());
   }
 
-  public Pose2d getEstimatedPoseFromPast(double secondsAgo) {
-    return poseAtTimestamp(Timer.getFPGATimestamp() - secondsAgo);
+  public Optional<Pose2d> getEstimatedPoseFromPast(double secondsAgo) {
+    double timestamp = Timer.getFPGATimestamp() - secondsAgo;
+    if (timestamp < oldestTimestamp()) {
+      return Optional.empty();
+    }
+    return Optional.of(poseAtTimestamp(Timer.getFPGATimestamp() - secondsAgo));
   }
 }

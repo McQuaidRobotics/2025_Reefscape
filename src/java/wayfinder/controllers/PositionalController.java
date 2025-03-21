@@ -3,6 +3,7 @@ package wayfinder.controllers;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import wayfinder.controllers.Types.ChassisConstraints;
+import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
 
 public class PositionalController {
@@ -18,6 +19,7 @@ public class PositionalController {
   public FieldSpeeds calculate(
       double period,
       Pose2d measurement,
+      Speeds measurementVelo,
       Pose2d target,
       Transform2d deadband,
       ChassisConstraints constraints) {
@@ -25,6 +27,7 @@ public class PositionalController {
         translationController.calculate(
             period,
             measurement.getTranslation(),
+            measurementVelo.asFieldRelative(measurement.getRotation()),
             target.getTranslation(),
             deadband.getTranslation().getNorm(),
             constraints.translation());
@@ -33,6 +36,7 @@ public class PositionalController {
         rotationalController.calculate(
             period,
             measurement.getRotation().getRadians(),
+            measurementVelo.asFieldRelative(measurement.getRotation()).omega(),
             target.getRotation().getRadians(),
             deadband.getRotation().getRadians(),
             constraints.rotation());

@@ -52,13 +52,13 @@ public class SwerveModuleSimSham extends SwerveModule {
         ClosedLoop.forVoltageAngularVelocity(
             PIDFeedback.forAngularVelocity(Volts, kDriveMotor.kP),
             SimpleFeedforward.forVoltage(
-                Rotations, kDriveMotor.kS, kDriveMotor.kV, 0.0, sim.timing().dt()));
+                Radians, kDriveMotor.kS, kDriveMotor.kV, 0., sim.timing().dt()));
 
     steerLoop =
         ClosedLoop.forVoltageAngle(
             PIDFeedback.forAngular(Volts, kSteerMotor.kP, kSteerMotor.kD)
                 .withContinuousAngularInput(),
-            SimpleFeedforward.forVoltage(Rotations, kSteerMotor.kS, 0.0, 0.0, sim.timing().dt()));
+            SimpleFeedforward.forVoltage(Radians, kSteerMotor.kS, 0.0, 0.0, sim.timing().dt()));
 
     driveMotor.configSensorToMechanismRatio(kDriveMotor.GEAR_RATIO);
     steerMotor.configSensorToMechanismRatio(kSteerMotor.GEAR_RATIO);

@@ -71,6 +71,22 @@ public class Triggers {
     }
   }
 
+  public static Trigger falseOnce() {
+    return new Trigger(
+        new BooleanSupplier() {
+          boolean ret = false;
+
+          public boolean getAsBoolean() {
+            try {
+              return ret;
+            } finally {
+              ret = true;
+            }
+          }
+          ;
+        });
+  }
+
   public static Trigger andAll(Trigger trigger, Trigger... triggers) {
     for (Trigger t : triggers) {
       trigger = trigger.and(t);

@@ -12,10 +12,11 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import igknighters.commands.OperatorTarget;
 import igknighters.commands.SubsystemTriggers;
 import igknighters.commands.autos.AutoController;
 import igknighters.commands.autos.AutoRoutines;
-import igknighters.commands.swerve.teleop.TeleopSwerveTraditionalCmd;
+import igknighters.commands.teleop.TeleopSwerveTraditionalCmd;
 import igknighters.commands.tests.TestManager;
 import igknighters.constants.ConstValues;
 import igknighters.constants.FieldConstants;
@@ -55,8 +56,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
   public final SimCtx simCtx = new SimCtx(localizer, isSimulation());
 
   private final DriverController driverController;
-
-  @SuppressWarnings("unused")
   private final OperatorController operatorController;
 
   @FlattenedLogged public final Subsystems subsystems;
@@ -80,7 +79,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     subsystems =
         new Subsystems(
             new Swerve(sharedState, localizer, simCtx),
-            new Vision(localizer, simCtx),
+            new Vision(sharedState, localizer, simCtx),
             new Led(),
             new SuperStructure(sharedState, simCtx),
             new Intake(sharedState, simCtx),
@@ -88,11 +87,12 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
     localizer.reset(FieldConstants.POSE2D_CENTER);
 
+    final var operatorTarget = new OperatorTarget(subsystems, this);
     driverController = new DriverController(0);
-    driverController.bind(localizer, subsystems);
+    driverController.bind(localizer, subsystems, operatorTarget);
     operatorController = new OperatorController(1);
-    operatorController.bind(localizer, subsystems);
-    SubsystemTriggers.setupTriggers(subsystems);
+    operatorController.bind(localizer, subsystems, operatorTarget);
+    SubsystemTriggers.setupTriggers(subsystems, localizer, operatorTarget);
 
     subsystems.swerve.setDefaultCommand(
         new TeleopSwerveTraditionalCmd(subsystems.swerve, driverController));
@@ -100,7 +100,11 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     final AutoFactory autoFactory =
         new AutoFactory(
             localizer::pose,
-            localizer::reset,
+            pose -> {
+              localizer.reset(pose);
+              subsystems.vision.resetHeading();
+              subsystems.swerve.setYaw(pose.getRotation());
+            },
             new AutoController(subsystems.swerve, localizer),
             true,
             subsystems.swerve,
@@ -117,7 +121,9 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             });
 
     final var routines = new AutoRoutines(subsystems, localizer, autoFactory);
-    autoChooser.addRoutine("test", routines::test);
+    AutoRoutines.addCmd(autoChooser, "test", routines::test);
+    AutoRoutines.addCmd(autoChooser, "testMove", routines::testMove);
+    autoChooser.addCmd("straight", routines.trajTest("Straight"));
     setupAutoChooser();
 
     testManager = new TestManager();

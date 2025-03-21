@@ -1,5 +1,8 @@
 package igknighters.subsystems.intake;
 
+import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.util.struct.StructSerializable;
+import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.SharedState;
@@ -7,22 +10,31 @@ import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.intake.rollers.RollerSim;
 import igknighters.subsystems.intake.rollers.Rollers;
 import igknighters.subsystems.intake.rollers.RollersReal;
-import java.util.function.BooleanSupplier;
+import monologue.Annotations.Log;
+import monologue.ProceduralStructGenerator;
 
 public class Intake implements ExclusiveSubsystem {
   private final SharedState shared;
 
-  public enum Holding {
+  @Log private Holding currentlyHolding = Holding.NONE;
+  @Log private Holding tryingToHold = Holding.NONE;
+
+  public enum Holding implements StructSerializable {
     CORAL,
     ALGAE,
-    NONE
+    NONE;
+
+    public static final Struct<Holding> struct = ProceduralStructGenerator.genEnum(Holding.class);
   }
 
-  public enum ControlType {
+  public enum ControlType implements StructSerializable {
     VOLTAGE,
     CURRENT,
     TORQUE,
-    VELOCITY
+    VELOCITY;
+
+    public static final Struct<ControlType> struct =
+        ProceduralStructGenerator.genEnum(ControlType.class);
   }
 
   private final Rollers rollers;
@@ -37,6 +49,11 @@ public class Intake implements ExclusiveSubsystem {
   }
 
   public void control(ControlType controlType, double value) {
+    if (value > -0.01) {
+      currentlyHolding = Holding.NONE;
+    }
+    log("ControlType", controlType);
+    log("Value", value);
     switch (controlType) {
       case VOLTAGE -> rollers.voltageOut(value);
       case CURRENT -> rollers.currentOut(value);
@@ -46,21 +63,42 @@ public class Intake implements ExclusiveSubsystem {
   }
 
   public Holding getHolding() {
-    if (rollers.hasCoral()) {
-      return Holding.CORAL;
-    } else if (rollers.hasAlgae()) {
-      return Holding.ALGAE;
-    } else {
-      return Holding.NONE;
-    }
+    return currentlyHolding;
   }
 
-  public BooleanSupplier isHolding(Holding holding) {
-    return () -> getHolding() == holding;
+  public void setTryingToHold(Holding holding) {
+    tryingToHold = holding;
+  }
+
+  public double gamepieceYOffset() {
+    if (!rollers.isLaserTripped()) {
+      return 0;
+    }
+    return rollers.gamepieceDistance();
   }
 
   public void periodic() {
     rollers.periodic();
+
+    if (DriverStation.isDisabled()) {
+      tryingToHold = Holding.NONE;
+      currentlyHolding = rollers.isLaserTripped() ? Holding.CORAL : Holding.NONE;
+      log("branchReason", "disabled");
+    } else {
+      if (tryingToHold != Holding.NONE && rollers.isLaserTripped()) {
+        currentlyHolding = tryingToHold;
+        tryingToHold = Holding.NONE;
+        log("branchReason", "justIntaked");
+      } else if (tryingToHold == Holding.ALGAE && rollers.isStalling()) {
+        currentlyHolding = Holding.ALGAE;
+        log("branchReason", "stalling");
+      } else if (!rollers.isLaserTripped() && !rollers.isStalling()) {
+        currentlyHolding = Holding.NONE;
+        log("branchReason", "notTrippedNotStalling");
+      } else {
+        log("branchReason", "none");
+      }
+    }
     shared.holdingAlgae = getHolding() == Holding.ALGAE;
   }
 }

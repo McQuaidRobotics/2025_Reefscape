@@ -12,16 +12,29 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.intake.IntakeConstants;
 import igknighters.subsystems.intake.IntakeConstants.RollerConstants;
+import igknighters.util.LerpTable;
 import igknighters.util.can.CANSignalManager;
 
 public class RollersReal extends Rollers {
+  private static final double INTAKE_WIDTH = 13.5 * Conv.INCHES_TO_METERS;
+  private static final double CORAL_WIDTH = 2.25 * Conv.INCHES_TO_METERS;
+  private static final LerpTable DISTANCE_LERP =
+      new LerpTable(
+          new LerpTable.LerpTableEntry(2.5 * Conv.INCHES_TO_METERS, 1.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(4.45 * Conv.INCHES_TO_METERS, 2.5 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(5.25 * Conv.INCHES_TO_METERS, 3.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(5.8 * Conv.INCHES_TO_METERS, 4.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(7.36 * Conv.INCHES_TO_METERS, 5.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(8.937 * Conv.INCHES_TO_METERS, 6.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(9.68 * Conv.INCHES_TO_METERS, 7.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(11.65 * Conv.INCHES_TO_METERS, 8.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(13.5 * Conv.INCHES_TO_METERS, 9.25 * Conv.INCHES_TO_METERS));
+
   private final TalonFX intakeMotor =
       new TalonFX(RollerConstants.INTAKE_MOTOR_ID, IntakeConstants.CANBUS);
   private final CANrange distanceSensor =
@@ -31,10 +44,8 @@ public class RollersReal extends Rollers {
       new VoltageOut(0.0).withUpdateFreqHz(0.0).withEnableFOC(true);
   private final TorqueCurrentFOC currentReq = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
-  private final Debouncer algaeDebouncer = new Debouncer(0.1, DebounceType.kRising);
-
-  private final StatusSignal<ReverseLimitValue> coralSensor;
-  private final BaseStatusSignal current, volts, velocity, temperature;
+  private final StatusSignal<ReverseLimitValue> laserTrippedSignal;
+  private final BaseStatusSignal current, voltage, velocity, acceleration, temperature, distance;
 
   private TalonFXConfiguration intakeConfiguration() {
     var cfg = new TalonFXConfiguration();
@@ -45,15 +56,15 @@ public class RollersReal extends Rollers {
     cfg.HardwareLimitSwitch.ReverseLimitSource = ReverseLimitSourceValue.RemoteCANrange;
     cfg.HardwareLimitSwitch.ReverseLimitRemoteSensorID = distanceSensor.getDeviceID();
 
-    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    cfg.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     return cfg;
   }
 
   private CANrangeConfiguration intakeSensorConfiguration() {
     var cfg = new CANrangeConfiguration();
-    cfg.ProximityParams.ProximityThreshold = 0.26;
-    cfg.ProximityParams.ProximityHysteresis = 0.01;
+    cfg.ProximityParams.ProximityThreshold = 0.37;
+    cfg.ProximityParams.ProximityHysteresis = 0.02;
     cfg.FovParams.FOVRangeX = 7.0;
     cfg.FovParams.FOVRangeY = 7.0;
     // might want to angle this to make detection distance more uniform across the whole intake
@@ -65,16 +76,25 @@ public class RollersReal extends Rollers {
 
   public RollersReal() {
     super(DCMotor.getKrakenX60(1).withReduction(RollerConstants.GEAR_RATIO));
-    coralSensor = intakeMotor.getReverseLimit();
+    laserTrippedSignal = intakeMotor.getReverseLimit();
     current = intakeMotor.getTorqueCurrent();
-    volts = intakeMotor.getMotorVoltage();
+    voltage = intakeMotor.getMotorVoltage();
     velocity = intakeMotor.getVelocity();
+    acceleration = intakeMotor.getAcceleration();
     temperature = intakeMotor.getDeviceTemp();
+    distance = distanceSensor.getDistance();
     intakeMotor.getConfigurator().apply(intakeConfiguration());
     distanceSensor.getConfigurator().apply(intakeSensorConfiguration());
 
     CANSignalManager.registerSignals(
-        IntakeConstants.CANBUS, coralSensor, current, volts, velocity, temperature);
+        IntakeConstants.CANBUS,
+        laserTrippedSignal,
+        current,
+        voltage,
+        velocity,
+        acceleration,
+        temperature,
+        distance);
 
     CANSignalManager.registerDevices(intakeMotor, distanceSensor);
   }
@@ -82,33 +102,18 @@ public class RollersReal extends Rollers {
   @Override
   public void voltageOut(double voltage) {
     super.controlledLastCycle = true;
-    if (voltage >= 0.0) {
-      algaeDebouncer.calculate(false);
-    }
     intakeMotor.setControl(voltageReq.withOutput(voltage));
   }
 
   @Override
   public void currentOut(double current) {
     super.controlledLastCycle = true;
-    if (current >= 0.0) {
-      algaeDebouncer.calculate(false);
-    }
     intakeMotor.setControl(currentReq.withOutput(current));
   }
 
   @Override
-  public boolean hasCoral() {
-    return coralSensor.getValue() == ReverseLimitValue.ClosedToGround;
-  }
-
-  private boolean probablyHasAlgae() {
-    return super.amps > RollerConstants.ALGAE_TRIP_VALUE && !hasCoral();
-  }
-
-  @Override
-  public boolean hasAlgae() {
-    return algaeDebouncer.calculate(probablyHasAlgae());
+  public boolean isStalling() {
+    return Math.abs(radiansPerSecond) < 120.0 && Math.abs(amps) > 20.0;
   }
 
   @Override
@@ -118,11 +123,16 @@ public class RollersReal extends Rollers {
     }
     super.controlledLastCycle = false;
     super.amps = current.getValueAsDouble();
-    super.volts = volts.getValueAsDouble();
-    super.hasAlgae = hasAlgae();
-    super.hasCoral = hasCoral();
+    super.volts = voltage.getValueAsDouble();
+    super.laserTripped = laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround;
+    super.gamepieceDistance =
+        (DISTANCE_LERP.lerp(distance.getValueAsDouble()) + CORAL_WIDTH) - (INTAKE_WIDTH / 2.0);
+
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
+    log("radiansPerSecondPerSecond", acceleration.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS);
+    log("gamepieceDistInches", gamepieceDistance * Conv.METERS_TO_INCHES);
     log("rpm", velocity.getValueAsDouble() * 60.0);
     log("temp", temperature.getValueAsDouble());
+    log("isStalling", isStalling());
   }
 }

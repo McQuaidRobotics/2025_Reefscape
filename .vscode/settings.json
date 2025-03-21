@@ -28,5 +28,6 @@
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
   "wpilib.skipSelectSimulateExtension": true,
-  "editor.renderWhitespace": "all"
+  "editor.renderWhitespace": "all",
+  "python.analysis.typeCheckingMode": "standard"
 }

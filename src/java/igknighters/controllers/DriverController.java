@@ -1,5 +1,6 @@
 package igknighters.controllers;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -7,70 +8,156 @@ import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
-import igknighters.commands.intake.IntakeCommands;
-import igknighters.commands.superStructure.StateManager;
-import igknighters.commands.swerve.SwerveCommands;
+import igknighters.commands.ClimberCommands;
+import igknighters.commands.IntakeCommands;
+import igknighters.commands.OperatorTarget;
+import igknighters.commands.SuperStructureCommands;
+import igknighters.commands.SwerveCommands;
+import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
+import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
-import igknighters.subsystems.intake.Intake.Holding;
 import igknighters.subsystems.superStructure.SuperStructureState;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
 import java.util.function.DoubleSupplier;
+import wpilibExt.AllianceSymmetry;
 
 public class DriverController {
   // Define the bindings for the controller
   @SuppressWarnings("unused")
-  public void bind(final Localizer localizer, final Subsystems subsystems) {
+  public void bind(
+      final Localizer localizer, final Subsystems subsystems, final OperatorTarget operatorTarget) {
     final var swerve = subsystems.swerve;
+    final var intake = subsystems.intake;
+    final var superStructure = subsystems.superStructure;
     final var vision = subsystems.vision;
     final var led = subsystems.led;
     final var climber = subsystems.climber;
 
-    final StateManager stateManager = new StateManager(subsystems.superStructure);
-
     /// FACE BUTTONS
-    this.A.onTrue(stateManager.holdAt(SuperStructureState.ScoreL2));
+    this.A.or(this.X)
+        .whileTrue(IntakeCommands.intakeCoral(intake))
+        .whileTrue(
+            new TeleopSwerveHeadingCmd(
+                swerve,
+                this,
+                localizer,
+                () -> {
+                  final double angle = 54.0;
+                  if (localizer.translation().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
+                    return AllianceSymmetry.isBlue()
+                        ? Rotation2d.fromDegrees(180 - angle)
+                        : Rotation2d.fromDegrees(angle);
+                  } else {
+                    return AllianceSymmetry.isBlue()
+                        ? Rotation2d.fromDegrees(-(180 - angle))
+                        : Rotation2d.fromDegrees(-angle);
+                  }
+                },
+                kSwerve.CONSTRAINTS)
+            // .unless(TunableValues.getBoolean("intakeAlign", false)::value)
+            )
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+        .onFalse(
+            Commands.waitSeconds(0.33)
+                .andThen(
+                    IntakeCommands.bounce(intake),
+                    Commands.waitSeconds(0.1),
+                    new ScheduleCommand(IntakeCommands.holdCoral(intake)))
+                .withName("BounceThenHoldCoral"));
+    this.A.whileTrue(
+        SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose));
+    this.X.whileTrue(
+        SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpFar));
 
-    this.B.onTrue(stateManager.holdAt(SuperStructureState.ScoreL3));
+    this.B.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor))
+        .whileTrue(
+            new TeleopSwerveHeadingCmd(
+                swerve,
+                this,
+                localizer,
+                () -> AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
+                kSwerve.CONSTRAINTS))
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
-    this.X.onTrue(stateManager.holdAt(SuperStructureState.Processor));
-
-    this.Y.onTrue(stateManager.holdAt(SuperStructureState.ScoreL4));
+    this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
+        .whileTrue(
+            new TeleopSwerveHeadingCmd(
+                swerve,
+                this,
+                localizer,
+                () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+                kSwerve.CONSTRAINTS))
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
-    this.RB.onTrue(
-        IntakeCommands.intakeCoral(subsystems.intake)
-            .alongWith(stateManager.holdAt(SuperStructureState.IntakeHp))
-            .until(subsystems.intake.isHolding(Holding.CORAL))
-            .andThen(new ScheduleCommand(stateManager.holdAt(SuperStructureState.Stow))));
+    this.RB.whileTrue(
+        IntakeCommands.expel(
+            intake,
+            () -> operatorTarget.superStructureState().equals(SuperStructureState.ScoreL1)));
 
-    this.LB.onTrue(IntakeCommands.runVoltage(subsystems.intake, 4.0).withTimeout(0.45));
+    this.LB.whileTrue(operatorTarget.gotoSuperStructureTargetCmd());
 
     // CENTER BUTTONS
-    this.Back.onTrue(Commands.none());
+    this.Back.onTrue(
+        Commands.sequence(
+                SuperStructureCommands.home(superStructure, true),
+                SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+            .withName("HomeAndHoldStow"));
 
-    this.Start.onTrue(SwerveCommands.orientGyro(swerve, localizer));
+    this.Start.onTrue(SwerveCommands.orientGyro(swerve, vision, localizer));
 
     // STICKS
     this.LS.onTrue(Commands.none());
 
     this.RS.onTrue(Commands.none());
+    // this.RS.onTrue(new WheelRadiusCharacterization(swerve, Direction.COUNTER_CLOCKWISE));
 
-    // TRIGGERS
-    this.LT.onTrue(Commands.none());
+    // // TRIGGERS
+    this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(localizer));
 
-    this.RT.onTrue(Commands.none());
+    this.RT
+        .whileTrue(
+            Commands.repeatingSequence(IntakeCommands.bounce(intake))
+                .withName("IntakeBounceRepeatedly"))
+        .onFalse(IntakeCommands.holdCoral(intake));
 
     // DPAD
-    this.DPR.whileTrue(
-        climber.run(() -> climber.voltageOut(-3.0)).finallyDo(() -> climber.voltageOut(0.0)));
+    this.DPR.onTrue(ClimberCommands.stow(climber));
 
-    this.DPD.whileTrue(
-        climber.run(() -> climber.voltageOut(-6.0)).finallyDo(() -> climber.voltageOut(0.0)));
+    this.DPD.onTrue(ClimberCommands.stage(climber));
 
-    this.DPL.onTrue(stateManager.home());
+    this.DPL.whileTrue(ClimberCommands.testMagnet(climber));
 
-    this.DPU.whileTrue(
-        climber.run(() -> climber.voltageOut(6.0)).finallyDo(() -> climber.voltageOut(0.0)));
+    this.DPU.onTrue(ClimberCommands.climb(climber));
+
+    this.DPR
+        .or(this.DPD)
+        .or(this.DPL)
+        .or(this.DPU)
+        .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
+
+    // COMBOS
+
+    this.LT
+        .or(LB)
+        .onTrue(IntakeCommands.holdCoral(intake))
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+        .and(operatorTarget.wantsAlgae())
+        .whileTrue(IntakeCommands.intakeAlgae(intake))
+        .onFalse(IntakeCommands.holdAlgae(intake));
+
+    this.RB
+        .and(Y)
+        .onTrue(
+            Commands.parallel(
+                Commands.sequence(
+                    SuperStructureCommands.moveTo(superStructure, SuperStructureState.Net_FLICKED),
+                    new ScheduleCommand(
+                        SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))),
+                Commands.sequence(
+                    IntakeCommands.holdAlgae(intake).withTimeout(0.14),
+                    IntakeCommands.expel(intake).withTimeout(0.25))));
   }
 
   // Define the buttons on the controller

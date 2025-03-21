@@ -78,11 +78,15 @@ public abstract class Obstacle {
   }
 
   public static class TeardropObstacle extends Obstacle {
-    final Translation2d loc;
-    final double primaryMaxRange;
-    final double primaryRadius;
-    final double tailStrength;
-    final double tailDistance;
+    private final Translation2d loc;
+    private final double primaryMaxRange;
+    private final double primaryRadius;
+    private final double tailStrength;
+    private final double tailDistance;
+
+    // private final MutTranslation2d sidewaysPoint = new MutTranslation2d();
+    // private final MutTranslation2d outwardsForce = new MutTranslation2d();
+    // private final MutTranslation2d sidewaysForce = new MutTranslation2d();
 
     public TeardropObstacle(
         Translation2d loc,
@@ -98,6 +102,58 @@ public abstract class Obstacle {
       this.tailStrength = tailStrength;
       this.tailDistance = tailLength + primaryMaxRange;
     }
+
+    // public Translation2d getForceAtPosition(Translation2d position, Translation2d target) {
+    //   final Rotation2d targetToLocAngle = loc.minus(target).getAngle();
+    //   sidewaysPoint.setPolar(tailDistance, targetToLocAngle);
+    //   sidewaysPoint.plusMut(loc);
+    //   outwardsForce.setZero();
+    //   sidewaysForce.setZero();
+
+    //   final Translation2d positionToLocation = position.minus(loc);
+    //   final double positionToLocationDistance = positionToLocation.getNorm();
+
+    //   if (positionToLocationDistance <= primaryMaxRange) {
+    //     final double magnitude =
+    //         distToForceMag(
+    //             Math.max(positionToLocationDistance - primaryRadius, 0),
+    //             primaryMaxRange - primaryRadius);
+    //     outwardsForce.setPolar(magnitude, positionToLocation.getAngle());
+    //   }
+
+    //   final Translation2d positionToLine =
+    //       position.minus(loc).rotateBy(targetToLocAngle.unaryMinus());
+    //   final double distanceAlongLine = positionToLine.getX();
+
+    //   final double distanceScalar = distanceAlongLine / tailDistance;
+    //   if (distanceScalar >= 0 && distanceScalar <= 1) {
+    //     final double secondaryMaxRange =
+    //         MathUtil.interpolate(primaryMaxRange, 0, distanceScalar * distanceScalar);
+    //     final double distanceToLine = Math.abs(positionToLine.getY());
+    //     if (distanceToLine > secondaryMaxRange) {
+    //       return outwardsForce;
+    //     }
+    //     final double sidewaysMag =
+    //         tailStrength
+    //             * (1 - distanceScalar * distanceScalar)
+    //             * (secondaryMaxRange - distanceToLine);
+    //     // flip the sidewaysMag based on which side of the goal-sideways circle the robot is on
+    //     final Rotation2d targetToPositionAngle =
+    //         new Rotation2d(target.getX() - position.getX(), target.getY() - position.getY());
+    //     final Rotation2d positionToSidewaysPointUnaryAngle =
+    //         new Rotation2d(
+    //             position.getX() - sidewaysPoint.getX(), -(position.getY() -
+    // sidewaysPoint.getY()));
+    //     final double sidewaysThetaSin =
+    //         (targetToPositionAngle.getCos() * positionToSidewaysPointUnaryAngle.getSin())
+    //             + (targetToPositionAngle.getSin() * positionToSidewaysPointUnaryAngle.getCos());
+    //     sidewaysForce.setPolar(sidewaysMag * Math.signum(sidewaysThetaSin), targetToLocAngle);
+    //     sidewaysForce.rotateByMut(Rotation2d.kCCW_90deg);
+    //   }
+
+    //   outwardsForce.plusMut(sidewaysForce);
+    //   return outwardsForce;
+    // }
 
     public Translation2d getForceAtPosition(Translation2d position, Translation2d target) {
       var targetToLoc = loc.minus(target);

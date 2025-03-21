@@ -5,14 +5,18 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.intake.IntakeConstants.RollerConstants;
+import sham.ShamGamePiece;
 import sham.ShamIndexer;
 import sham.ShamIntake;
 import sham.ShamMechanism;
@@ -22,11 +26,44 @@ import sham.ShamMechanism.MechanismDynamics;
 import sham.seasonspecific.Reefscape;
 import sham.shamController.ShamMCX;
 import sham.utils.GearRatio;
+import wpilibExt.AllianceSymmetry;
+import wpilibExt.AllianceSymmetry.SymmetryStrategy;
 import wpilibExt.DCMotorExt;
 
 public class RollerSim extends Rollers {
+  private static final Translation2d[] intakePositions;
+
+  static {
+    final Translation2d[] intakePositionsCore = {
+      new Translation2d(0.56, 6.7),
+      new Translation2d(1.65, 7.5),
+      AllianceSymmetry.flip(new Translation2d(0.56, 6.7), SymmetryStrategy.HORIZONTAL),
+      AllianceSymmetry.flip(new Translation2d(1.65, 7.5), SymmetryStrategy.HORIZONTAL),
+      AllianceSymmetry.flip(new Translation2d(0.56, 6.7), SymmetryStrategy.VERTICAL),
+      AllianceSymmetry.flip(new Translation2d(1.65, 7.5), SymmetryStrategy.VERTICAL),
+      AllianceSymmetry.flip(new Translation2d(0.56, 6.7), SymmetryStrategy.ROTATIONAL),
+      AllianceSymmetry.flip(new Translation2d(1.65, 7.5), SymmetryStrategy.ROTATIONAL),
+    };
+    intakePositions = new Translation2d[20];
+    for (int i = 0; i < 4; i++) {
+      int positionsOffset = i * 5;
+      Translation2d interpStart = intakePositionsCore[i * 2];
+      Translation2d interpEnd = intakePositionsCore[i * 2 + 1];
+      intakePositions[positionsOffset] = interpStart;
+      intakePositions[positionsOffset + 4] = interpEnd;
+      for (int j = 0; j < 4; j++) {
+        double t = 0.2 + (0.2 * j);
+        intakePositions[positionsOffset + j + 1] = interpStart.interpolate(interpEnd, t);
+      }
+    }
+  }
+
+  private final Debouncer intakeDebouncer = new Debouncer(0.6, DebounceType.kRising);
+  private boolean lastAutoEnabled = false;
+
   private final ShamMechanism intakeMechanism;
   private final ShamMCX intakeMotor;
+  private final SimCtx sim;
   private final ShamIntake intake;
   private final ShamIndexer indexer;
 
@@ -57,6 +94,7 @@ public class RollerSim extends Rollers {
                 Reefscape.ALGAE,
                 Reefscape.CORAL);
     indexer = simCtx.robot().getIndexer();
+    sim = simCtx;
   }
 
   public void voltageOut(double voltage) {
@@ -70,13 +108,8 @@ public class RollerSim extends Rollers {
   }
 
   @Override
-  public boolean hasAlgae() {
-    return indexer.peekGamePiece().map(gp -> gp.isOfVariant(Reefscape.ALGAE)).orElse(false);
-  }
-
-  @Override
-  public boolean hasCoral() {
-    return indexer.peekGamePiece().map(gp -> gp.isOfVariant(Reefscape.CORAL)).orElse(false);
+  public boolean isStalling() {
+    return amps < 0.0 && isLaserTripped();
   }
 
   @Override
@@ -88,9 +121,12 @@ public class RollerSim extends Rollers {
     super.volts = intakeMotor.voltage().in(Volts);
     super.amps = intakeMotor.statorCurrent().in(Amps);
     super.radiansPerSecond = intakeMotor.velocity().in(RadiansPerSecond);
-    super.hasAlgae = hasAlgae();
-    super.hasCoral = hasCoral();
-    if (volts < 0.0 && !hasCoral() && !hasAlgae()) {
+    super.laserTripped =
+        indexer
+            .peekGamePiece()
+            .map(gp -> gp.isOfVariant(Reefscape.CORAL) || gp.isOfVariant(Reefscape.ALGAE))
+            .orElse(false);
+    if (volts < 0.0 && !isLaserTripped()) {
       intake.startIntake();
     } else {
       intake.stopIntake();
@@ -98,5 +134,24 @@ public class RollerSim extends Rollers {
     if (volts > -0.01) {
       indexer.removeGamePiece();
     }
+
+    // sham gamepiece intake stuff is broken rn, temporary fix
+    boolean nearCoralStation = false;
+    Translation2d roboPose = sim.robot().getDriveTrain().getChassisWorldPose().getTranslation();
+    for (Translation2d pos : intakePositions) {
+      if (roboPose.getDistance(pos) < 0.3) {
+        nearCoralStation = true;
+        break;
+      }
+    }
+    if (intakeDebouncer.calculate(
+        nearCoralStation && !isLaserTripped() && intake.isIntakeRunning())) {
+      indexer.insertGamePiece(new ShamGamePiece(Reefscape.CORAL, sim.arena()));
+    }
+    if (!lastAutoEnabled && DriverStation.isAutonomousEnabled()) {
+      System.out.println("Auto enabled");
+      indexer.insertGamePiece(new ShamGamePiece(Reefscape.CORAL, sim.arena()));
+    }
+    lastAutoEnabled = DriverStation.isAutonomousEnabled();
   }
 }

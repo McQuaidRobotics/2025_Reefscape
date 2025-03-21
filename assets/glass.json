@@ -1,0 +1,496 @@
+{
+  "NetworkTables": {
+    "transitory": {
+      "AdvantageKit": {
+        "RealOutputs": {
+          "Stem": {
+            "Stem Validator": {
+              "open": false
+            },
+            "open": false
+          }
+        },
+        "Stem": {
+          "Wrist": {
+            "open": false
+          },
+          "open": false
+        },
+        "Swerve": {
+          "Gyro": {
+            "open": false
+          }
+        },
+        "Umbrella": {
+          "Shooter": {
+            "open": false
+          },
+          "open": false
+        },
+        "Vision": {
+          "Camera[photon__module_2]": {
+            "latestPoseEst": {
+              "open": false
+            },
+            "open": false
+          },
+          "Camera[photon_module_1]": {
+            "latestPoseEst": {
+              "open": false
+            },
+            "open": false
+          }
+        }
+      },
+      "Aim": {
+        "open": false
+      },
+      "CANSignalManager": {
+        "string[]##v_CANSignalManager/DriveBus": {
+          "open": false
+        }
+      },
+      "Commands": {
+        "open": true
+      },
+      "Robot": {
+        "Intake": {
+          "open": true,
+          "rollers": {
+            "open": true
+          }
+        },
+        "SuperStructure": {
+          "wrist": {
+            "open": true
+          }
+        },
+        "Swerve": {
+          "gyro": {
+            "open": true
+          },
+          "setpointGenerator": {
+            "SwerveSetpoint##v_/Robot/Swerve/setpointGenerator/output": {
+              "open": true
+            },
+            "open": true
+          },
+          "swerveMods": {
+            "0": {
+              "open": true
+            }
+          }
+        },
+        "Umbrella": {
+          "Shooter": {
+            "open": false
+          }
+        },
+        "Vision": {
+          "photon_module_1": {
+            "VisionPoseEstimate##v_/Robot/Vision/photon_module_1/poseEst": {
+              "Pose3d##v_pose": {
+                "open": false
+              },
+              "open": false
+            },
+            "open": false
+          },
+          "photon_module_2": {
+            "open": false
+          }
+        },
+        "localizer": {
+          "Pose2d##v_/Robot/localizer/pose": {
+            "Translation2d##v_translation": {
+              "open": false
+            },
+            "open": false
+          }
+        },
+        "open": true
+      },
+      "Tracer": {
+        "RobotLoop": {
+          "robotPeriodic": {
+            "CANSignalRefresh": {
+              "open": false
+            },
+            "CommandScheduler": {
+              "StemPeriodic": {
+                "open": false
+              }
+            },
+            "open": false
+          }
+        }
+      },
+      "Tunables": {
+        "Aim": {
+          "open": false
+        },
+        "SwerveTargetCmd": {
+          "open": false
+        }
+      },
+      "Visualizers": {
+        "Field": {
+          "double[]##v_/Visualizers/Field/Robot": {
+            "open": false
+          },
+          "open": false
+        }
+      },
+      "photonvision": {
+        "photon_module_1": {
+          "open": false
+        },
+        "photon_module_2": {
+          "double[]##v_/photonvision/photon_module_2/targetPose": {
+            "open": false
+          }
+        }
+      }
+    },
+    "types": {
+      "/Choosers/AutoChooser": "String Chooser",
+      "/Choosers/TestChooser": "String Chooser",
+      "/FMSInfo": "FMSInfo",
+      "/Field": "Field2d",
+      "/SmartDashboard/Choreo Alerts": "Alerts",
+      "/SmartDashboard/SuperStructure": "Mechanism2d",
+      "/SmartDashboard/VisionSystemSim-AprilTags/Sim Field": "Field2d",
+      "/SmartDashboard/VisionSystemSim-ObjectDetection/Sim Field": "Field2d",
+      "/Visualizers/Field": "Field2d",
+      "/Visualizers/Stem": "Mechanism2d",
+      "/Visualizers/SwerveModules/Module[0]": "Mechanism2d",
+      "/Visualizers/SwerveModules/Module[1]": "Mechanism2d",
+      "/Visualizers/SwerveModules/Module[2]": "Mechanism2d",
+      "/Visualizers/SwerveModules/Module[3]": "Mechanism2d"
+    },
+    "windows": {
+      "/Choosers/AutoChooser": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Field": {
+        "AprilTags": {
+          "image": "C:\\Programming\\FRC\\2025_Reefscape\\assets\\tag-blue.png",
+          "style": "Box/Image"
+        },
+        "SeenTags": {
+          "image": "C:\\Programming\\FRC\\2025_Reefscape\\assets\\tag-green.png"
+        },
+        "builtin": "",
+        "height": 8.71399974822998,
+        "image": "C:\\Programming\\FRC\\2025_Reefscape\\assets\\2025-field-igknighters.png",
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/SuperStructure": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Visualizers/SwerveModules/Module[0]": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Visualizers/SwerveModules/Module[1]": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Visualizers/SwerveModules/Module[2]": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Visualizers/SwerveModules/Module[3]": {
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "photonvision@1": {
+      "Subscribers": {
+        "open": false
+      },
+      "open": false
+    },
+    "photonvision@3": {
+      "Publishers": {
+        "open": false
+      },
+      "open": false
+    },
+    "visible": true
+  },
+  "NetworkTables Settings": {
+    "dsClient": false,
+    "mode": "Client (NT4)",
+    "serverTeam": "127.0.0.1"
+  },
+  "Plots": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "axis": [
+            {
+              "autoFit": true
+            }
+          ],
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 200,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/Robot/Swerve/swerveMods/0/driveAmps"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/Swerve/swerveMods/0/driveVolts"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:/Robot/Swerve/swerveMods/0/driveVeloMPS"
+            },
+            {
+              "color": [
+                0.7686275243759155,
+                0.30588236451148987,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/Swerve/swerveMods/0/targetDriveVeloMPS"
+            }
+          ]
+        },
+        {
+          "axis": [
+            {
+              "autoFit": true
+            }
+          ],
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 200,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/Robot/Swerve/swerveMods/0/steerAmps"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/Swerve/swerveMods/0/steerVolts"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:/Robot/Swerve/swerveMods/0/steerVeloRadPS"
+            },
+            {
+              "color": [
+                0.7686275243759155,
+                0.30588236451148987,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/Swerve/swerveMods/0/targetSteerAbsoluteRads"
+            }
+          ]
+        }
+      ]
+    },
+    "Plot <1>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 430,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/Robot/SuperStructure/Wrist/amps"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/SuperStructure/Wrist/volts"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:/Robot/SuperStructure/Wrist/radians"
+            },
+            {
+              "color": [
+                0.7686275243759155,
+                0.30588236451148987,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/SuperStructure/Wrist/targetRadians"
+            }
+          ]
+        }
+      ]
+    },
+    "Plot <2>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 430,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/Robot/SuperStructure/Elevator/amps"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/SuperStructure/Elevator/volts"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:/Robot/SuperStructure/Elevator/meters"
+            },
+            {
+              "color": [
+                0.7686275243759155,
+                0.30588236451148987,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/SuperStructure/Elevator/targetMeters"
+            }
+          ]
+        }
+      ]
+    },
+    "Plot <3>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 430,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/Robot/Intake/rollers/amps"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/Intake/rollers/volts"
+            },
+            {
+              "color": [
+                0.658823549747467,
+                0.35805416107177734,
+                0.3333333432674408,
+                1.0
+              ],
+              "digital": "Digital",
+              "id": "NT:/Robot/Intake/rollers/laserTripped",
+              "weight": 4.999997615814209
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -12,6 +12,7 @@ import igknighters.constants.FieldConstants.Reef;
 import wayfinder.repulsorField.Obstacle;
 import wayfinder.repulsorField.Obstacle.HorizontalObstacle;
 import wayfinder.repulsorField.Obstacle.VerticalObstacle;
+import wpilibExt.AllianceSymmetry;
 
 public class Pathing {
 
@@ -79,8 +80,8 @@ public class Pathing {
   };
 
   private static final Obstacle[] REEF_LARGE = {
-    new Obstacle.TeardropObstacle(new Translation2d(4.49, 4), 1.0, 3.5, 1.2, 2.0, 2.2),
-    new Obstacle.TeardropObstacle(new Translation2d(13.08, 4), 1.0, 3.5, 1.2, 2.0, 2.2),
+    new Obstacle.TeardropObstacle(new Translation2d(4.49, 4), 1.4, 2.5, 1.5, 0.7, 1.2),
+    new Obstacle.TeardropObstacle(new Translation2d(13.08, 4), 1.4, 2.5, 1.5, 0.7, 1.2),
   };
 
   private static final Obstacle[] WALL =
@@ -110,12 +111,13 @@ public class Pathing {
     CAGE(WALL, REEF_LARGE),
     Other(WALL, REEF_LARGE);
 
-    public final Rectangle2d hitBox;
+    public final Rectangle2d blueHitBox;
+    public final Rectangle2d redHitBox;
     public final Obstacle[] obstacles;
 
     private static Rectangle2d faceHitBox(Pose2d face) {
       final Transform2d transform = new Transform2d(new Translation2d(1.0, 0.0), Rotation2d.kZero);
-      return new Rectangle2d(face.plus(transform), 2.4, 2.25);
+      return new Rectangle2d(face.plus(transform), 2.4, 1.0);
     }
 
     PathObstacles(Pose2d hitBox, Obstacle[]... obstacles) {
@@ -127,7 +129,8 @@ public class Pathing {
     }
 
     PathObstacles(Rectangle2d hitBox, Obstacle[]... obstacles) {
-      this.hitBox = hitBox;
+      this.blueHitBox = hitBox;
+      this.redHitBox = faceHitBox(AllianceSymmetry.flip(hitBox.getCenter()));
       int totalLength = 0;
       for (var obstacleSet : obstacles) {
         totalLength += obstacleSet.length;
@@ -142,6 +145,22 @@ public class Pathing {
       }
 
       this.obstacles = all;
+    }
+
+    public static PathObstacles fromReefSide(Reef.Side side) {
+      return switch (side) {
+        case CLOSE_LEFT -> CLOSE_LEFT_REEF;
+        case CLOSE_MID -> CLOSE_MID_REEF;
+        case CLOSE_RIGHT -> CLOSE_RIGHT_REEF;
+        case FAR_LEFT -> FAR_LEFT_REEF;
+        case FAR_MID -> FAR_MID_REEF;
+        case FAR_RIGHT -> FAR_RIGHT_REEF;
+      };
+    }
+
+    public boolean insideHitBox(Translation2d position) {
+      return (blueHitBox.contains(position) && AllianceSymmetry.isBlue())
+          || (redHitBox.contains(position) && AllianceSymmetry.isRed());
     }
   }
 }

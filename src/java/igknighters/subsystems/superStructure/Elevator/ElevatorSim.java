@@ -63,12 +63,7 @@ public class ElevatorSim extends Elevator {
         ClosedLoop.forVoltageAngle(
             PIDFeedback.forAngular(Volts, kElevator.kP, kElevator.kD),
             ElevatorFeedforward.forVoltage(
-                Radians,
-                kElevator.kS,
-                kElevator.kG,
-                kElevator.kV,
-                kElevator.kA,
-                simCtx.timing().dt()),
+                Radians, kElevator.kS, 0.0, kElevator.kV, kElevator.kA, simCtx.timing().dt()),
             UnitTrapezoidProfile.forAngle(
                 RotationsPerSecond.of(kElevator.MAX_VELOCITY),
                 RotationsPerSecondPerSecond.of(kElevator.MAX_ACCELERATION)));

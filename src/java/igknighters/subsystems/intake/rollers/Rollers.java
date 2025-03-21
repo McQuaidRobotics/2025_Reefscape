@@ -6,15 +6,17 @@ import monologue.Annotations.Log;
 
 public abstract class Rollers extends Component {
   private final double kt, kv;
+  protected final DCMotor motor;
 
   @Log protected double amps;
   @Log protected double volts;
-  @Log protected boolean hasAlgae;
-  @Log protected boolean hasCoral;
   @Log protected double radiansPerSecond;
+  @Log protected boolean laserTripped;
+  @Log protected double gamepieceDistance;
   @Log protected boolean controlledLastCycle;
 
   protected Rollers(DCMotor motor) {
+    this.motor = motor;
     kt = motor.KtNMPerAmp;
     kv = motor.KvRadPerSecPerVolt;
   }
@@ -51,23 +53,13 @@ public abstract class Rollers extends Component {
     voltageOut(velocity / kv);
   }
 
-  /**
-   * Returns true if the rollers have coral.
-   *
-   * <p>This returning true in a given cycle should be mutually exclusive with {@link #hasAlgae()}
-   * returning true in the same cycle.
-   *
-   * @return true if the rollers have coral
-   */
-  public abstract boolean hasCoral();
+  public boolean isLaserTripped() {
+    return laserTripped;
+  }
 
-  /**
-   * Returns true if the rollers have algae.
-   *
-   * <p>This returning true in a given cycle should be mutually exclusive with {@link #hasCoral()}
-   * returning true in the same cycle.
-   *
-   * @return true if the rollers have algae
-   */
-  public abstract boolean hasAlgae();
+  public abstract boolean isStalling();
+
+  public double gamepieceDistance() {
+    return gamepieceDistance;
+  }
 }

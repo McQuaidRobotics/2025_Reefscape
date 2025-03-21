@@ -7,6 +7,8 @@ import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kDriveMotor
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
 import igknighters.util.LerpTable;
 import igknighters.util.LerpTable.LerpTableEntry;
+import wayfinder.controllers.Types.ChassisConstraints;
+import wayfinder.controllers.Types.Constraints;
 
 public class SwerveConstants {
 
@@ -28,14 +30,14 @@ public class SwerveConstants {
 
   public static final class ModuleConstants {
     public static final class kWheel {
-      public static final double RADIUS = 2.0 * Conv.INCHES_TO_METERS;
+      public static final double RADIUS = 1.94 * Conv.INCHES_TO_METERS;
       public static final double DIAMETER = RADIUS * 2.0;
       public static final double CIRCUMFERENCE = DIAMETER * Math.PI;
       public static final double COF = 1.8;
     }
 
     public static final class kDriveMotor {
-      public static final double GEAR_RATIO = SwerveGearRatios.L2_DRIVE_KRAKEN;
+      public static final double GEAR_RATIO = SwerveGearRatios.L3_DRIVE_KRAKEN;
 
       public static final boolean INVERT = false;
       public static final boolean NEUTRAL_MODE_BRAKE = false;
@@ -48,7 +50,7 @@ public class SwerveConstants {
       public static final double kV = kKrakenX60Foc.kV * GEAR_RATIO;
 
       public static final double STATOR_CURRENT_LIMIT = 120.0;
-      public static final double SUPPLY_CURRENT_LIMIT = 60.0;
+      public static final double SUPPLY_CURRENT_LIMIT = 50.0;
 
       public static final double MAX_VELOCITY = (12.0 - kS) / kV;
     }
@@ -57,7 +59,7 @@ public class SwerveConstants {
       public static final double GEAR_RATIO = SwerveGearRatios.STEER;
 
       public static final boolean INVERT = true;
-      public static final boolean NEUTRAL_MODE_BRAKE = false;
+      public static final boolean NEUTRAL_MODE_BRAKE = true;
 
       public static final double kP = 30.0;
       public static final double kI = 0.0;
@@ -95,17 +97,17 @@ public class SwerveConstants {
     public static final LerpTable TELEOP_TRANSLATION_AXIS_CURVE =
         new LerpTable(
             new LerpTableEntry(0.0, 0.0),
-            new LerpTableEntry(0.15, 0.0), // deadzone
-            new LerpTableEntry(0.7, 0.4),
+            new LerpTableEntry(0.05, 0.0), // deadzone
+            new LerpTableEntry(0.7, 0.55),
             new LerpTableEntry(1.0, 1.0));
 
     public static final LerpTable TELEOP_ROTATION_AXIS_CURVE =
         new LerpTable(
             new LerpTableEntry(0.0, 0.0),
-            new LerpTableEntry(0.15, 0.0), // deadzone
-            new LerpTableEntry(0.5, 0.2),
-            new LerpTableEntry(0.7, 0.4),
-            new LerpTableEntry(1.0, 0.6));
+            new LerpTableEntry(0.05, 0.0), // deadzone
+            new LerpTableEntry(0.5, 0.3),
+            new LerpTableEntry(0.7, 0.6),
+            new LerpTableEntry(1.0, 1.0));
 
     public static final Translation2d[] MODULE_CHASSIS_LOCATIONS =
         new Translation2d[] {
@@ -114,5 +116,10 @@ public class SwerveConstants {
           new Translation2d(-DRIVEBASE_WIDTH / 2.0, DRIVEBASE_WIDTH / 2.0),
           new Translation2d(DRIVEBASE_WIDTH / 2.0, DRIVEBASE_WIDTH / 2.0)
         };
+
+    public static final ChassisConstraints CONSTRAINTS =
+        new ChassisConstraints(
+            new Constraints(MAX_DRIVE_VELOCITY, MAX_DRIVE_VELOCITY * 3.0),
+            new Constraints(MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY));
   }
 }

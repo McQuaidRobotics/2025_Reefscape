@@ -34,4 +34,13 @@ public class Types {
           translation.min(other.translation), rotation.min(other.rotation));
     }
   }
+
+  public enum ControllerMode {
+    STRICT,
+    REPLANNING,
+    UNPROFILED;
+
+    public static final Struct<ControllerMode> struct =
+        ProceduralStructGenerator.genEnum(ControllerMode.class);
+  }
 }

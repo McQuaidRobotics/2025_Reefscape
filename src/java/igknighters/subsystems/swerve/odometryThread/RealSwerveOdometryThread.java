@@ -27,7 +27,7 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
 
   protected final AtomicLong[] gyroStates = new AtomicLong[2];
 
-  protected boolean enableLatencyCompensation = true;
+  protected boolean enableLatencyCompensation = false;
 
   private double getAtomicDouble(AtomicLong[] array, int index) {
     return Double.longBitsToDouble(array[index].get());
@@ -103,6 +103,14 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
         latencyCompensatedValue(signals[MODULE_COUNT * 4], signals[(MODULE_COUNT * 4) + 1]));
   }
 
+  private double getDataLatency() {
+    double totalLatency = 0.0;
+    for (var signal : signals) {
+      totalLatency += signal.getTimestamp().getLatency();
+    }
+    return totalLatency / (double) signals.length;
+  }
+
   private double getAcceleration() {
     return Math.hypot(
         signals[(MODULE_COUNT * 4) + 2].getValueAsDouble(),
@@ -144,10 +152,10 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
 
         swerveDataSender.send(
             new SwerveDriveSample(
-                getModulePositions(),
+                log("ModulePositions", getModulePositions()),
                 getGyroRotation(),
                 getAcceleration(),
-                Timer.getFPGATimestamp()));
+                Timer.getFPGATimestamp() - log("latency", getDataLatency())));
       }
     } finally {
       isRunning.set(false);

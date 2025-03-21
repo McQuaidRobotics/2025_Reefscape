@@ -2,6 +2,8 @@
 
 package choreo.trajectory;
 
+import choreo.util.ChoreoAllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil.Flipper;
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.ArrayList;
 import java.util.List;
@@ -155,8 +157,8 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
    * @return The SampleType at the given time.
    */
   public Optional<SampleType> sampleAt(double timestamp, boolean mirrorForRedAlliance) {
-    Optional<SampleType> state = sampleInternal(timestamp);
-    return mirrorForRedAlliance ? state.map(SampleType::flipped) : state;
+    Optional<SampleType> sample = sampleInternal(timestamp);
+    return mirrorForRedAlliance ? sample.map(SampleType::flipped) : sample;
   }
 
   /**
@@ -209,16 +211,26 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   }
 
   /**
+   * Returns this trajectory, flipped based on the given flipper.
+   *
+   * @param flipper the flipper to use.
+   * @return this trajectory, flipped based on the given flipper.
+   */
+  public Trajectory<SampleType> flipped(Flipper flipper) {
+    var flippedStates = new ArrayList<SampleType>();
+    for (var state : samples) {
+      flippedStates.add(state.flipped(flipper));
+    }
+    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+  }
+
+  /**
    * Returns this trajectory, mirrored across the field midline.
    *
    * @return this trajectory, mirrored across the field midline.
    */
   public Trajectory<SampleType> flipped() {
-    var flippedStates = new ArrayList<SampleType>();
-    for (var state : samples) {
-      flippedStates.add(state.flipped());
-    }
-    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+    return flipped(ChoreoAllianceFlipUtil.getFlipper());
   }
 
   /**
@@ -239,12 +251,21 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
    * @return a choreo trajectory that represents the split of the trajectory at the given index.
    */
   public Optional<Trajectory<SampleType>> getSplit(int splitIndex) {
+    // Assumption: splits.get(splitIndex) is a valid index of samples.
     if (splitIndex < 0 || splitIndex >= splits.size()) {
       return Optional.empty();
     }
     int start = splits.get(splitIndex);
     int end = splitIndex + 1 < splits.size() ? splits.get(splitIndex + 1) + 1 : samples.size();
     var sublist = samples.subList(start, end);
+    // Empty section should not be achievable (would mean malformed splits array), but is handled
+    // for safety
+    if (sublist.size() == 0) {
+      return Optional.of(
+          new Trajectory<SampleType>(
+              this.name + "[" + splitIndex + "]", List.of(), List.of(), List.of()));
+    }
+    // Now we know sublist.size() >= 1
     double startTime = sublist.get(0).getTimestamp();
     double endTime = sublist.get(sublist.size() - 1).getTimestamp();
     return Optional.of(

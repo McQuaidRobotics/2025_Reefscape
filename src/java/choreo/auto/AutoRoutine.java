@@ -9,6 +9,7 @@ import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -38,19 +39,27 @@ public class AutoRoutine {
   private final String name;
 
   /** The alliance helper that is used to determine flipping logic */
-  private final AllianceContext allianceCtx;
+  final AllianceContext allianceCtx;
 
   /** A boolean utilized in {@link #active()} to resolve trueness */
-  boolean isActive = false;
+  private boolean isActive = false;
+
+  private final Trigger isActiveTrigger =
+      new Trigger(loop, () -> isActive && DriverStation.isEnabled());
 
   /** A boolean indicating if a trajectory is running on the routine right now */
   private boolean isIdle = true;
+
+  private final Trigger isIdleTrigger = new Trigger(loop, () -> isIdle);
 
   /** A boolean that is true when the loop is killed */
   boolean isKilled = false;
 
   /** The amount of times the routine has been polled */
   private int pollCount = 0;
+
+  /** The timestamp of the current cycle */
+  private double cycleTimestamp = 0;
 
   /**
    * Creates a new loop with a specific name and a custom alliance supplier.
@@ -66,6 +75,10 @@ public class AutoRoutine {
     this.allianceCtx = allianceHelper;
   }
 
+  public String name() {
+    return name;
+  }
+
   /**
    * Returns a {@link Trigger} that is true while this autonomous routine is being polled.
    *
@@ -75,16 +88,17 @@ public class AutoRoutine {
    * @return A {@link Trigger} that is true while this autonomous routine is being polled.
    */
   public Trigger active() {
-    return new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
+    return isActiveTrigger;
   }
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled() || !allianceCtx.allianceKnownOrIgnored() || isKilled) {
+    if (DriverStation.isDisabled() || !allianceCtx.allianceKnownOrIgnored() || isKilled) {
       isActive = false;
       return;
     }
     pollCount++;
+    cycleTimestamp = Timer.getFPGATimestamp();
     loop.poll();
     isActive = true;
   }
@@ -108,13 +122,12 @@ public class AutoRoutine {
     return new Trigger(loop, condition);
   }
 
-  /**
-   * Gets the poll count of the routine.
-   *
-   * @return The poll count of the routine.
-   */
   int pollCount() {
     return pollCount;
+  }
+
+  double cycleTimestamp() {
+    return cycleTimestamp;
   }
 
   /**
@@ -133,6 +146,7 @@ public class AutoRoutine {
    */
   public void reset() {
     pollCount = 0;
+    cycleTimestamp = 0;
     isActive = false;
   }
 
@@ -155,7 +169,7 @@ public class AutoRoutine {
    * @return A trigger that is true when the routine is idle.
    */
   public Trigger idle() {
-    return new Trigger(loop, () -> isIdle);
+    return isIdleTrigger;
   }
 
   /**
@@ -210,7 +224,8 @@ public class AutoRoutine {
    * @param cyclesToDelay The number of cycles to delay.
    * @param trajectory The first trajectory to watch.
    * @param trajectories The other trajectories to watch
-   * @return a trigger that determines if any of the trajectories are finished
+   * @return a trigger that goes true for one cycle whenever any of the trajectories finishes,
+   *     delayed by the given number of cycles.
    * @see AutoTrajectory#doneDelayed(int)
    */
   public Trigger anyDoneDelayed(
@@ -257,14 +272,16 @@ public class AutoRoutine {
   /**
    * Creates a trigger that returns true when any of the trajectories given are inactive.
    *
+   * <p>This trigger will only return true if the routine is active.
+   *
    * @param trajectory The first trajectory to watch.
    * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are inactive
    */
-  public Trigger anyInactive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+  public Trigger allInactive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
     var trigger = trajectory.inactive();
     for (int i = 0; i < trajectories.length; i++) {
-      trigger = trigger.or(trajectories[i].inactive());
+      trigger = trigger.and(trajectories[i].inactive());
     }
     return trigger.and(this.active());
   }
@@ -297,7 +314,7 @@ public class AutoRoutine {
     return Commands.either(
         Commands.run(this::poll)
             .finallyDo(this::reset)
-            .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
+            .until(() -> DriverStation.isDisabled() || finishCondition.getAsBoolean())
             .withName(name),
         Commands.runOnce(
             () -> {

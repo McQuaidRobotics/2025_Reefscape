@@ -78,7 +78,6 @@ public class ShamGyro {
     AngularVelocity omegaV =
         actualAngularVelocity
             .plus(averageDriftingMotionless)
-            // .plus(getDriftingDueToImpact(actualAngularVelocity))
             .plus(
                 actualAngularVelocity.times(ShamCommonMath.generateRandomNormal(0.0, veloStdDev)));
 
@@ -98,20 +97,4 @@ public class ShamGyro {
       updateConsumer.accept(Pair.of(angleThisTick, omegaV), new XY<>(xA, yA));
     }
   }
-
-  // private AngularVelocity getDriftingDueToImpact(AngularVelocity actualAngularVelocity) {
-  //     AngularVelocity lastAngularVelocity = RadiansPerSecond.of(
-  //         lastTwist.dtheta * timing.dt().in(Seconds)
-  //     );
-  //     AngularAcceleration angularAcceleration =
-  // actualAngularVelocity.minus(lastAngularVelocity).div(timing.dt());
-  //     if (MeasureMath.abs(angularAcceleration).gt(START_DRIFTING)) {
-  //         return DRIFT_DUE_TO_IMPACT_COEFFICIENT
-  //                 .times(MeasureMath.signum(angularAcceleration))
-  //                 .times(angularAcceleration.div(START_DRIFTING))
-  //                 .div(timing.dt());
-  //     } else {
-  //         return RadiansPerSecond.of(0);
-  //     }
-  // }
 }

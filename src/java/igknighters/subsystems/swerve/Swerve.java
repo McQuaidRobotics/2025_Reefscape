@@ -59,6 +59,7 @@ import wpilibExt.Tracer;
  */
 public class Swerve implements ExclusiveSubsystem {
   private final SharedState sharedState;
+  private final Localizer localizer;
 
   private final Gyro gyro;
   private final SwerveModule[] swerveMods;
@@ -97,6 +98,7 @@ public class Swerve implements ExclusiveSubsystem {
 
   public Swerve(SharedState shared, Localizer localizer, SimCtx simCtx) {
     sharedState = shared;
+    this.localizer = localizer;
     final boolean useSham = true;
     if (Robot.isSimulation()) {
       sim = Optional.of((ShamSwerve) simCtx.robot().getDriveTrain());
@@ -188,6 +190,23 @@ public class Swerve implements ExclusiveSubsystem {
     drive(speeds, defaultConstraints);
   }
 
+  public void drivePreProfiled(Speeds speeds) {
+    RobotSpeeds robotSpeeds = speeds.asRobotRelative(getYaw());
+    log("targetSpeed", robotSpeeds);
+
+    setpoint =
+        setpointGeneratorBeta.generateSimpleSetpoint(
+            setpoint, robotSpeeds, ConstValues.PERIODIC_TIME);
+
+    setModuleStates(setpoint.moduleStates());
+  }
+
+  public void driveVolts(Rotation2d wheelAngleRobotRelative, double volts) {
+    for (var module : swerveMods) {
+      module.setVoltageOut(volts, wheelAngleRobotRelative);
+    }
+  }
+
   /**
    * Offsets the gyro to define the current yaw as the supplied value
    *
@@ -203,7 +222,11 @@ public class Swerve implements ExclusiveSubsystem {
    * @return A {@link Rotation2d} representing the current yaw
    */
   public Rotation2d getYaw() {
-    return Rotation2d.fromRadians(gyro.getYawRads());
+    return localizer.pose().getRotation();
+  }
+
+  public double getYawForNow() {
+    return gyro.getYawRads();
   }
 
   /**

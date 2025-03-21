@@ -46,8 +46,8 @@ public class SuperStructureConstants {
         (PULLEY_RADIUS * PULLEY_RADIUS)
             * (STAGES[0].mass + STAGES[1].mass + STAGES[2].mass + STAGES[3].mass);
 
-    public static final double MIN_HEIGHT = 12.75 * Conv.INCHES_TO_METERS;
-    public static final double MAX_HEIGHT = 80.25 * Conv.INCHES_TO_METERS;
+    public static final double MIN_HEIGHT = 13.1 * Conv.INCHES_TO_METERS;
+    public static final double MAX_HEIGHT = 80.5 * Conv.INCHES_TO_METERS;
     public static final double DEFAULT_TOLERANCE = 0.75 * Conv.INCHES_TO_METERS;
 
     public static final double kP = 6.0;
@@ -68,8 +68,8 @@ public class SuperStructureConstants {
 
   public class kWrist {
     public static final double LENGTH = 9.0 * Conv.INCHES_TO_METERS;
-    public static final double MAX_ANGLE = -0.23 * Conv.ROTATIONS_TO_RADIANS;
-    public static final double MAX_ANGLE_ALGAE = -0.07 * Conv.ROTATIONS_TO_RADIANS;
+    public static final double MAX_ANGLE = -0.20 * Conv.ROTATIONS_TO_RADIANS;
+    public static final double ALGAE_MAX_ANGLE = -0.07 * Conv.ROTATIONS_TO_RADIANS;
     public static final double MIN_ANGLE = 0.127 * Conv.ROTATIONS_TO_RADIANS;
 
     public static final int MOTOR_ID = 11;
@@ -83,14 +83,16 @@ public class SuperStructureConstants {
     public static final double KD = 0.0;
     public static final double KG = 0.07;
     public static final double KS = 0.2;
-    public static final double KV = (12.0 / kKrakenX60Foc.FREE_SPEED) * GEAR_RATIO;
+    public static final double KV = kKrakenX60Foc.kV * GEAR_RATIO;
     public static final double KA = 0.00;
 
     public static final double MAX_VELOCITY = (12.0 - KS - KG) / KV;
-    public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.5;
+    public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.1;
+    public static final double ALGAE_MAX_VELOCITY = MAX_VELOCITY * 0.75;
+    public static final double ALGAE_MAX_ACCELERATION = MAX_ACCELERATION * 0.5;
 
-    public static final double DEFAULT_TOLERANCE = 1.0 * Conv.DEGREES_TO_RADIANS;
-    public static final double ANGLE_OFFSET = -0.100341796875;
+    public static final double DEFAULT_TOLERANCE = 1.3 * Conv.DEGREES_TO_RADIANS;
+    public static final double ANGLE_OFFSET = -0.30810546875;
 
     public static final double STATOR_CURRENT_LIMIT = 50.0;
     public static final double SUPPLY_CURRENT_LIMIT = 40.0;
