@@ -32,7 +32,7 @@ public class SwerveConstants {
 
   public static final class ModuleConstants {
     public static final class kWheel {
-      public static final double RADIUS = 1.94 * Conv.INCHES_TO_METERS;
+      public static final double RADIUS = 1.936 * Conv.INCHES_TO_METERS;
       public static final double DIAMETER = RADIUS * 2.0;
       public static final double CIRCUMFERENCE = DIAMETER * Math.PI;
       public static final double COF = 1.8;
@@ -80,11 +80,7 @@ public class SwerveConstants {
       public static final boolean INVERT = false;
 
       public static final double[] ENCODER_OFFSETS_ROTATIONS =
-          new double[] {
-            -0.219482421875,
-            -0.384521484375,
-            0.355224609375,
-            -0.1943359375};
+          new double[] {-0.219482421875, -0.384521484375, 0.355224609375, -0.1943359375};
     }
   }
 

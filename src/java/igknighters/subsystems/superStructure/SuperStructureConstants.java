@@ -53,8 +53,8 @@ public class SuperStructureConstants {
 
     public static final double kP = 6.0;
     public static final double kD = 0.0;
-    public static final double kG = 0.05;
-    public static final double kS = 0.3;
+    public static final double kG = 0.2;
+    public static final double kS = 0.2;
     public static final double kV = kKrakenX60Foc.kV * GEAR_RATIO;
     public static final double kA = 0.00;
 
