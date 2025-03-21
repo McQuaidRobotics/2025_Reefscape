@@ -12,6 +12,7 @@ import igknighters.Localizer;
 import igknighters.commands.SuperStructureCommands.MoveOrder;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
+import igknighters.constants.FieldConstants.FaceSubLocation;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
@@ -26,15 +27,6 @@ import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
 
 public class OperatorTarget implements StructSerializable {
-  public enum FaceSubLocation implements StructSerializable {
-    LEFT,
-    RIGHT,
-    CENTER;
-
-    public static final Struct<FaceSubLocation> struct =
-        ProceduralStructGenerator.genEnum(FaceSubLocation.class);
-  }
-
   private boolean wasUpdated = false;
   private boolean hasTarget = false;
   private FaceSubLocation faceSubLocation = FaceSubLocation.CENTER;
