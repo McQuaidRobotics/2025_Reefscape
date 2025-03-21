@@ -64,7 +64,6 @@ public class SuperStructureConstants {
     public static final double MAX_VELOCITY_LINEAR = MAX_VELOCITY * PULLEY_RADIUS;
     public static final double MAX_ACCELERATION_LINEAR = MAX_ACCELERATION * PULLEY_RADIUS;
 
-
     public static final double HOMING_VOLTAGE = -kS - 2.0;
 
     public static final double STATOR_CURRENT_LIMIT = 80.0;
@@ -73,8 +72,8 @@ public class SuperStructureConstants {
 
   public class kWrist {
     public static final double LENGTH = 9.0 * Conv.INCHES_TO_METERS;
-    public static final double MAX_ANGLE = -0.20 * Conv.ROTATIONS_TO_RADIANS;
-    public static final double ALGAE_MAX_ANGLE = -0.07 * Conv.ROTATIONS_TO_RADIANS;
+    public static final double MAX_ANGLE = -1.1;
+    public static final double ALGAE_MAX_ANGLE = 0.0;
     public static final double MIN_ANGLE = 0.127 * Conv.ROTATIONS_TO_RADIANS;
 
     public static final int MOTOR_ID = 11;
@@ -97,7 +96,7 @@ public class SuperStructureConstants {
     public static final double ALGAE_MAX_ACCELERATION = MAX_ACCELERATION * 0.5;
 
     public static final double DEFAULT_TOLERANCE = 1.3 * Conv.DEGREES_TO_RADIANS;
-    public static final double ANGLE_OFFSET = -0.30810546875;
+    public static final double ANGLE_OFFSET = 0.18115234375;
 
     public static final double STATOR_CURRENT_LIMIT = 50.0;
     public static final double SUPPLY_CURRENT_LIMIT = 40.0;

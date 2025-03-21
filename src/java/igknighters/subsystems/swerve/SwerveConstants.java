@@ -80,7 +80,11 @@ public class SwerveConstants {
       public static final boolean INVERT = false;
 
       public static final double[] ENCODER_OFFSETS_ROTATIONS =
-          new double[] {-0.2055, -0.39453, 0.35766, -0.192383};
+          new double[] {
+            -0.219482421875,
+            -0.384521484375,
+            0.355224609375,
+            -0.1943359375};
     }
   }
 
