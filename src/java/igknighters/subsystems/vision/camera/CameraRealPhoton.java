@@ -39,10 +39,10 @@ public class CameraRealPhoton extends Camera {
     poseEstimator =
         new PhotonPoseEstimator(
             FieldConstants.APRIL_TAG_FIELD,
-            PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             this.robotToCamera);
     poseEstimator.setTagModel(TargetModel.kAprilTag36h11);
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
 
     BootupLogger.bootupLog("    " + config.cameraName() + " camera initialized (real)");
   }
@@ -134,8 +134,6 @@ public class CameraRealPhoton extends Camera {
     if (DriverStation.isDisabled()) {
       clearHeading();
       poseEstimator.setPrimaryStrategy(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
-    } else {
-      poseEstimator.setPrimaryStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
     }
     for (var result : results) {
       ArrayList<PhotonTrackedTarget> newTargets = new ArrayList<>();
