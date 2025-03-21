@@ -19,7 +19,11 @@ public enum Waypoints {
   FarMid_R,
   FarMid_L,
   FarMid_M,
+  FarMid_C,
+  Barge_R,
+  Barge_L,
   Intake,
+  StartingMiddle,
   StartingInside,
   StartingOutside;
 
