@@ -37,6 +37,20 @@ public class SuperStructureCommands {
                 kWrist.DEFAULT_TOLERANCE * scalar));
   }
 
+  public static Trigger isElevatorAt(SuperStructure superStructure, double elevatorMeters, double tolerance) {
+    return new Trigger(
+        () ->
+            superStructure.isAt(
+                elevatorMeters, superStructure.wristAngle(), tolerance, 1000.0));
+  }
+
+  public static Trigger isWristAt(SuperStructure superStructure, double wristRads, double tolerance) {
+    return new Trigger(
+        () ->
+            superStructure.isAt(
+                superStructure.elevatorHeight(), wristRads, 1000.0, tolerance));
+  }
+
   public enum MoveOrder {
     ELEVATOR_FIRST,
     WRIST_FIRST,

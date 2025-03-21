@@ -43,8 +43,7 @@ public class SuperStructureConstants {
             + STAGES[3].rangeOfMotion();
 
     public static final double MOI =
-        (PULLEY_RADIUS * PULLEY_RADIUS)
-            * (STAGES[0].mass + STAGES[1].mass + STAGES[2].mass + STAGES[3].mass);
+        (PULLEY_RADIUS * PULLEY_RADIUS) * (21.0 * Conv.POUNDS_TO_KILOGRAMS);
 
     public static final double MIN_HEIGHT = 13.1 * Conv.INCHES_TO_METERS;
     public static final double MAX_HEIGHT = 80.5 * Conv.INCHES_TO_METERS;
@@ -82,9 +81,9 @@ public class SuperStructureConstants {
     public static final boolean INVERT_ENCODER = false;
     public static final double GEAR_RATIO = (5.0 / 1.0) * (5.0 / 1.0) * (60.0 / 30.0);
 
-    public static final double KP = 110.0;
+    public static final double KP = 125.0;
     public static final double KD = 0.0;
-    public static final double KG = 0.07;
+    public static final double KG = 0.0;
     public static final double KS = 0.2;
     public static final double KV = kKrakenX60Foc.kV * GEAR_RATIO;
     public static final double KA = 0.00;
