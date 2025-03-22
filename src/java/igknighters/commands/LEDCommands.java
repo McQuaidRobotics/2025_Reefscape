@@ -11,7 +11,6 @@ import igknighters.subsystems.led.Led;
 import igknighters.subsystems.led.LedUtil;
 import java.util.ArrayList;
 import java.util.List;
-import monologue.Monologue;
 
 public class LEDCommands {
 
@@ -35,11 +34,10 @@ public class LEDCommands {
                 DriverStation.reportError(
                     "incorect lengths on offsets and patterns LED COMMANDS ", false);
               } else {
-                Monologue.log(
-                    "both patterns", "PAT 1: " + names.get(0) + " PAT 2: " + names.get(1));
+                led.log("both patterns", "PAT 1: " + names.get(0) + " PAT 2: " + names.get(1));
                 for (int i = 0; i < patterns.size(); i++) {
                   if (index.get(i) == 0) {
-                    Monologue.log(
+                    led.log(
                         "zone for strip 1",
                         MathUtil.clamp(offsets.get(i), 0, 34)
                             + " endzone: "
@@ -50,7 +48,7 @@ public class LEDCommands {
                             MathUtil.clamp(offsets.get(i) + lengths.get(i) - 1, 0, 35));
                     patterns.get(i).applyTo(controlledZone);
                   } else {
-                    Monologue.log(
+                    led.log(
                         "zone for strip 2 ",
                         MathUtil.clamp(36 + offsets.get(i), 37, blankSlate.getLength() - 1)
                             + " endzone: "

@@ -73,7 +73,7 @@ public class SubsystemTriggers {
             SwerveCommands.orientGyro(swerve, vision, localizer, localizer.pose().getRotation()))
         .onTrue(Commands.print("Reorienting robot to localizer pose"));
     final Trigger ledIdle = Triggers.subsystemIdle(led);
-    Monologue.log("is robot disabled", RobotModeTriggers.disabled().getAsBoolean());
+
     final Trigger ledEnabled =
         RobotModeTriggers.disabled()
             .onFalse(
