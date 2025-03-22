@@ -72,8 +72,8 @@ public class LedUtil {
     final Color[] colors = new Color[2];
     colors[0] = buffer.getLED(0);
     colors[1] = buffer.getLED(39);
-    Monologue.log("led0Value", ColorStruct.INSTANCE, colors[0]);
-    Monologue.log("led38Val", ColorStruct.INSTANCE, colors[1]);
+    Monologue.log("Robot/Led/led0Value", ColorStruct.INSTANCE, colors[0]);
+    Monologue.log("Robot/Led/led38Value", ColorStruct.INSTANCE, colors[1]);
   }
 
   public static class NamedLEDPattern implements LEDPattern {
