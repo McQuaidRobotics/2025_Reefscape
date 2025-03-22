@@ -123,7 +123,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     final var routines = new AutoRoutines(subsystems, localizer, autoFactory);
     AutoRoutines.addCmd(autoChooser, "test", routines::test);
     AutoRoutines.addCmd(autoChooser, "testMove", routines::testMove);
-    AutoRoutines.addCmd(autoChooser, "BARGE", routines::algaeBarge);
+    autoChooser.addCmd("bargeAlgae", routines.algaeBarge(true));
     autoChooser.addCmd("straight", routines.trajTest("Straight"));
     setupAutoChooser();
 

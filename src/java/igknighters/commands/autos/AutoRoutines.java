@@ -4,21 +4,19 @@ import static igknighters.commands.autos.Waypoints.*;
 
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
+import choreo.util.ChoreoAllianceFlipUtil.Flipper;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
-import igknighters.Robot;
 import igknighters.commands.IntakeCommands;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SuperStructureCommands.MoveOrder;
+import igknighters.commands.SwerveCommands;
 import igknighters.subsystems.Subsystems;
-import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.intake.Intake.Holding;
-import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import java.util.function.Supplier;
 
@@ -27,13 +25,13 @@ public class AutoRoutines extends AutoCommands {
   public AutoRoutines(Subsystems subsystems, Localizer localizer, AutoFactory factory) {
     super(factory, subsystems, localizer);
 
-    if (Robot.isSimulation()) {
-      new Trigger(DriverStation::isAutonomousEnabled)
-          .onTrue(
-              Commands.waitSeconds(15.3)
-                  .andThen(() -> DriverStationSim.setEnabled(false))
-                  .withName("Simulated Auto Ender"));
-    }
+    // if (Robot.isSimulation()) {
+    //   new Trigger(DriverStation::isAutonomousEnabled)
+    //       .onTrue(
+    //           Commands.waitSeconds(15.3)
+    //               .andThen(() -> DriverStationSim.setEnabled(false))
+    //               .withName("Simulated Auto Ender"));
+    // }
   }
 
   public Supplier<Command> trajTest(String trajName) {
@@ -41,38 +39,80 @@ public class AutoRoutines extends AutoCommands {
         Commands.sequence(factory.resetOdometry(trajName), factory.trajectoryCmd(trajName));
   }
 
-  public Command grabAlgaeFarMid_C() {
-    return Commands.parallel(
-        Commands.sequence(
-            factory.resetOdometry("FarMid_LToFarMid_C"),
-            factory.trajectoryCmd("FarMid_LToFarMid_C")),
-        Commands.sequence(
+  @SuppressWarnings("unchecked")
+  public Trajectory<SwerveSample> flipTrajectory(boolean leftSide, Waypoints start, Waypoints end) {
+    Trajectory<SwerveSample> rawTraj =
+        (Trajectory<SwerveSample>) factory.cache().loadTrajectory(start.to(end)).orElseThrow();
+    if (leftSide) {
+      return rawTraj;
+    } else {
+      return rawTraj.flipped(Flipper.MIRRORED_X);
+    }
+  }
+
+  public Command L4ToAlgaeFarMid(boolean leftSide) {
+    Commands.print("grabAlgaeFarMid");
+    Trajectory<?> trajectory = flipTrajectory(leftSide, FarMid_L, FarMid_C);
+    return factory.trajectoryCmd(trajectory),
             SuperStructureCommands.holdAt(
-                superStructure, SuperStructureState.AlgaeL3, MoveOrder.ELEVATOR_FIRST),
-            IntakeCommands.intakeAlgae(intake)));
+                superStructure, SuperStructureState.AlgaeL2, MoveOrder.ELEVATOR_FIRST),
+            IntakeCommands.intakeAlgae(super.intake))
+        .withTimeout(2)
+        .withName("L4ToAlgaeFarMid");
   }
 
-  public Command algaeFarMid_CToBarge_R() {
-    return Commands.sequence(
-        IntakeCommands.holdAlgae(intake),
-        factory.resetOdometry("FarMid_CToBarge_R"),
-        factory.trajectoryCmd("FarMid_LToFarMid_C"),
-        Commands.parallel(
-            Commands.sequence(
-                SuperStructureCommands.moveTo(superStructure, SuperStructureState.Net_FLICKED),
-                new ScheduleCommand(
-                    SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))),
-            Commands.sequence(
-                IntakeCommands.holdAlgae(intake).withTimeout(0.14),
-                IntakeCommands.expel(intake).withTimeout(0.25))));
+  public Command StartingMiddleToFarMid_L(boolean leftSide) {
+    Trajectory<?> trajectory = flipTrajectory(leftSide, StartingMiddle, FarMid_L);
+    Commands.print("StartingMiddleToFarMid_L");
+    return Commands.parallel(
+            Commands.sequence(factory.resetOdometry(trajectory), factory.trajectoryCmd(trajectory))
+                .andThen(
+                    SwerveCommands.moveToSimple(
+                        swerve, localizer, trajectory.getFinalPose(leftSide).get())),
+            SuperStructureCommands.holdAt(
+                superStructure, SuperStructureState.ScoreL4, MoveOrder.ELEVATOR_FIRST),
+            IntakeCommands.holdCoral(intake))
+        .until(
+            localizer.near(
+                new Translation2d(
+                    trajectory.getFinalPose(leftSide).get().getX(),
+                    trajectory.getFinalPose(leftSide).get().getY()),
+                0.05))
+        .andThen(IntakeCommands.expel(intake))
+        .withTimeout(0.3)
+        .until(IntakeCommands.isHolding(intake, Holding.NONE))
+        .withName("StartingMiddleToFarMid_L");
   }
 
-  public Command algaeBarge(boolean leftSide, SuperStructure superStructure, Intake intake) {
-    return newAuto("algaeBarge", leftSide)
-        .addScoringTrajectory(StartingMiddle, FarMid_C)
-        .build()
-        .andThen(grabAlgaeFarMid_C().until(() -> intake.getHolding().equals(Holding.ALGAE)))
-        .andThen(algaeFarMid_CToBarge_R().until(() -> intake.getHolding().equals(Holding.NONE)));
+  public Command algaeFarMid_CToBarge_R(boolean leftSide) {
+    Trajectory<?> trajectory = flipTrajectory(leftSide, FarMid_C, Barge_R);
+    Commands.print("ALGAE FAR MID C TO BARGE");
+    return Commands.parallel(
+            IntakeCommands.holdAlgae(super.intake),
+            Commands.sequence(factory.resetOdometry(trajectory), factory.trajectoryCmd(trajectory)))
+        .andThen(
+            SwerveCommands.moveToSimple(swerve, localizer, trajectory.getFinalPose(leftSide).get()))
+        .until(
+            localizer.near(
+                new Translation2d(
+                    trajectory.getFinalPose(leftSide).get().getX(),
+                    trajectory.getFinalPose(leftSide).get().getY()),
+                0.05))
+        .andThen(
+            Commands.parallel(
+                SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net_FLICKED),
+                Commands.sequence(
+                    IntakeCommands.holdAlgae(super.intake).withTimeout(0.14),
+                    IntakeCommands.expel(super.intake).withTimeout(0.25))))
+        .until(IntakeCommands.isHolding(intake, Holding.NONE))
+        .withName("algaeFarMidToBarge");
+  }
+
+  public Supplier<Command> algaeBarge(boolean leftSide) {
+    return () ->
+        StartingMiddleToFarMid_L(leftSide)
+            .andThen(L4ToAlgaeFarMid(leftSide))
+            .andThen(algaeFarMid_CToBarge_R(leftSide));
   }
 
   @FunctionalInterface
