@@ -15,6 +15,8 @@ public class SwerveConstants {
   /** The gear ratios for the swerve modules for easier constant definition. */
   @SuppressWarnings("unused")
   private static final class SwerveGearRatios {
+    static final double L1_DRIVE = (50.0 / 14.0) * (19.0 / 25.0) * (45.0 / 15.0);
+    static final double L1_DRIVE_KRAKEN = (50.0 / 16.0) * (19.0 / 25.0) * (45.0 / 15.0);
     static final double L2_DRIVE = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
     static final double L2_DRIVE_KRAKEN = (50.0 / 16.0) * (17.0 / 27.0) * (45.0 / 15.0);
     static final double L3_DRIVE = (50.0 / 14.0) * (16.0 / 28.0) * (45.0 / 15.0);
@@ -37,7 +39,7 @@ public class SwerveConstants {
     }
 
     public static final class kDriveMotor {
-      public static final double GEAR_RATIO = SwerveGearRatios.L3_DRIVE_KRAKEN;
+      public static final double GEAR_RATIO = SwerveGearRatios.L1_DRIVE_KRAKEN;
 
       public static final boolean INVERT = false;
       public static final boolean NEUTRAL_MODE_BRAKE = false;
@@ -78,7 +80,11 @@ public class SwerveConstants {
       public static final boolean INVERT = false;
 
       public static final double[] ENCODER_OFFSETS_ROTATIONS =
-          new double[] {-0.2055, -0.39453, 0.35766, -0.192383};
+          new double[] {
+            -0.219482421875,
+            -0.384521484375,
+            0.355224609375,
+            -0.1943359375};
     }
   }
 
@@ -90,7 +96,7 @@ public class SwerveConstants {
         Math.hypot(DRIVEBASE_WIDTH / 2.0, DRIVEBASE_WIDTH / 2.0);
 
     public static final double MAX_DRIVE_VELOCITY = kDriveMotor.MAX_VELOCITY * kWheel.RADIUS;
-    public static final double MAX_DRIVE_ACCELERATION = MAX_DRIVE_VELOCITY / 0.8;
+    public static final double MAX_DRIVE_ACCELERATION = MAX_DRIVE_VELOCITY / 0.75;
     public static final double MAX_ANGULAR_VELOCITY = (MAX_DRIVE_VELOCITY / DRIVEBASE_RADIUS);
     public static final double MAX_STEERING_VELOCITY = ModuleConstants.kSteerMotor.MAX_VELOCITY;
 
