@@ -74,7 +74,7 @@ public class PivotReal extends Pivot {
     cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
         PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
 
-    cfg.Voltage.PeakReverseVoltage = -5.0;
+    cfg.Voltage.PeakReverseVoltage = -7.5;
 
     // cfg.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.MAX_VELOCITY;
     // cfg.MotionMagic.MotionMagicAcceleration = PivotConstants.MAX_ACCELERATION;

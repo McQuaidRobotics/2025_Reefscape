@@ -106,7 +106,7 @@ public class SwerveCommands {
         new ChassisConstraints(
             new Constraints(
                 kSwerve.MAX_DRIVE_VELOCITY * 0.45,
-                SharedState.maximumAcceleration(SuperStructureState.ScoreL3.elevatorMeters)),
+                SharedState.maximumAcceleration(SuperStructureState.Stow.elevatorMeters)),
             new Constraints(
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.65));
     final ChassisConstraints roughConstraints =
@@ -118,13 +118,17 @@ public class SwerveCommands {
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(
             new PositionalController(
-                ControllerFactories.longRangeTranslationController(),
+                // new ControllerSequence<>(
+                //     TranslationController.profiled(2.0, 0, 0, false),
+                //     TranslationController.unprofiled(4.0, 0.0, 0.05, 0.025)
+                // ),
+                TranslationController.unprofiled(4.0, 0.0, 0.05, 0.025),
                 ControllerFactories.basicRotationalController()),
             obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
         new RepulsorFieldPlanner(
             new PositionalController(
-                TranslationController.unprofiled(5.0, 0.0, 0.0, 0.0),
+                TranslationController.unprofiled(3.0, 0.0, 0.0, 0.0),
                 ControllerFactories.basicRotationalController()),
             PathObstacles.Other.obstacles);
 

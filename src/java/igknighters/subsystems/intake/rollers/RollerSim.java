@@ -68,7 +68,6 @@ public class RollerSim extends Rollers {
   private final ShamIndexer indexer;
 
   public RollerSim(SimCtx simCtx) {
-    super(DCMotor.getKrakenX60(1).withReduction(RollerConstants.GEAR_RATIO));
     intakeMotor = new ShamMCX("IntakeMotor");
     intakeMechanism =
         new ShamMechanism(

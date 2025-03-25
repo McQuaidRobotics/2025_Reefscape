@@ -133,24 +133,34 @@ public class OperatorTarget implements StructSerializable {
 
   public Command gotoTargetCmd(Localizer localizer) {
     Supplier<Command> c =
-        () ->
-            Commands.parallel(
-                SwerveCommands.lineupReef(
-                    subsystems.swerve,
-                    localizer,
-                    targetLocation(),
-                    PathObstacles.fromReefSide(side)),
-                Commands.sequence(
-                    Commands.waitUntil(
-                        isNearPose(localizer, targetLocation().getTranslation(), 2.0)),
-                    SuperStructureCommands.holdAt(
-                            subsystems.superStructure,
-                            superStructureState.minHeight(SuperStructureState.ScoreStaged))
-                        .until(
-                            isNearPose(localizer, targetLocation().getTranslation(), 0.04)
-                                .and(isSlowerThan(0.4))),
-                    SuperStructureCommands.holdAt(
-                        subsystems.superStructure, superStructureState, MoveOrder.ELEVATOR_FIRST)));
+        () -> {
+          SuperStructureState preferredStow;
+          if (superStructureState.elevatorMeters > SuperStructureState.ScoreL3.elevatorMeters) {
+            preferredStow = SuperStructureState.ScoreStagedHigh;
+          } else if (superStructureState.elevatorMeters
+              > SuperStructureState.ScoreL2.elevatorMeters) {
+            preferredStow = SuperStructureState.Stow;
+          } else {
+            preferredStow = SuperStructureState.ScoreStagedLow;
+          }
+          final MoveOrder preferredMoveOrder =
+              superStructureState.elevatorMeters > SuperStructureState.ScoreL3.elevatorMeters
+                  ? MoveOrder.ELEVATOR_FIRST
+                  : MoveOrder.SIMULTANEOUS;
+          return Commands.parallel(
+              SwerveCommands.lineupReef(
+                  subsystems.swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side)),
+              Commands.sequence(
+                  SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
+                      .until(isNearPose(localizer, targetLocation().getTranslation(), 2.0)),
+                  SuperStructureCommands.holdAt(
+                          subsystems.superStructure, superStructureState.minHeight(preferredStow))
+                      .until(
+                          isNearPose(localizer, targetLocation().getTranslation(), 0.04)
+                              .and(isSlowerThan(0.4))),
+                  SuperStructureCommands.holdAt(
+                      subsystems.superStructure, superStructureState, preferredMoveOrder)));
+        };
     return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure)
         .unless(wantsAlgae())
         .unless(hasTarget().negate())

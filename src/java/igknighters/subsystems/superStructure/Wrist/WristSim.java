@@ -67,7 +67,7 @@ public class WristSim extends Wrist {
   }
 
   @Override
-  public void goToPosition(double targetPosition, Optional<Constraints> constraints) {
+  public void gotoPosition(double targetPosition, Optional<Constraints> constraints) {
     super.targetRadians = targetPosition;
     var c = constraints.orElse(DEFAULT_CONSTRAINTS);
     super.maxVelocity = c.maxVelocity;

@@ -20,6 +20,8 @@ import monologue.Annotations.Log;
 public class SuperStructure implements ExclusiveSubsystem {
   private static final Optional<Constraints> ALGAE_WRIST_CONSTRAINTS =
       Optional.of(new Constraints(kWrist.ALGAE_MAX_VELOCITY, kWrist.ALGAE_MAX_ACCELERATION));
+  private static final Optional<Constraints> ALGAE_ELEVATOR_CONSTRAINTS =
+      Optional.of(new Constraints(kElevator.ALGAE_MAX_VELOCITY, kElevator.ALGAE_MAX_ACCELERATION));
 
   private final SharedState shared;
   private final SuperStructureVisualizer visualizer;
@@ -75,12 +77,13 @@ public class SuperStructure implements ExclusiveSubsystem {
     elevatorMeters = MathUtil.clamp(elevatorMeters, kElevator.MIN_HEIGHT, kElevator.MAX_HEIGHT);
     if (shared.holdingAlgae) {
       wristRads = MathUtil.clamp(wristRads, kWrist.ALGAE_MAX_ANGLE, kWrist.MIN_ANGLE);
-      wrist.goToPosition(wristRads, ALGAE_WRIST_CONSTRAINTS);
+      wrist.gotoPosition(wristRads, ALGAE_WRIST_CONSTRAINTS);
+      elevator.gotoPosition(elevatorMeters, ALGAE_ELEVATOR_CONSTRAINTS);
     } else {
       wristRads = MathUtil.clamp(wristRads, kWrist.MAX_ANGLE, kWrist.MIN_ANGLE);
       wrist.goToPosition(wristRads);
+      elevator.gotoPosition(elevatorMeters);
     }
-    elevator.gotoPosition(elevatorMeters);
     visualizer.updateSetpoint(elevatorMeters, wristRads);
   }
 

@@ -9,7 +9,7 @@ import edu.wpi.first.util.struct.StructSerializable;
 public class FudgeFactory {
   private static final String pathPrefix = "/Tunables/Fudge/";
 
-  public static abstract class Fudge<T> {
+  public abstract static class Fudge<T> {
     protected final String path;
     protected T memory;
 
@@ -41,8 +41,7 @@ public class FudgeFactory {
 
     private DoubleFudge(String name, Double value) {
       super(name, value);
-      var topic = NetworkTableInstance.getDefault()
-          .getDoubleTopic(pathPrefix + name);
+      var topic = NetworkTableInstance.getDefault().getDoubleTopic(pathPrefix + name);
       if (topic.isPersistent()) {
         entry = topic.getEntry(value);
       } else {
@@ -69,8 +68,7 @@ public class FudgeFactory {
 
     private StructFudge(String name, T value, S struct) {
       super(name, value);
-      var topic = NetworkTableInstance.getDefault()
-          .getStructTopic(pathPrefix + name, struct);
+      var topic = NetworkTableInstance.getDefault().getStructTopic(pathPrefix + name, struct);
       if (topic.isPersistent()) {
         entry = topic.getEntry(value);
       } else {
@@ -96,7 +94,8 @@ public class FudgeFactory {
     return new DoubleFudge(name, value);
   }
 
-  public static <T, S extends Struct<T> & StructSerializable> Fudge<T> fudge(String name, T value, S struct) {
+  public static <T, S extends Struct<T> & StructSerializable> Fudge<T> fudge(
+      String name, T value, S struct) {
     return new StructFudge<>(name, value, struct);
   }
 }

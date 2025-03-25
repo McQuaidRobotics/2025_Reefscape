@@ -44,6 +44,7 @@ public class Vision implements SharedSubsystem {
 
   private final Camera[] cameras;
 
+  private final Timer timerSinceLastSample = new Timer();
   private final HashSet<Integer> seenTags = new HashSet<>();
 
   public record VisionUpdateFlaws(
@@ -57,7 +58,12 @@ public class Vision implements SharedSubsystem {
     }
 
     public static VisionUpdateFlaws solve(
-        Pose3d pose, Pose3d lastPose, double time, double avgDistance, List<Integer> tagsList) {
+        Pose3d pose,
+        Pose3d lastPose,
+        double time,
+        double avgDistance,
+        List<Integer> tagsList,
+        double trustScalar) {
       Translation2d simplePose = pose.getTranslation().toTranslation2d();
       boolean outOfBounds =
           simplePose.getX() < 0.0
@@ -80,7 +86,7 @@ public class Vision implements SharedSubsystem {
           extremeJitter,
           infeasiblePitchValue || infeasibleRollValue || infeasibleZValue || outOfBounds,
           avgDistance,
-          tagTrust);
+          tagTrust * trustScalar);
     }
 
     public static final Struct<VisionUpdateFlaws> struct =
@@ -188,6 +194,10 @@ public class Vision implements SharedSubsystem {
     }
   }
 
+  public double timeSinceLastSample() {
+    return timerSinceLastSample.get();
+  }
+
   @Override
   public void periodic() {
     Tracer.startTrace("VisionPeriodic");
@@ -213,7 +223,13 @@ public class Vision implements SharedSubsystem {
           .map(this::gaugeTrust)
           .filter(Optional::isPresent)
           .map(Optional::get)
-          .forEach(visionSender::send);
+          .forEach(
+              sample -> {
+                if (sample.trust > 0.6) {
+                  timerSinceLastSample.restart();
+                }
+                visionSender.send(sample);
+              });
 
       seenTags.addAll(camera.getSeenTags());
 

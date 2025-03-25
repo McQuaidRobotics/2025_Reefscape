@@ -29,9 +29,7 @@ public class Intake implements ExclusiveSubsystem {
 
   public enum ControlType implements StructSerializable {
     VOLTAGE,
-    CURRENT,
-    TORQUE,
-    VELOCITY;
+    CURRENT;
 
     public static final Struct<ControlType> struct =
         ProceduralStructGenerator.genEnum(ControlType.class);
@@ -57,8 +55,6 @@ public class Intake implements ExclusiveSubsystem {
     switch (controlType) {
       case VOLTAGE -> rollers.voltageOut(value);
       case CURRENT -> rollers.currentOut(value);
-      case TORQUE -> rollers.torqueOut(value);
-      case VELOCITY -> rollers.velocityOut(value);
     }
   }
 

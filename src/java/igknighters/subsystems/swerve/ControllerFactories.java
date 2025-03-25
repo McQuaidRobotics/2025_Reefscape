@@ -16,7 +16,7 @@ public class ControllerFactories {
       basicRotationalController() {
     return new ControllerSequence<>(
         RotationalController.profiled(5.0, 0, false),
-        RotationalController.unprofiled(3.0, 0.1, 1.0 * Conv.DEGREES_TO_RADIANS));
+        RotationalController.unprofiled(8.0, 0.1, 1.0 * Conv.DEGREES_TO_RADIANS));
   }
 
   public static Controller<Rotation2d, Double, Rotation2d, Constraints>

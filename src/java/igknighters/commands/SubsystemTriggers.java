@@ -14,6 +14,7 @@ import igknighters.commands.LEDCommands.LEDSection;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.kLed;
 import igknighters.constants.FieldConstants.FaceSubLocation;
+import igknighters.controllers.DriverController;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.led.Led;
@@ -43,7 +44,10 @@ public class SubsystemTriggers {
 
   @SuppressWarnings("unused")
   public static void setupTriggers(
-      Subsystems subsystems, Localizer localizer, OperatorTarget target) {
+      Subsystems subsystems,
+      Localizer localizer,
+      OperatorTarget target,
+      DriverController driverController) {
     final Swerve swerve = subsystems.swerve;
     final Vision vision = subsystems.vision;
     final Led led = subsystems.led;
@@ -52,8 +56,9 @@ public class SubsystemTriggers {
 
     RobotModeTriggers.disabled()
         .negate()
-        .and(IntakeCommands.isHolding(intake, Intake.Holding.CORAL))
-        .onTrue(IntakeCommands.holdCoral(intake));
+        .onTrue(
+            IntakeCommands.holdCoral(intake)
+                .onlyIf(IntakeCommands.isHolding(intake, Intake.Holding.CORAL)));
 
     new Trigger(
             () -> {
@@ -107,7 +112,7 @@ public class SubsystemTriggers {
                 new LEDSection(1, 0, LedUtil.makeFlash(Color.kYellow, .1), 37, "L1INGS2"))
             .onlyIf(target.targeting(SuperStructureState.ScoreL1));
 
-    final Command algaeFlasg =
+    final Command algaeFlash =
         Commands.defer(
             () -> {
               return LEDCommands.runSplitWithLEDSection(
@@ -183,7 +188,7 @@ public class SubsystemTriggers {
                         }),
                     yellowFlash,
                     leftFlash,
-                    algaeFlasg,
+                    algaeFlash,
                     flashRight)
                 .until(
                     new BooleanSupplier() {
@@ -194,6 +199,11 @@ public class SubsystemTriggers {
                             || DriverStation.isDisabled();
                       }
                     })
-                .ignoringDisable(false));
+                .ignoringDisable(true));
+
+    new Trigger(() -> vision.timeSinceLastSample() < 0.1)
+        .whileTrue(
+            Commands.startEnd(
+                () -> driverController.rumble(0.03), () -> driverController.rumble(0.0)));
   }
 }

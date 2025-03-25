@@ -27,6 +27,7 @@ public class CameraRealPhoton extends Camera {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
   private final PhotonPoseEstimator poseEstimator;
+  private final double trustScalar;
 
   private Optional<VisionUpdate> previousUpdate = Optional.empty();
   private ArrayList<Integer> seenTags = new ArrayList<>();
@@ -42,7 +43,13 @@ public class CameraRealPhoton extends Camera {
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             this.robotToCamera);
     poseEstimator.setTagModel(TargetModel.kAprilTag36h11);
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.PNP_DISTANCE_TRIG_SOLVE);
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
+    if (config.cameraName().contains("back")) {
+      trustScalar = 0.33;
+    } else {
+      trustScalar = 1.0;
+    }
 
     BootupLogger.bootupLog("    " + config.cameraName() + " camera initialized (real)");
   }
@@ -79,7 +86,8 @@ public class CameraRealPhoton extends Camera {
               new Pose3d(previousUpdate.get().pose()),
               estRoboPose.timestampSeconds - previousUpdate.get().timestamp(),
               avgDistance,
-              seenTags);
+              seenTags,
+              trustScalar);
     }
 
     var u = new VisionUpdate(pose, estRoboPose.timestampSeconds, faults);

@@ -1,11 +1,16 @@
 package igknighters.subsystems.superStructure.Elevator;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import igknighters.subsystems.Component;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
+import java.util.Optional;
 import monologue.Annotations.Log;
 
 public abstract class Elevator extends Component {
+  protected static final Constraints DEFAULT_CONSTRAINTS =
+      new Constraints(kElevator.MAX_VELOCITY, kElevator.MAX_ACCELERATION);
+
   @Log protected double meters;
   @Log protected double targetMeters;
   @Log protected double metersPerSecond;
@@ -14,13 +19,25 @@ public abstract class Elevator extends Component {
   @Log protected boolean isHomed;
   @Log protected boolean isLimitTripped;
   @Log protected boolean controlledLastCycle;
+  @Log protected double maxVelocity;
+  @Log protected double maxAcceleration;
+
+  /**
+   * Requests the elevator to go to a specific position for the next control cycle.
+   *
+   * @param targetPosition The target position of the elevator in meters.
+   * @param constraints The constraints to apply to the elevator while moving.
+   */
+  public abstract void gotoPosition(double targetPosition, Optional<Constraints> constraints);
 
   /**
    * Requests the elevator to go to a specific position for the next control cycle.
    *
    * @param targetPosition The target position of the elevator in meters.
    */
-  public abstract void gotoPosition(double targetPosition);
+  public void gotoPosition(double targetPosition) {
+    gotoPosition(targetPosition, Optional.empty());
+  }
 
   /**
    * Returns the current position of the elevator in meters.
@@ -78,4 +95,10 @@ public abstract class Elevator extends Component {
    * @param voltage The voltage to power the elevator motor controller.
    */
   public abstract void voltageOut(double voltage);
+
+  protected final void noTarget() {
+    targetMeters = Double.NaN;
+    maxVelocity = Double.NaN;
+    maxAcceleration = Double.NaN;
+  }
 }
