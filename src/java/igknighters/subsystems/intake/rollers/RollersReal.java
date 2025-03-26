@@ -63,7 +63,7 @@ public class RollersReal extends Rollers {
 
   private CANrangeConfiguration intakeSensorConfiguration() {
     var cfg = new CANrangeConfiguration();
-    cfg.ProximityParams.ProximityThreshold = 0.37;
+    cfg.ProximityParams.ProximityThreshold = 0.33;
     cfg.ProximityParams.ProximityHysteresis = 0.02;
     cfg.FovParams.FOVRangeX = 7.0;
     cfg.FovParams.FOVRangeY = 7.0;

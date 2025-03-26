@@ -151,8 +151,8 @@ public class TwistyPoseEst {
     Twist2d twist = lastPose.log(pose);
     twist.dx *= weight;
     twist.dy *= weight;
-    if (weight < 0.8) {
-      twist.dtheta *= 0.02;
+    if (weight > 0.8) {
+      twist.dtheta *= 0.02 * weight;
     } else {
       twist.dtheta *= 0.0;
     }

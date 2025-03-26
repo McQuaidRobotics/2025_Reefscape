@@ -11,8 +11,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.Robot;
+import igknighters.commands.SuperStructureCommands;
+import igknighters.commands.SwerveCommands;
 import igknighters.subsystems.Subsystems;
 import java.util.function.Supplier;
+import wpilibExt.Speeds;
 
 public class AutoRoutines extends AutoCommands {
 
@@ -50,10 +53,13 @@ public class AutoRoutines extends AutoCommands {
         .build();
   }
 
-  public Command testMove(boolean leftSide) {
-    return newAuto("testMove", leftSide)
-        .addTrajectoriesMoveOnly(
-            StartingOutside, FarLeft_R, Intake, CloseLeft_L, Intake, CloseLeft_R, Intake)
-        .build();
+  public Command testWithPush(boolean leftSide) {
+    return Commands.sequence(
+        Commands.deferredProxy(
+            () -> {
+              return SuperStructureCommands.home(superStructure, true);
+            }),
+        SwerveCommands.drive(swerve, Speeds.fromRobotRelative(-2.5, 0, 0)).withTimeout(0.25),
+        test(leftSide));
   }
 }

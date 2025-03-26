@@ -18,6 +18,7 @@ import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.led.Led;
 import igknighters.subsystems.superStructure.SuperStructureState;
+import java.util.EnumMap;
 import java.util.Set;
 import java.util.function.Supplier;
 import monologue.GlobalField;
@@ -27,6 +28,15 @@ import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
 
 public class OperatorTarget implements StructSerializable {
+  private static final EnumMap<SuperStructureState, SuperStructureState> stagedStateMap =
+      new EnumMap<>(SuperStructureState.class) {
+        {
+          put(SuperStructureState.ScoreL4, SuperStructureState.StagedL4);
+          put(SuperStructureState.ScoreL3, SuperStructureState.ScoreL3);
+          put(SuperStructureState.ScoreL2, SuperStructureState.ScoreL2);
+        }
+      };
+
   private boolean wasUpdated = false;
   private boolean hasTarget = false;
   private FaceSubLocation faceSubLocation = FaceSubLocation.CENTER;
@@ -134,15 +144,8 @@ public class OperatorTarget implements StructSerializable {
   public Command gotoTargetCmd(Localizer localizer) {
     Supplier<Command> c =
         () -> {
-          SuperStructureState preferredStow;
-          if (superStructureState.elevatorMeters > SuperStructureState.ScoreL3.elevatorMeters) {
-            preferredStow = SuperStructureState.ScoreStagedHigh;
-          } else if (superStructureState.elevatorMeters
-              > SuperStructureState.ScoreL2.elevatorMeters) {
-            preferredStow = SuperStructureState.Stow;
-          } else {
-            preferredStow = SuperStructureState.ScoreStagedLow;
-          }
+          final SuperStructureState stagedState =
+              stagedStateMap.getOrDefault(superStructureState, superStructureState);
           final MoveOrder preferredMoveOrder =
               superStructureState.elevatorMeters > SuperStructureState.ScoreL3.elevatorMeters
                   ? MoveOrder.ELEVATOR_FIRST
@@ -154,7 +157,7 @@ public class OperatorTarget implements StructSerializable {
                   SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
                       .until(isNearPose(localizer, targetLocation().getTranslation(), 2.0)),
                   SuperStructureCommands.holdAt(
-                          subsystems.superStructure, superStructureState.minHeight(preferredStow))
+                          subsystems.superStructure, superStructureState.minHeight(stagedState))
                       .until(
                           isNearPose(localizer, targetLocation().getTranslation(), 0.04)
                               .and(isSlowerThan(0.4))),
