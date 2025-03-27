@@ -53,19 +53,25 @@ public class AutoRoutines extends AutoCommands {
   public Command L4ToAlgaeFarMid(boolean leftSide) {
     Commands.print("grabAlgaeFarMid");
     Trajectory<?> trajectory = flipTrajectory(leftSide, FarMid_L, FarMid_C);
-    return factory.trajectoryCmd(trajectory),
-            SuperStructureCommands.holdAt(
-                superStructure, SuperStructureState.AlgaeL2, MoveOrder.ELEVATOR_FIRST),
+    return Commands.parallel(
+            factory.trajectoryCmd(trajectory),
+            Commands.sequence(
+                Commands.waitSeconds(.2),
+                SuperStructureCommands.holdAt(
+                    superStructure, SuperStructureState.AlgaeL2, MoveOrder.ELEVATOR_FIRST)),
             IntakeCommands.intakeAlgae(super.intake))
-        .withTimeout(2)
+        .withTimeout(3)
         .withName("L4ToAlgaeFarMid");
   }
 
   public Command StartingMiddleToFarMid_L(boolean leftSide) {
     Trajectory<?> trajectory = flipTrajectory(leftSide, StartingMiddle, FarMid_L);
-    Commands.print("StartingMiddleToFarMid_L");
+
     return Commands.parallel(
-            Commands.sequence(factory.resetOdometry(trajectory), factory.trajectoryCmd(trajectory))
+            Commands.sequence(
+                    Commands.print("StartingMiddleToFarMid_L"),
+                    factory.resetOdometry(trajectory),
+                    factory.trajectoryCmd(trajectory))
                 .andThen(
                     SwerveCommands.moveToSimple(
                         swerve, localizer, trajectory.getFinalPose(leftSide).get())),
@@ -89,15 +95,17 @@ public class AutoRoutines extends AutoCommands {
     Commands.print("ALGAE FAR MID C TO BARGE");
     return Commands.parallel(
             IntakeCommands.holdAlgae(super.intake),
-            Commands.sequence(factory.resetOdometry(trajectory), factory.trajectoryCmd(trajectory)))
-        .andThen(
-            SwerveCommands.moveToSimple(swerve, localizer, trajectory.getFinalPose(leftSide).get()))
-        .until(
-            localizer.near(
-                new Translation2d(
-                    trajectory.getFinalPose(leftSide).get().getX(),
-                    trajectory.getFinalPose(leftSide).get().getY()),
-                0.05))
+            factory
+                .trajectoryCmd(trajectory)
+                .andThen(
+                    SwerveCommands.moveToSimple(
+                        swerve, localizer, trajectory.getFinalPose(leftSide).get()))
+                .until(
+                    localizer.near(
+                        new Translation2d(
+                            trajectory.getFinalPose(leftSide).get().getX(),
+                            trajectory.getFinalPose(leftSide).get().getY()),
+                        0.05)))
         .andThen(
             Commands.parallel(
                 SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net_FLICKED),
