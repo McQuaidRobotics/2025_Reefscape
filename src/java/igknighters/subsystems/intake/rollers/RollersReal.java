@@ -12,10 +12,9 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
-
 import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.intake.IntakeConstants;
@@ -126,7 +125,9 @@ public class RollersReal extends Rollers {
     super.controlledLastCycle = false;
     super.amps = current.getValueAsDouble();
     super.volts = voltage.getValueAsDouble();
-    super.laserTripped = intakeDebouncer.calculate(laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround);
+    super.laserTripped =
+        intakeDebouncer.calculate(
+            laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround);
     super.gamepieceDistance =
         (DISTANCE_LERP.lerp(movingAverage.calculate(distance.getValueAsDouble()))
                 + CORAL_HALF_WIDTH)
