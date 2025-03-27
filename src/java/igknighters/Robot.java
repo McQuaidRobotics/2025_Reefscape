@@ -197,8 +197,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
           "/Robot",
           new MonologueConfig()
               .withDatalogPrefix("")
-              .withOptimizeBandwidth(DriverStation::isFMSAttached)
-              .withLazyLogging(true));
+              .withOptimizeBandwidth(DriverStation::isFMSAttached));
     } else {
       // used for tests and CI, does not actually log anything but asserts the logging is setup
       // mostly correct
