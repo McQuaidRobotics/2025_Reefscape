@@ -23,6 +23,7 @@ import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
+import igknighters.util.plumbing.TunableValues;
 import java.util.function.DoubleSupplier;
 import wpilibExt.AllianceSymmetry;
 
@@ -43,24 +44,27 @@ public class DriverController {
         .whileTrue(IntakeCommands.intakeCoral(intake))
         .whileTrue(
             new TeleopSwerveHeadingCmd(
-                swerve,
-                this,
-                localizer,
-                () -> {
-                  final double angle = 54.0;
-                  if (localizer.translation().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
-                    return AllianceSymmetry.isBlue()
-                        ? Rotation2d.fromDegrees(180 - angle)
-                        : Rotation2d.fromDegrees(angle);
-                  } else {
-                    return AllianceSymmetry.isBlue()
-                        ? Rotation2d.fromDegrees(-(180 - angle))
-                        : Rotation2d.fromDegrees(-angle);
-                  }
-                },
-                kSwerve.CONSTRAINTS)
-            // .unless(TunableValues.getBoolean("intakeAlign", false)::value)
-            )
+                    swerve,
+                    this,
+                    localizer,
+                    () -> {
+                      final double angle = 54.0;
+                      if (localizer.translation().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
+                        return AllianceSymmetry.isBlue()
+                            ? Rotation2d.fromDegrees(180 - angle)
+                            : Rotation2d.fromDegrees(angle);
+                      } else {
+                        return AllianceSymmetry.isBlue()
+                            ? Rotation2d.fromDegrees(-(180 - angle))
+                            : Rotation2d.fromDegrees(-angle);
+                      }
+                    },
+                    kSwerve.CONSTRAINTS)
+                .onlyIf(
+                    () -> {
+                      return TunableValues.getBoolean("intakeAlign", true).value()
+                          || DriverStation.isFMSAttached();
+                    }))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .onFalse(
             Commands.waitSeconds(0.33)
@@ -149,8 +153,11 @@ public class DriverController {
 
     this.LT
         .or(LB)
-        .onTrue(IntakeCommands.holdCoral(intake))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+        .and(operatorTarget.wantsAlgae().negate())
+        .onTrue(IntakeCommands.holdCoral(intake));
+    this.LT
+        .or(LB)
         .and(operatorTarget.wantsAlgae())
         .whileTrue(IntakeCommands.intakeAlgae(intake))
         .onFalse(IntakeCommands.holdAlgae(intake));

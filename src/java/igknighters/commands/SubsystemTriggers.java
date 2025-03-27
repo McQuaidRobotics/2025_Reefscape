@@ -78,11 +78,10 @@ public class SubsystemTriggers {
             SwerveCommands.orientGyro(swerve, vision, localizer, localizer.pose().getRotation()))
         .onTrue(Commands.print("Reorienting robot to localizer pose"));
     final Trigger ledIdle = Triggers.subsystemIdle(led);
-    Monologue.log("is robot disabled", RobotModeTriggers.disabled().getAsBoolean());
     final Trigger ledEnabled =
         RobotModeTriggers.disabled()
             .onFalse(
-                LEDCommands.runSplitWithLEDSection(
+                LEDCommands.run(
                     led,
                     new LEDSection(
                         0, 0, LEDPattern.solid(new Color(0, 255, 0)), 36, "enabled index 0"),
@@ -91,7 +90,7 @@ public class SubsystemTriggers {
     final Trigger ledTriggerAutonomous =
         RobotModeTriggers.autonomous()
             .whileTrue(
-                LEDCommands.runSplitWithLEDSection(
+                LEDCommands.run(
                     led,
                     new LEDSection(
                         0, 0, LedUtil.makeRainbow(255, 100), 36, "autonomous rainbow s1"),
@@ -99,14 +98,14 @@ public class SubsystemTriggers {
                         1, 0, LedUtil.makeRainbow(255, 100), 36, "autonomous rainbow s2")));
 
     final Command ledDisabledLed =
-        LEDCommands.runSplitWithLEDSection(
+        LEDCommands.run(
             led,
             new LEDSection(0, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s1"),
             new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s2"));
     Triggers.falseOnce().and(RobotModeTriggers.disabled()).whileTrue(ledDisabledLed);
 
     final Command yellowFlash =
-        LEDCommands.runSplitWithLEDSection(
+        LEDCommands.run(
                 led,
                 new LEDSection(0, 0, LedUtil.makeFlash(Color.kYellow, .1), 36, "L1INGS1"),
                 new LEDSection(1, 0, LedUtil.makeFlash(Color.kYellow, .1), 37, "L1INGS2"))
@@ -115,7 +114,7 @@ public class SubsystemTriggers {
     final Command algaeFlash =
         Commands.defer(
             () -> {
-              return LEDCommands.runSplitWithLEDSection(
+              return LEDCommands.run(
                       led,
                       new LEDSection(
                           1,
@@ -136,7 +135,7 @@ public class SubsystemTriggers {
     final Command leftFlash =
         Commands.defer(
             () -> {
-              return LEDCommands.runSplitWithLEDSection(
+              return LEDCommands.run(
                       led,
                       new LEDSection(
                           0,
@@ -158,7 +157,7 @@ public class SubsystemTriggers {
     final Command flashRight =
         Commands.defer(
             () -> {
-              return LEDCommands.runSplitWithLEDSection(
+              return LEDCommands.run(
                       led,
                       new LEDSection(
                           1,
