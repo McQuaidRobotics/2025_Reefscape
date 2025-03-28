@@ -187,8 +187,8 @@ public class AutoCommands {
                       SwerveCommands.moveToSimple(swerve, localizer, finalPose)
                           .until(
                               localizer
-                                  .near(finalPose.getTranslation(), 0.04)
-                                  .and(movingSlowerThan(swerve, 0.1)))
+                                  .near(finalPose.getTranslation(), 0.03)
+                                  .and(movingSlowerThan(swerve, 0.08)))
                           .withName("FinishAlignment"))
                   .andThen(SwerveCommands.stop(swerve));
             };

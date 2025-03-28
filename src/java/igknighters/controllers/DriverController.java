@@ -78,7 +78,7 @@ public class DriverController {
     this.X.whileTrue(
         SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpFar));
 
-    this.B.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net_FLICKED))
+    this.B.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor))
         .whileTrue(
             new TeleopSwerveHeadingCmd(
                 swerve,
@@ -88,30 +88,30 @@ public class DriverController {
                 kSwerve.CONSTRAINTS))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
+    this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
+        .whileTrue(
+            new TeleopSwerveSingleAxisCmd(
+                swerve,
+                this,
+                localizer,
+                () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+                () -> {
+                  final Translation2d line = new Translation2d(7.375, 0.0);
+                  return AllianceSymmetry.isBlue() ? line : AllianceSymmetry.flip(line);
+                },
+                false,
+                kSwerve.CONSTRAINTS))
+        .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+
     // this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
     //     .whileTrue(
-    //         new TeleopSwerveSingleAxisCmd(
+    //         new TeleopSwerveHeadingCmd(
     //             swerve,
     //             this,
     //             localizer,
     //             () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-    //             () -> {
-    //               final Translation2d line = new Translation2d(7.375, 0.0);
-    //               return AllianceSymmetry.isBlue() ? line : AllianceSymmetry.flip(line);
-    //             },
-    //             false,
     //             kSwerve.CONSTRAINTS))
     //     .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
-
-    this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
-    .whileTrue(
-        new TeleopSwerveHeadingCmd(
-            swerve,
-            this,
-            localizer,
-            () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-            kSwerve.CONSTRAINTS))
-    .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
     this.RB.whileTrue(
@@ -172,17 +172,17 @@ public class DriverController {
         .whileTrue(IntakeCommands.intakeAlgae(intake))
         .onFalse(IntakeCommands.holdAlgae(intake));
 
-    // this.RB
-    //     .and(Y)
-    //     .onTrue(
-    //         Commands.parallel(
-    //             Commands.sequence(
-    //                 SuperStructureCommands.moveTo(superStructure, SuperStructureState.Net_FLICKED),
-    //                 new ScheduleCommand(
-    //                     SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))),
-    //             Commands.sequence(
-    //                 IntakeCommands.holdAlgae(intake).withTimeout(0.14),
-    //                 IntakeCommands.expel(intake).withTimeout(0.25))));
+    this.RB
+        .and(Y)
+        .onTrue(
+            Commands.parallel(
+                Commands.sequence(
+                    SuperStructureCommands.moveTo(superStructure, SuperStructureState.Net_FLICKED),
+                    new ScheduleCommand(
+                        SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))),
+                Commands.sequence(
+                    IntakeCommands.holdAlgae(intake).withTimeout(0.07),
+                    IntakeCommands.expel(intake).withTimeout(0.5))));
   }
 
   // Define the buttons on the controller
