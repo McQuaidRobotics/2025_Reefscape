@@ -92,7 +92,7 @@ chor: dict
 with open("./src/deploy/choreo/reefscape.chor", "r") as f:
     chor = json.load(f)
     pose_store = chor["variables"]["poses"]
-    dist_from_face = (ROBOT_WIDTH / 2) + inchesToMeters(5.0)
+    dist_from_face = (ROBOT_WIDTH / 2) + inchesToMeters(12.0)
     for side in Side:
         pose_store[side.namePascal() + "_L"] = poseToJson(side.scoreLeft(dist_from_face))
         pose_store[side.namePascal() + "_M"] = poseToJson(side.scoreMid(dist_from_face))

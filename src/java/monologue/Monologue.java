@@ -1,7 +1,6 @@
 package monologue;
 
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
@@ -154,8 +153,6 @@ public class Monologue extends GlobalLogged {
     GlobalField.publish();
 
     DataLogManager.logNetworkTables(false);
-    NetworkTableInstance.getDefault()
-        .startEntryDataLog(DataLogManager.getLog(), "/Robot", config.datalogPrefix);
     // DriverStation.startDataLog(DataLogManager.getLog(), true);
 
     // create and start a timer to time the setup process

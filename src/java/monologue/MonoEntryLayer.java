@@ -12,6 +12,8 @@ import java.util.function.DoubleConsumer;
 import java.util.function.LongConsumer;
 
 class MonoEntryLayer {
+  private static final boolean ALWAYS_LOG_BOTH = true;
+
   private static final HashMap<LogSink, HashMap<String, MonologueEntry<?>>> entries =
       new HashMap<>() {
         {
@@ -72,12 +74,17 @@ class MonoEntryLayer {
       var map = entries.get(sink);
       if (!map.containsKey(path)) {
         String cleanPath = NetworkTable.normalizeKey(path, true);
-        var e =
-            switch (sink) {
-              case NT -> new MonologueNtEntry<>(cleanPath, Optional.of(struct), clazz);
-              case DL -> new MonologueFileEntry<>(cleanPath, Optional.of(struct), clazz);
-              case OP -> new MonologueOptimizedEntry<>(cleanPath, Optional.of(struct), clazz);
-            };
+        MonologueEntry<T[]> e;
+        if (ALWAYS_LOG_BOTH) {
+          e = new MonologueDualEntry<>(cleanPath, Optional.of(struct), clazz, sink);
+        } else {
+          e =
+              switch (sink) {
+                case NT -> new MonologueNtEntry<>(cleanPath, Optional.of(struct), clazz);
+                case DL -> new MonologueFileEntry<>(cleanPath, Optional.of(struct), clazz);
+                case OP -> new MonologueOptimizedEntry<>(cleanPath, Optional.of(struct), clazz);
+              };
+        }
         map.put(path, e);
         return e;
       } else {
@@ -291,6 +298,30 @@ class MonoEntryLayer {
     }
   }
 
+  private static class MonologueDualEntry<T> implements MonologueEntry<T> {
+    private final LogSink sink;
+    private final MonologueFileEntry<T> fileEntry;
+    private final MonologueNtEntry<T> ntEntry;
+
+    public MonologueDualEntry(
+        String path, Optional<Struct<?>> optStruct, Class<T> clazz, LogSink sink) {
+      fileEntry = new MonologueFileEntry<>(path, optStruct, clazz);
+      ntEntry = new MonologueNtEntry<>(path, optStruct, clazz);
+      this.sink = sink;
+    }
+
+    @Override
+    public void log(T value) {
+      fileEntry.log(value);
+      ntEntry.log(value);
+    }
+
+    @Override
+    public LogSink sink() {
+      return sink;
+    }
+  }
+
   public static class MonologueDoubleEntry implements MonologueEntry<Double> {
     private final LogSink sink;
     private final DoubleConsumer fileLog;
@@ -326,6 +357,11 @@ class MonoEntryLayer {
     }
 
     public void logDouble(double value) {
+      if (ALWAYS_LOG_BOTH) {
+        ntLog.accept(value);
+        fileLog.accept(value);
+        return;
+      }
       switch (sink) {
         case NT -> ntLog.accept(value);
         case DL -> fileLog.accept(value);
@@ -385,6 +421,11 @@ class MonoEntryLayer {
     }
 
     public void logBoolean(boolean value) {
+      if (ALWAYS_LOG_BOTH) {
+        ntLog.accept(value);
+        fileLog.accept(value);
+        return;
+      }
       switch (sink) {
         case NT -> ntLog.accept(value);
         case DL -> fileLog.accept(value);
@@ -444,6 +485,11 @@ class MonoEntryLayer {
     }
 
     public void logLong(long value) {
+      if (ALWAYS_LOG_BOTH) {
+        ntLog.accept(value);
+        fileLog.accept(value);
+        return;
+      }
       switch (sink) {
         case NT -> ntLog.accept(value);
         case DL -> fileLog.accept(value);
