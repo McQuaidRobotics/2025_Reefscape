@@ -51,9 +51,10 @@ public class AutoRoutines extends AutoCommands {
   }
 
   public Command L4ToAlgaeFarMid(boolean leftSide) {
-    Commands.print("grabAlgaeFarMid");
+
     Trajectory<?> trajectory = flipTrajectory(leftSide, FarMid_L, FarMid_C);
     return Commands.parallel(
+            Commands.runOnce(() -> Commands.print("L4ToAlgaeFarMid:3")),
             factory.trajectoryCmd(trajectory),
             Commands.sequence(
                 Commands.waitSeconds(.2),
@@ -69,7 +70,7 @@ public class AutoRoutines extends AutoCommands {
 
     return Commands.parallel(
             Commands.sequence(
-                    Commands.print("StartingMiddleToFarMid_L"),
+                    Commands.print("StartingMiddleToFarMid_L:)"),
                     factory.resetOdometry(trajectory),
                     factory.trajectoryCmd(trajectory))
                 .andThen(
@@ -92,8 +93,8 @@ public class AutoRoutines extends AutoCommands {
 
   public Command algaeFarMid_CToBarge_R(boolean leftSide) {
     Trajectory<?> trajectory = flipTrajectory(leftSide, FarMid_C, Barge_R);
-    Commands.print("ALGAE FAR MID C TO BARGE");
     return Commands.parallel(
+            Commands.runOnce(() -> Commands.print("ALGAE FAR MID C TO BARGE:(")),
             IntakeCommands.holdAlgae(super.intake),
             factory
                 .trajectoryCmd(trajectory)
@@ -105,7 +106,7 @@ public class AutoRoutines extends AutoCommands {
                         new Translation2d(
                             trajectory.getFinalPose(leftSide).get().getX(),
                             trajectory.getFinalPose(leftSide).get().getY()),
-                        0.05)))
+                        0.1)))
         .andThen(
             Commands.parallel(
                 SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net_FLICKED),
@@ -118,7 +119,8 @@ public class AutoRoutines extends AutoCommands {
 
   public Supplier<Command> algaeBarge(boolean leftSide) {
     return () ->
-        StartingMiddleToFarMid_L(leftSide)
+        SuperStructureCommands.home(superStructure, true)
+            .andThen(StartingMiddleToFarMid_L(leftSide))
             .andThen(L4ToAlgaeFarMid(leftSide))
             .andThen(algaeFarMid_CToBarge_R(leftSide));
   }
