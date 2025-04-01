@@ -7,6 +7,7 @@ import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
@@ -88,7 +89,10 @@ public class OperatorTarget implements StructSerializable {
   public Pose2d targetLocation() {
     Pose2d ret;
     if (!wantsAlgae().getAsBoolean()) {
-      double backoffDist = (kRobotIntrinsics.CHASSIS_WIDTH / 2.0) + (5.0 * Conv.INCHES_TO_METERS);
+      double backoffDist = (kRobotIntrinsics.CHASSIS_WIDTH / 2.0);
+      if (!superStructureState.equals(SuperStructureState.ScoreL1)) {
+        backoffDist += 5.0 * Conv.INCHES_TO_METERS;
+      }
       ret =
           switch (faceSubLocation) {
             case LEFT -> side.alignScoreLeft(backoffDist, subsystems.intake.gamepieceYOffset());
@@ -158,27 +162,37 @@ public class OperatorTarget implements StructSerializable {
               superStructureState.equals(SuperStructureState.ScoreL4)
                   ? MoveOrder.ELEVATOR_FIRST
                   : MoveOrder.SIMULTANEOUS;
+          final var targetLocation = targetLocation();
           return Commands.parallel(
               SwerveCommands.lineupReef(
-                  subsystems.swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side)),
+                  subsystems.swerve, localizer, targetLocation, PathObstacles.fromReefSide(side)),
               Commands.sequence(
                   SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
-                      .until(isNearPose(localizer, targetLocation().getTranslation(), 2.0)),
+                      .until(isNearPose(localizer, targetLocation.getTranslation(), 2.0)),
                   SuperStructureCommands.holdAt(
                           subsystems.superStructure, superStructureState.minHeight(stagedState))
                       .until(
-                          isNearPose(localizer, targetLocation().getTranslation(), 0.04)
+                          isNearPose(localizer, targetLocation.getTranslation(), 0.04)
                               .and(isSlowerThan(0.4))),
                   SuperStructureCommands.holdAt(
                       subsystems.superStructure, superStructureState, preferredMoveOrder)),
               Commands.sequence(
                   LEDCommands.run(subsystems.led, LedUtil.makeBounce(kLed.TargetingColor, 1.0))
                       .until(
-                          isNearPose(localizer, targetLocation().getTranslation(), 0.04)
-                              .and(isSlowerThan(0.4))
+                          isNearPose(localizer, targetLocation.getTranslation(), 0.04)
+                              .and(isSlowerThan(0.2))
                               .and(
                                   SuperStructureCommands.isAt(
                                       subsystems.superStructure, superStructureState))),
+                  new ScheduleCommand(
+                          IntakeCommands.expel(
+                              subsystems.intake,
+                              () -> superStructureState.equals(SuperStructureState.ScoreL1)))
+                      .onlyIf(
+                          () ->
+                              superStructureState.equals(SuperStructureState.ScoreL1)
+                                  || superStructureState.equals(SuperStructureState.ScoreL2)
+                                  || superStructureState.equals(SuperStructureState.ScoreL3)),
                   LEDCommands.run(subsystems.led, LedUtil.makeFlash(Color.kSnow, 0.25))));
         };
     return makeRefreshableCmd(coral, subsystems.swerve, subsystems.superStructure)

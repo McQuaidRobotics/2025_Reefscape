@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.LEDCommands.LEDSection;
-import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.kLed;
 import igknighters.constants.FieldConstants.FaceSubLocation;
 import igknighters.controllers.DriverController;
@@ -70,13 +69,6 @@ public class SubsystemTriggers {
             })
         .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
 
-    localizer
-        .near(swerve.getYaw(), 1.0 * Conv.DEGREES_TO_RADIANS)
-        .negate()
-        .and(RobotModeTriggers.disabled())
-        .onTrue(
-            SwerveCommands.orientGyro(swerve, vision, localizer, localizer.pose().getRotation()))
-        .onTrue(Commands.print("Reorienting robot to localizer pose"));
     final Trigger ledIdle = Triggers.subsystemIdle(led);
     final Trigger ledEnabled =
         RobotModeTriggers.disabled()
@@ -198,11 +190,13 @@ public class SubsystemTriggers {
                             || DriverStation.isDisabled();
                       }
                     })
-                .ignoringDisable(true));
+                .ignoringDisable(true)
+                .withName("LedTargetingFlash"));
 
     new Trigger(() -> vision.timeSinceLastSample() < 0.1)
         .whileTrue(
             Commands.startEnd(
-                () -> driverController.rumble(0.03), () -> driverController.rumble(0.0)));
+                    () -> driverController.rumble(0.03), () -> driverController.rumble(0.0))
+                .withName("RumbleForTag"));
   }
 }

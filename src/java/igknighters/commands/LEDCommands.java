@@ -56,12 +56,15 @@ public class LEDCommands {
             })
         .ignoringDisable(true)
         .withName(
-            "split led controlls patterns length = "
+            "SplitLed("
                 + patterns.size()
-                + " offset length = "
+                + ", "
                 + offsets.size()
-                + " led to be controlled: "
-                + index);
+                + ", "
+                + index
+                + ", "
+                + names
+                + ")");
   }
 
   public static Command run(Led led, LEDSection... ledSections) {

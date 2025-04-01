@@ -4,7 +4,6 @@ import edu.wpi.first.networktables.*;
 import edu.wpi.first.util.datalog.*;
 import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.util.struct.Struct;
-import edu.wpi.first.wpilibj.DataLogManager;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -12,7 +11,7 @@ import java.util.function.DoubleConsumer;
 import java.util.function.LongConsumer;
 
 class MonoEntryLayer {
-  private static final boolean ALWAYS_LOG_BOTH = true;
+  private static final boolean ALWAYS_LOG_BOTH = Monologue.SEND_TO_DATALOG_IN_JAVA;
 
   private static final HashMap<LogSink, HashMap<String, MonologueEntry<?>>> entries =
       new HashMap<>() {
@@ -22,6 +21,12 @@ class MonoEntryLayer {
           put(LogSink.OP, new HashMap<>());
         }
       };
+
+  private static DataLog wpilog() {
+    return Monologue.getWpilog()
+        .orElseThrow(
+            () -> new IllegalStateException("Monologue wpilog not initialized or not available"));
+  }
 
   public static interface MonologueEntry<T> {
     public void log(T value);
@@ -33,12 +38,17 @@ class MonoEntryLayer {
       var map = entries.get(sink);
       if (!map.containsKey(path)) {
         String cleanPath = NetworkTable.normalizeKey(path, true);
-        var e =
-            switch (sink) {
-              case NT -> new MonologueNtEntry<>(cleanPath, Optional.empty(), clazz);
-              case DL -> new MonologueFileEntry<>(cleanPath, Optional.empty(), clazz);
-              case OP -> new MonologueOptimizedEntry<>(cleanPath, Optional.empty(), clazz);
-            };
+        MonologueEntry<T> e;
+        if (ALWAYS_LOG_BOTH) {
+          e = new MonologueDualEntry<>(cleanPath, Optional.empty(), clazz, sink);
+        } else {
+          e =
+              switch (sink) {
+                case NT -> new MonologueNtEntry<>(cleanPath, Optional.empty(), clazz);
+                case DL -> new MonologueFileEntry<>(cleanPath, Optional.empty(), clazz);
+                case OP -> new MonologueOptimizedEntry<>(cleanPath, Optional.empty(), clazz);
+              };
+        }
         entries.get(sink).put(path, e);
         return e;
       } else {
@@ -51,16 +61,21 @@ class MonoEntryLayer {
       var map = entries.get(sink);
       if (!map.containsKey(path)) {
         String cleanPath = NetworkTable.normalizeKey(path, true);
-        var e =
-            switch (sink) {
-              case NT ->
-                  new MonologueNtEntry<>(cleanPath, Optional.of(struct), struct.getTypeClass());
-              case DL ->
-                  new MonologueFileEntry<>(cleanPath, Optional.of(struct), struct.getTypeClass());
-              case OP ->
-                  new MonologueOptimizedEntry<>(
-                      cleanPath, Optional.of(struct), struct.getTypeClass());
-            };
+        MonologueEntry<T> e;
+        if (ALWAYS_LOG_BOTH) {
+          e = new MonologueDualEntry<>(cleanPath, Optional.of(struct), struct.getTypeClass(), sink);
+        } else {
+          e =
+              switch (sink) {
+                case NT ->
+                    new MonologueNtEntry<>(cleanPath, Optional.of(struct), struct.getTypeClass());
+                case DL ->
+                    new MonologueFileEntry<>(cleanPath, Optional.of(struct), struct.getTypeClass());
+                case OP ->
+                    new MonologueOptimizedEntry<>(
+                        cleanPath, Optional.of(struct), struct.getTypeClass());
+              };
+        }
         map.put(path, e);
         return e;
       } else {
@@ -131,7 +146,7 @@ class MonoEntryLayer {
 
     @SuppressWarnings("unchecked")
     public MonologueFileEntry(String path, Optional<Struct<?>> optStruct, Class<T> clazz) {
-      DataLog dl = DataLogManager.getLog();
+      DataLog dl = wpilog();
       if (optStruct.isPresent()) {
         if (clazz.isArray()) {
           var entry = StructArrayLogEntry.create(dl, path, optStruct.get());
@@ -336,7 +351,7 @@ class MonoEntryLayer {
             @Override
             public void accept(double value) {
               if (entry.isEmpty()) {
-                entry = Optional.of(new DoubleLogEntry(DataLogManager.getLog(), path));
+                entry = Optional.of(new DoubleLogEntry(wpilog(), path));
               }
               entry.get().append(value);
             }
@@ -400,7 +415,7 @@ class MonoEntryLayer {
             @Override
             public void accept(boolean value) {
               if (entry.isEmpty()) {
-                entry = Optional.of(new BooleanLogEntry(DataLogManager.getLog(), path));
+                entry = Optional.of(new BooleanLogEntry(wpilog(), path));
               }
               entry.get().append(value);
             }
@@ -464,7 +479,7 @@ class MonoEntryLayer {
             @Override
             public void accept(long value) {
               if (entry.isEmpty()) {
-                entry = Optional.of(new IntegerLogEntry(DataLogManager.getLog(), path));
+                entry = Optional.of(new IntegerLogEntry(wpilog(), path));
               }
               entry.get().append(value);
             }
