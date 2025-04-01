@@ -12,6 +12,7 @@ import igknighters.Localizer;
 import igknighters.commands.SuperStructureCommands.MoveOrder;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
+import igknighters.constants.FieldConstants.FaceSubLocation;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
@@ -26,15 +27,6 @@ import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
 
 public class OperatorTarget implements StructSerializable {
-  public enum FaceSubLocation implements StructSerializable {
-    LEFT,
-    RIGHT,
-    CENTER;
-
-    public static final Struct<FaceSubLocation> struct =
-        ProceduralStructGenerator.genEnum(FaceSubLocation.class);
-  }
-
   private boolean wasUpdated = false;
   private boolean hasTarget = false;
   private FaceSubLocation faceSubLocation = FaceSubLocation.CENTER;
@@ -120,9 +112,7 @@ public class OperatorTarget implements StructSerializable {
   private Command makeRefreshableCmd(Supplier<Command> cmdSupplier, Subsystem... requirements) {
     return Commands.repeatingSequence(
         Commands.runOnce(() -> wasUpdated = false),
-        Commands.defer(cmdSupplier, Set.of(requirements))
-            .until(isUpdated())
-            .unless(hasTarget().negate()));
+        Commands.defer(cmdSupplier, Set.of(requirements)).until(isUpdated()));
   }
 
   private Trigger isNearPose(Localizer localizer, Translation2d translation, double dist) {
@@ -143,26 +133,37 @@ public class OperatorTarget implements StructSerializable {
 
   public Command gotoTargetCmd(Localizer localizer) {
     Supplier<Command> c =
-        () ->
-            Commands.parallel(
-                SwerveCommands.moveTo(
-                    subsystems.swerve,
-                    localizer,
-                    targetLocation(),
-                    PathObstacles.fromReefSide(side)),
-                Commands.sequence(
-                    Commands.waitUntil(
-                        isNearPose(localizer, targetLocation().getTranslation(), 2.0)),
-                    SuperStructureCommands.holdAt(
-                            subsystems.superStructure,
-                            superStructureState.minHeight(SuperStructureState.ScoreStaged))
-                        .until(
-                            isNearPose(localizer, targetLocation().getTranslation(), 0.04)
-                                .and(isSlowerThan(0.4))),
-                    SuperStructureCommands.holdAt(
-                        subsystems.superStructure, superStructureState, MoveOrder.ELEVATOR_FIRST)));
+        () -> {
+          SuperStructureState preferredStow;
+          if (superStructureState.elevatorMeters > SuperStructureState.ScoreL3.elevatorMeters) {
+            preferredStow = SuperStructureState.ScoreStagedHigh;
+          } else if (superStructureState.elevatorMeters
+              > SuperStructureState.ScoreL2.elevatorMeters) {
+            preferredStow = SuperStructureState.Stow;
+          } else {
+            preferredStow = SuperStructureState.ScoreStagedLow;
+          }
+          final MoveOrder preferredMoveOrder =
+              superStructureState.elevatorMeters > SuperStructureState.ScoreL3.elevatorMeters
+                  ? MoveOrder.ELEVATOR_FIRST
+                  : MoveOrder.SIMULTANEOUS;
+          return Commands.parallel(
+              SwerveCommands.lineupReef(
+                  subsystems.swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side)),
+              Commands.sequence(
+                  SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
+                      .until(isNearPose(localizer, targetLocation().getTranslation(), 2.0)),
+                  SuperStructureCommands.holdAt(
+                          subsystems.superStructure, superStructureState.minHeight(preferredStow))
+                      .until(
+                          isNearPose(localizer, targetLocation().getTranslation(), 0.04)
+                              .and(isSlowerThan(0.4))),
+                  SuperStructureCommands.holdAt(
+                      subsystems.superStructure, superStructureState, preferredMoveOrder)));
+        };
     return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure)
         .unless(wantsAlgae())
+        .unless(hasTarget().negate())
         .withName("TeleopAlignFull");
   }
 

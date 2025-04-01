@@ -26,7 +26,7 @@ public abstract class Wrist extends Component {
    * @param targetPosition The target angle of the wrist in radians.
    * @param constraints The constraints to apply to the wrist while moving.
    */
-  public abstract void goToPosition(double targetPosition, Optional<Constraints> constraints);
+  public abstract void gotoPosition(double targetPosition, Optional<Constraints> constraints);
 
   /**
    * Requests the wrist to go to a specific position for the next control cycle.
@@ -34,7 +34,7 @@ public abstract class Wrist extends Component {
    * @param targetPosition The target angle of the wrist in radians.
    */
   public void goToPosition(double targetPosition) {
-    goToPosition(targetPosition, Optional.empty());
+    gotoPosition(targetPosition, Optional.empty());
   }
 
   /**

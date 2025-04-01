@@ -12,7 +12,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
-import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.intake.IntakeConstants;
@@ -21,19 +21,17 @@ import igknighters.util.LerpTable;
 import igknighters.util.can.CANSignalManager;
 
 public class RollersReal extends Rollers {
-  private static final double INTAKE_WIDTH = 13.5 * Conv.INCHES_TO_METERS;
-  private static final double CORAL_WIDTH = 2.25 * Conv.INCHES_TO_METERS;
+  private static final double INTAKE_WIDTH = 14.0 * Conv.INCHES_TO_METERS;
+  private static final double CORAL_HALF_WIDTH = 2.25 * Conv.INCHES_TO_METERS;
   private static final LerpTable DISTANCE_LERP =
       new LerpTable(
-          new LerpTable.LerpTableEntry(2.5 * Conv.INCHES_TO_METERS, 1.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(4.45 * Conv.INCHES_TO_METERS, 2.5 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(5.25 * Conv.INCHES_TO_METERS, 3.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(5.8 * Conv.INCHES_TO_METERS, 4.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(7.36 * Conv.INCHES_TO_METERS, 5.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(8.937 * Conv.INCHES_TO_METERS, 6.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(9.68 * Conv.INCHES_TO_METERS, 7.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(11.65 * Conv.INCHES_TO_METERS, 8.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(13.5 * Conv.INCHES_TO_METERS, 9.25 * Conv.INCHES_TO_METERS));
+          new LerpTable.LerpTableEntry(0.036, 0.5 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(0.092, 1.875 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(0.141, 3.625 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(0.171, 4.875 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(0.222, 6.625 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(0.258, 8.0 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(0.316, 9.55 * Conv.INCHES_TO_METERS));
 
   private final TalonFX intakeMotor =
       new TalonFX(RollerConstants.INTAKE_MOTOR_ID, IntakeConstants.CANBUS);
@@ -46,6 +44,8 @@ public class RollersReal extends Rollers {
 
   private final StatusSignal<ReverseLimitValue> laserTrippedSignal;
   private final BaseStatusSignal current, voltage, velocity, acceleration, temperature, distance;
+
+  private final LinearFilter movingAverage = LinearFilter.movingAverage(5);
 
   private TalonFXConfiguration intakeConfiguration() {
     var cfg = new TalonFXConfiguration();
@@ -69,13 +69,13 @@ public class RollersReal extends Rollers {
     cfg.FovParams.FOVRangeY = 7.0;
     // might want to angle this to make detection distance more uniform across the whole intake
     cfg.FovParams.FOVCenterX = 0.0;
-    cfg.ToFParams.UpdateMode = UpdateModeValue.ShortRange100Hz;
+    cfg.ToFParams.UpdateFrequency = 50.0;
+    cfg.ToFParams.UpdateMode = UpdateModeValue.ShortRangeUserFreq;
 
     return cfg;
   }
 
   public RollersReal() {
-    super(DCMotor.getKrakenX60(1).withReduction(RollerConstants.GEAR_RATIO));
     laserTrippedSignal = intakeMotor.getReverseLimit();
     current = intakeMotor.getTorqueCurrent();
     voltage = intakeMotor.getMotorVoltage();
@@ -113,7 +113,7 @@ public class RollersReal extends Rollers {
 
   @Override
   public boolean isStalling() {
-    return Math.abs(radiansPerSecond) < 120.0 && Math.abs(amps) > 20.0;
+    return Math.abs(radiansPerSecond) < 120.0 && Math.abs(amps) > 10.0;
   }
 
   @Override
@@ -126,7 +126,9 @@ public class RollersReal extends Rollers {
     super.volts = voltage.getValueAsDouble();
     super.laserTripped = laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround;
     super.gamepieceDistance =
-        (DISTANCE_LERP.lerp(distance.getValueAsDouble()) + CORAL_WIDTH) - (INTAKE_WIDTH / 2.0);
+        (DISTANCE_LERP.lerp(movingAverage.calculate(distance.getValueAsDouble()))
+                + CORAL_HALF_WIDTH)
+            - (INTAKE_WIDTH / 2.0);
 
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
     log("radiansPerSecondPerSecond", acceleration.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS);

@@ -1,6 +1,7 @@
 package igknighters.controllers;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -14,6 +15,7 @@ import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
+import igknighters.commands.teleop.TeleopSwerveSingleAxisCmd;
 // import igknighters.commands.tests.WheelRadiusCharacterization;
 // import igknighters.commands.tests.WheelRadiusCharacterization.Direction;
 import igknighters.constants.FieldConstants;
@@ -84,11 +86,16 @@ public class DriverController {
 
     this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
         .whileTrue(
-            new TeleopSwerveHeadingCmd(
+            new TeleopSwerveSingleAxisCmd(
                 swerve,
                 this,
                 localizer,
                 () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+                () -> {
+                  final Translation2d line = new Translation2d(7.45, 0.0);
+                  return AllianceSymmetry.isBlue() ? line : AllianceSymmetry.flip(line);
+                },
+                false,
                 kSwerve.CONSTRAINTS))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
@@ -111,18 +118,17 @@ public class DriverController {
 
     // STICKS
     this.LS.onTrue(Commands.none());
+    // this.LS.onTrue(new WheelRadiusCharacterization(swerve, Direction.COUNTER_CLOCKWISE));
 
-    this.RS.onTrue(Commands.none());
-    // this.RS.onTrue(new WheelRadiusCharacterization(swerve, Direction.COUNTER_CLOCKWISE));
+    this.RS.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.ScoreL1, led));
 
     // // TRIGGERS
     this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(localizer));
 
-    this.RT
-        .whileTrue(
-            Commands.repeatingSequence(IntakeCommands.bounce(intake))
-                .withName("IntakeBounceRepeatedly"))
-        .onFalse(IntakeCommands.holdCoral(intake));
+    this.RT.onTrue(
+        IntakeCommands.bounce(intake)
+            .andThen(new ScheduleCommand(IntakeCommands.holdCoral(intake)))
+            .withName("IntakeBounce"));
 
     // DPAD
     this.DPR.onTrue(ClimberCommands.stow(climber));

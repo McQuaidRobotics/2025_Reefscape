@@ -6,7 +6,7 @@ import java.util.Optional;
 public class WristDisabled extends Wrist {
 
   @Override
-  public void goToPosition(double targetPosition, Optional<Constraints> constraints) {
+  public void gotoPosition(double targetPosition, Optional<Constraints> constraints) {
     super.radians = targetPosition;
     super.targetRadians = targetPosition;
     super.controlledLastCycle = true;

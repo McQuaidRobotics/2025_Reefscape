@@ -1,26 +1,36 @@
 package igknighters.subsystems.superStructure.Elevator;
 
+import static igknighters.constants.ConstValues.Conv.RADIANS_TO_ROTATIONS;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.SuperStructureConstants;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
 import igknighters.util.can.CANSignalManager;
+import java.util.Optional;
 
 public class ElevatorReal extends Elevator {
   private final TalonFX follower;
   private final TalonFX leader;
 
-  private final MotionMagicVoltage controlReq = new MotionMagicVoltage(0.0).withUpdateFreqHz(0.0);
+  private final DynamicMotionMagicVoltage controlReq =
+      new DynamicMotionMagicVoltage(
+              0.0,
+              kElevator.MAX_VELOCITY * Conv.RADIANS_TO_ROTATIONS,
+              kElevator.MAX_ACCELERATION * Conv.RADIANS_TO_ROTATIONS,
+              0.0)
+          .withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
 
@@ -30,8 +40,8 @@ public class ElevatorReal extends Elevator {
   public ElevatorReal() {
     leader = new TalonFX(kElevator.LEADER_ID, SuperStructureConstants.CANBUS);
     follower = new TalonFX(kElevator.FOLLOWER_ID, SuperStructureConstants.CANBUS);
-    leader.getConfigurator().apply(elevatorConfiguration());
-    follower.getConfigurator().apply(elevatorConfiguration());
+    leader.getConfigurator().apply(elevatorLeaderConfiguration());
+    follower.getConfigurator().apply(elevatorFollowerConfiguration());
     follower.setControl(new Follower(kElevator.LEADER_ID, true));
 
     position = leader.getPosition();
@@ -49,7 +59,7 @@ public class ElevatorReal extends Elevator {
     leader.setPosition(kElevator.MIN_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE);
   }
 
-  private TalonFXConfiguration elevatorConfiguration() {
+  private TalonFXConfiguration elevatorLeaderConfiguration() {
 
     var cfg = new TalonFXConfiguration();
 
@@ -65,10 +75,9 @@ public class ElevatorReal extends Elevator {
     cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
         kElevator.MAX_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE;
 
-    cfg.HardwareLimitSwitch.ReverseLimitEnable = true;
-
-    cfg.MotionMagic.MotionMagicCruiseVelocity = kElevator.MAX_VELOCITY;
-    cfg.MotionMagic.MotionMagicAcceleration = kElevator.MAX_ACCELERATION;
+    cfg.MotionMagic.MotionMagicCruiseVelocity = kElevator.MAX_VELOCITY * Conv.RADIANS_TO_ROTATIONS;
+    cfg.MotionMagic.MotionMagicAcceleration =
+        kElevator.MAX_ACCELERATION * Conv.RADIANS_TO_ROTATIONS;
 
     cfg.CurrentLimits.StatorCurrentLimit = kElevator.STATOR_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLimit = kElevator.SUPPLY_CURRENT_LIMIT;
@@ -82,10 +91,22 @@ public class ElevatorReal extends Elevator {
     return cfg;
   }
 
+  private TalonFXConfiguration elevatorFollowerConfiguration() {
+    var cfg = new TalonFXConfiguration();
+
+    return cfg;
+  }
+
   @Override
-  public void gotoPosition(double targetPosition) {
+  public void gotoPosition(double targetPosition, Optional<Constraints> constraints) {
     super.targetMeters = targetPosition;
     super.controlledLastCycle = true;
+    final var c = constraints.orElse(DEFAULT_CONSTRAINTS);
+    super.maxVelocity = c.maxVelocity;
+    super.maxAcceleration = c.maxAcceleration;
+    controlReq
+        .withVelocity(c.maxVelocity * RADIANS_TO_ROTATIONS)
+        .withAcceleration(c.maxAcceleration * RADIANS_TO_ROTATIONS);
     if (isLimitTripped && targetPosition < meters) {
       voltageOut(0.0);
     } else {
@@ -108,13 +129,14 @@ public class ElevatorReal extends Elevator {
   public boolean home() {
     if (!isHomed && super.home()) {
       leader.setPosition(kElevator.MIN_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE);
+      follower.setPosition(kElevator.MIN_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE);
     }
     return isHomed;
   }
 
   @Override
   public void voltageOut(double voltage) {
-    super.targetMeters = Double.NaN;
+    super.noTarget();
     super.controlledLastCycle = true;
     if (isLimitTripped && voltage < 0.0) {
       voltage = 0.0;
@@ -125,7 +147,7 @@ public class ElevatorReal extends Elevator {
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {
-      super.targetMeters = Double.NaN;
+      super.noTarget();
       leader.setControl(neutralOut);
     }
     super.controlledLastCycle = false;

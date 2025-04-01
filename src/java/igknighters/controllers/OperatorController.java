@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.OperatorTarget;
-import igknighters.commands.OperatorTarget.FaceSubLocation;
+import igknighters.constants.FieldConstants.FaceSubLocation;
 import igknighters.constants.FieldConstants.Reef.Side;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.superStructure.SuperStructureState;

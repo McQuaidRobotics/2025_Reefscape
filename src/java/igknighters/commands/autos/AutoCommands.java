@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -129,7 +130,7 @@ public class AutoCommands {
   public void orchestrateScoring(AutoTrajectory traj) {
     traj.active()
         .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
-    traj.atTimeBeforeEnd(timeBeforeL4Move)
+    traj.atTimeBeforeEnd(timeBeforeL4Move * 1.4)
         .onTrue(
             loggedCmd(
                 SuperStructureCommands.holdAt(
@@ -140,7 +141,7 @@ public class AutoCommands {
     traj.active()
         .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
     traj.atTimeBeforeEnd(
-            Math.min(timeBeforeIntakeMove * 1.2, traj.getRawTrajectory().getTotalTime() * 0.90))
+            Math.min(timeBeforeIntakeMove * 1.625, traj.getRawTrajectory().getTotalTime() * 0.90))
         .onTrue(
             loggedCmd(
                 SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose)))
@@ -199,6 +200,7 @@ public class AutoCommands {
     }
 
     public ReefscapeAuto addScoringTrajectory(Waypoints start, Waypoints end) {
+      final Timer scoreTimer = new Timer();
       final AutoTrajectory traj = getTrajectory(start, end);
       if (!trajectoryBeenAdded) {
         trajectoryBeenAdded = true;
@@ -208,6 +210,7 @@ public class AutoCommands {
       bodyCommand.addCommands(
           afterIntake(traj),
           finishAlignment(traj),
+          Commands.runOnce(scoreTimer::restart),
           loggedCmd(
               Commands.waitUntil(
                       SuperStructureCommands.isAt(superStructure, SuperStructureState.ScoreL4))
@@ -215,11 +218,13 @@ public class AutoCommands {
                   .withName("WaitForL4")),
           Commands.waitSeconds(0.1),
           new ScheduleCommand(loggedCmd(IntakeCommands.expel(intake, () -> false))),
-          Commands.waitSeconds(0.25));
+          Commands.waitSeconds(0.2),
+          Commands.runOnce(() -> System.out.println("Scoring took: " + scoreTimer.get())));
       return this;
     }
 
     public ReefscapeAuto addIntakeTrajectory(Waypoints start, Waypoints end) {
+      final Timer intakeTimer = new Timer();
       final AutoTrajectory traj = getTrajectory(start, end);
       if (!trajectoryBeenAdded) {
         trajectoryBeenAdded = true;
@@ -229,9 +234,12 @@ public class AutoCommands {
       bodyCommand.addCommands(
           afterScore(traj),
           Commands.sequence(
-                  SwerveCommands.driveVolts(swerve, Rotation2d.kZero, 1.0).withTimeout(0.33),
+                  // SwerveCommands.driveVolts(swerve, Rotation2d.kZero, 1.0).withTimeout(0.33),
+                  Commands.runOnce(intakeTimer::restart),
+                  finishAlignment(traj),
                   Commands.repeatingSequence(SwerveCommands.stop(swerve)))
-              .until(IntakeCommands.isHolding(intake, Holding.CORAL)));
+              .until(IntakeCommands.isHolding(intake, Holding.CORAL))
+              .finallyDo(() -> System.out.println("Intake took: " + intakeTimer.get())));
       return this;
     }
 

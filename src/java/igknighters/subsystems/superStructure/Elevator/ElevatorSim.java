@@ -12,11 +12,13 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
+import java.util.Optional;
 import sham.ShamMechanism;
 import sham.ShamMechanism.Friction;
 import sham.ShamMechanism.HardLimits;
@@ -75,9 +77,12 @@ public class ElevatorSim extends Elevator {
   }
 
   @Override
-  public void gotoPosition(double targetPosition) {
+  public void gotoPosition(double targetPosition, Optional<Constraints> constraints) {
     super.targetMeters = targetPosition;
     super.controlledLastCycle = true;
+    final var c = constraints.orElse(DEFAULT_CONSTRAINTS);
+    super.maxVelocity = c.maxVelocity;
+    super.maxAcceleration = c.maxAcceleration;
     shamMCX.controlVoltage(
         voltageLoop, Rotations.of(targetPosition / kElevator.PULLEY_CIRCUMFERENCE));
   }
@@ -89,7 +94,7 @@ public class ElevatorSim extends Elevator {
 
   @Override
   public void voltageOut(double voltage) {
-    super.targetMeters = Double.NaN;
+    super.noTarget();
     super.controlledLastCycle = true;
     shamMCX.controlVoltage(Volts.of(voltage));
   }
@@ -97,7 +102,7 @@ public class ElevatorSim extends Elevator {
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {
-      super.targetMeters = Double.NaN;
+      super.noTarget();
       shamMCX.controlVoltage(Volts.zero());
     }
     super.controlledLastCycle = false;

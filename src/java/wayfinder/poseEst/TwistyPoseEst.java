@@ -151,7 +151,11 @@ public class TwistyPoseEst {
     Twist2d twist = lastPose.log(pose);
     twist.dx *= weight;
     twist.dy *= weight;
-    twist.dtheta *= weight;
+    if (weight < 0.8) {
+      twist.dtheta *= 0.02;
+    } else {
+      twist.dtheta *= 0.0;
+    }
     forcePrune(timestamp, lastPose.exp(twist));
   }
 

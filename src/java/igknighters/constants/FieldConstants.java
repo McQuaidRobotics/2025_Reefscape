@@ -135,6 +135,15 @@ public class FieldConstants {
     }
   }
 
+  public enum FaceSubLocation implements StructSerializable {
+    LEFT,
+    RIGHT,
+    CENTER;
+
+    public static final Struct<FaceSubLocation> struct =
+        ProceduralStructGenerator.genEnum(FaceSubLocation.class);
+  }
+
   public static final AprilTagFieldLayout APRIL_TAG_FIELD =
       new AprilTagFieldLayout(
           List.of(AprilTags.TAGS), FieldConstants.FIELD_LENGTH, FieldConstants.FIELD_WIDTH);

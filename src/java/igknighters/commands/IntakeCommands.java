@@ -26,20 +26,8 @@ public class IntakeCommands {
         .withName("IntakeRunCurrent(" + current + ")");
   }
 
-  public static Command runTorque(Intake intake, double torque) {
-    return intake
-        .run(() -> intake.control(ControlType.TORQUE, torque))
-        .withName("IntakeRunTorque(" + torque + ")");
-  }
-
-  public static Command runVelocity(Intake intake, double velocity) {
-    return intake
-        .run(() -> intake.control(ControlType.VELOCITY, velocity))
-        .withName("IntakeRunVelocity(" + velocity + ")");
-  }
-
   public static Command intakeCoral(Intake intake) {
-    return runVoltage(intake, -3.8)
+    return runVoltage(intake, -7.5)
         .alongWith(Commands.run(() -> intake.setTryingToHold(Holding.CORAL)))
         .until(isHolding(intake, Holding.CORAL))
         .andThen(new ScheduleCommand(holdCoral(intake)))
@@ -47,15 +35,15 @@ public class IntakeCommands {
   }
 
   public static Command intakeAlgae(Intake intake) {
-    return runVoltage(intake, -10.0)
+    return runVoltage(intake, -12.0)
         .alongWith(Commands.run(() -> intake.setTryingToHold(Holding.ALGAE)))
         .withName("IntakeAlgae");
   }
 
   public static Command expel(Intake intake, BooleanSupplier isL1) {
     return Commands.either(
-            runVoltage(intake, 5.0),
-            Commands.either(runVoltage(intake, 2.0), runVoltage(intake, 3.5), isL1),
+            runVoltage(intake, 14.0),
+            Commands.either(runVoltage(intake, 7.0), runVoltage(intake, 12.0), isL1),
             isHolding(intake, Holding.ALGAE))
         .withName("Expel");
   }
@@ -66,9 +54,9 @@ public class IntakeCommands {
 
   public static Command bounce(Intake intake) {
     return Commands.sequence(
-            IntakeCommands.runVoltage(intake, 1.0).withTimeout(0.1),
+            IntakeCommands.runVoltage(intake, 3.0).withTimeout(0.10),
             intake.runOnce(() -> intake.setTryingToHold(Holding.CORAL)),
-            IntakeCommands.runVoltage(intake, -12.0).withTimeout(0.15))
+            IntakeCommands.runVoltage(intake, -12.0).withTimeout(0.2))
         .finallyDo(() -> intake.setTryingToHold(Holding.NONE))
         .withName("IntakeBounce");
   }
@@ -80,7 +68,7 @@ public class IntakeCommands {
   }
 
   public static Command holdCoral(Intake intake) {
-    return IntakeCommands.runCurrent(intake, -35.0)
+    return IntakeCommands.runCurrent(intake, -12.5)
         .until(isHolding(intake, Holding.CORAL).negate())
         .withName("HoldCoral");
   }
