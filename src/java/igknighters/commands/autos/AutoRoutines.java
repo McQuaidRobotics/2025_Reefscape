@@ -65,7 +65,7 @@ public class AutoRoutines extends AutoCommands {
                 SuperStructureCommands.holdAt(
                     superStructure, SuperStructureState.AlgaeL2, MoveOrder.ELEVATOR_FIRST)),
             IntakeCommands.intakeAlgae(super.intake))
-        .withTimeout(1)
+        .withTimeout(2)
         .withName("L4ToAlgaeFarMid");
   }
 
@@ -110,7 +110,7 @@ public class AutoRoutines extends AutoCommands {
                 Commands.sequence(
                     IntakeCommands.holdAlgae(super.intake).withTimeout(0.14),
                     IntakeCommands.expel(super.intake).withTimeout(0.25))))
-        .until(IntakeCommands.isHolding(intake, Holding.NONE))
+        // .until(IntakeCommands.isHolding(intake, Holding.NONE))
         .withName("algaeFarMidToBarge");
   }
 
