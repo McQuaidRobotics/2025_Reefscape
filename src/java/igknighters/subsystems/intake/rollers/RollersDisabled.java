@@ -11,4 +11,9 @@ public class RollersDisabled extends Rollers {
   public boolean isStalling() {
     return false;
   }
+
+  @Override
+  public double getVoltage() {
+    return 0;
+  }
 }

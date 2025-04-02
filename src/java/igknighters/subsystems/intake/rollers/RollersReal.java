@@ -112,6 +112,11 @@ public class RollersReal extends Rollers {
   }
 
   @Override
+  public double getVoltage() {
+    return intakeMotor.getMotorVoltage().getValueAsDouble();
+  }
+
+  @Override
   public boolean isStalling() {
     return Math.abs(radiansPerSecond) < 120.0 && Math.abs(amps) > 10.0;
   }

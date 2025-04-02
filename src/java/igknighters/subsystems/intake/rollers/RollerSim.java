@@ -31,6 +31,7 @@ import wpilibExt.AllianceSymmetry.SymmetryStrategy;
 import wpilibExt.DCMotorExt;
 
 public class RollerSim extends Rollers {
+
   private static final Translation2d[] intakePositions;
 
   static {
@@ -109,6 +110,11 @@ public class RollerSim extends Rollers {
   @Override
   public boolean isStalling() {
     return amps < 0.0 && isLaserTripped();
+  }
+
+  @Override
+  public double getVoltage() {
+    return intakeMotor.voltage().in(Volts);
   }
 
   @Override

@@ -36,6 +36,7 @@ public class Intake implements ExclusiveSubsystem {
   }
 
   private final Rollers rollers;
+  private final IntakeVisualizer intakeVisualizer = new IntakeVisualizer();
 
   public Intake(SharedState shared, SimCtx simCtx) {
     this.shared = shared;
@@ -50,6 +51,7 @@ public class Intake implements ExclusiveSubsystem {
     if (value > -0.01) {
       currentlyHolding = Holding.NONE;
     }
+
     log("ControlType", controlType);
     log("Value", value);
     switch (controlType) {
@@ -75,6 +77,7 @@ public class Intake implements ExclusiveSubsystem {
 
   public void periodic() {
     rollers.periodic();
+    intakeVisualizer.updatePosition(rollers.getVoltage());
 
     if (DriverStation.isDisabled()) {
       tryingToHold = Holding.NONE;

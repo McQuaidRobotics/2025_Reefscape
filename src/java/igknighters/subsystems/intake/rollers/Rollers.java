@@ -32,6 +32,8 @@ public abstract class Rollers extends Component {
 
   public abstract boolean isStalling();
 
+  public abstract double getVoltage();
+
   public double gamepieceDistance() {
     return gamepieceDistance;
   }
