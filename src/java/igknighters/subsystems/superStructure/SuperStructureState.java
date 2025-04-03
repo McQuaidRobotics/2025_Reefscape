@@ -26,7 +26,7 @@ public enum SuperStructureState implements StructSerializable {
   Net_FLICKED(MAX_HEIGHT, MAX_ANGLE, 1.0),
   // Net(L3.height, -1.0, 1.0),
   // Net_FLICKED(MAX_HEIGHT, -1.0, 1.0),
-  IntakeHpClose(28.25 * INCHES_TO_METERS, -54.0 * DEGREES_TO_RADIANS),
+  IntakeHpClose(28.8 * INCHES_TO_METERS, -54.0 * DEGREES_TO_RADIANS),
   IntakeHpFar(26.2 * INCHES_TO_METERS, -48.0 * DEGREES_TO_RADIANS),
   AntiTilt(MIN_HEIGHT + 0.05, MAX_ANGLE, 1.0);
 

@@ -39,6 +39,13 @@ public class DriverController {
     final var led = subsystems.led;
     final var climber = subsystems.climber;
 
+    final Trigger shouldAutoAlign =
+        new Trigger(
+            () -> {
+              return TunableValues.getBoolean("driverAssist", true).value()
+                  || DriverStation.isFMSAttached();
+            });
+
     /// FACE BUTTONS
     this.A.or(this.X)
         .whileTrue(IntakeCommands.intakeCoral(intake))
@@ -60,11 +67,7 @@ public class DriverController {
                       }
                     },
                     kSwerve.CONSTRAINTS)
-                .onlyIf(
-                    () -> {
-                      return TunableValues.getBoolean("intakeAlign", true).value()
-                          || DriverStation.isFMSAttached();
-                    }))
+                .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .onFalse(
             Commands.waitSeconds(0.33)
@@ -81,26 +84,28 @@ public class DriverController {
     this.B.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor))
         .whileTrue(
             new TeleopSwerveHeadingCmd(
-                swerve,
-                this,
-                localizer,
-                () -> AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
-                kSwerve.CONSTRAINTS))
+                    swerve,
+                    this,
+                    localizer,
+                    () -> AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
+                    kSwerve.CONSTRAINTS)
+                .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
         .whileTrue(
             new TeleopSwerveSingleAxisCmd(
-                swerve,
-                this,
-                localizer,
-                () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-                () -> {
-                  final Translation2d line = new Translation2d(7.4, 0.0);
-                  return AllianceSymmetry.isBlue() ? line : AllianceSymmetry.flip(line);
-                },
-                false,
-                kSwerve.CONSTRAINTS))
+                    swerve,
+                    this,
+                    localizer,
+                    () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+                    () -> {
+                      final Translation2d line = new Translation2d(7.25, 0.0);
+                      return AllianceSymmetry.isBlue() ? line : AllianceSymmetry.flip(line);
+                    },
+                    false,
+                    kSwerve.CONSTRAINTS)
+                .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))

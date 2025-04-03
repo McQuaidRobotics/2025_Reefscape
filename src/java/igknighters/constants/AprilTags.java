@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import wpilibExt.AllianceSymmetry;
 
 public class AprilTags {
   /**
@@ -164,9 +165,13 @@ public class AprilTags {
   }
 
   public static boolean observalbleTag(int id) {
-    for (int i : TAG_IDS) {
-      if (i == id) {
-        return true;
+    for (AprilTag tag : TAGS) {
+      if (tag.ID == id) {
+        if (AllianceSymmetry.isBlue()) {
+          return tag.pose.getX() < FieldConstants.FIELD_LENGTH / 2.0;
+        } else {
+          return tag.pose.getX() > FieldConstants.FIELD_LENGTH / 2.0;
+        }
       }
     }
     return false;
