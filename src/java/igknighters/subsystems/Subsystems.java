@@ -24,6 +24,9 @@ public class Subsystems implements Logged {
   @Log(key = "Intake")
   public final Intake intake;
 
+  @Log(key = "RobotVisualizer")
+  public final RobotVisualizer visualizer = new RobotVisualizer();
+
   @Log(key = "SuperStructure")
   public final SuperStructure superStructure;
 
@@ -69,6 +72,12 @@ public class Subsystems implements Logged {
    * @see Subsystem
    */
   public static interface ExclusiveSubsystem extends Subsystem, Logged {}
+
+  public void periodic() {
+    visualizer.updatePosition(
+        superStructure.elevatorHeight(), superStructure.wristAngle(), intake.getVoltage());
+    visualizer.updateSetpoint(superStructure.targetingMeters(), superStructure.targetingRads());
+  }
 
   /** A subsystem that does not act as a locking resource when using commands */
   public static interface SharedSubsystem extends Logged {

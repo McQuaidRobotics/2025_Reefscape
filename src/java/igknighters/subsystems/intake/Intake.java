@@ -68,6 +68,10 @@ public class Intake implements ExclusiveSubsystem {
     tryingToHold = holding;
   }
 
+  public double getVoltage() {
+    return rollers.getVoltage();
+  }
+
   public double gamepieceYOffset() {
     if (!rollers.isLaserTripped()) {
       return 0;

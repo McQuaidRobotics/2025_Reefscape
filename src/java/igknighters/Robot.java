@@ -133,6 +133,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
   @Override
   public void robotPeriodic() {
+    subsystems.periodic();
     loopCount.incrementAndGet();
     Tracer.traceFunc("SimCtx", simCtx::update);
     Tracer.traceFunc("CANSignalRefresh", CANSignalManager::refreshSignals);

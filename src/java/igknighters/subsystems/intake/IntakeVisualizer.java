@@ -10,12 +10,12 @@ public class IntakeVisualizer {
   Mechanism2d intakeMechanism = new Mechanism2d(40, 40);
   MechanismRoot2d intakeRoot = intakeMechanism.getRoot("rollerPercentOut", 0, 20);
   MechanismLigament2d intakeLigament =
-      intakeRoot.append(new MechanismLigament2d("intakeLig", 20, 0));
+      intakeRoot.append(new MechanismLigament2d("intakeLig", 40, 0));
   Color8Bit fullReverseColor = new Color8Bit(255, 0, 0);
   Color8Bit fullForwardColor = new Color8Bit(0, 255, 0);
 
   public IntakeVisualizer() {
-    intakeLigament.setLineWeight(40);
+    intakeLigament.setLineWeight(200);
     intakeMechanism.setBackgroundColor(new Color8Bit(0, 0, 255));
     SmartDashboard.putData("IntakeMechanism", intakeMechanism);
   }

@@ -29,6 +29,9 @@ public class SuperStructure implements ExclusiveSubsystem {
   @Log(key = "Wrist")
   private final Wrist wrist;
 
+  private double targetHeight = 0.0;
+  private double targetWristRads = 0.0;
+
   @Log(key = "Elevator")
   private final Elevator elevator;
 
@@ -71,6 +74,8 @@ public class SuperStructure implements ExclusiveSubsystem {
   public void goTo(double elevatorMeters, double wristRads) {
     wrist.log("initialTargetRads", wristRads);
     elevator.log("initialTargetMeters", elevatorMeters);
+    targetHeight = elevatorMeters;
+    targetWristRads = wristRads;
     if (!isHomed()) {
       return;
     }
@@ -85,6 +90,14 @@ public class SuperStructure implements ExclusiveSubsystem {
       elevator.gotoPosition(elevatorMeters);
     }
     visualizer.updateSetpoint(elevatorMeters, wristRads);
+  }
+
+  public double targetingMeters() {
+    return targetHeight;
+  }
+
+  public double targetingRads() {
+    return targetWristRads;
   }
 
   /**
