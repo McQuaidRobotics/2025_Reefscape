@@ -75,7 +75,10 @@ public class Subsystems implements Logged {
 
   public void periodic() {
     visualizer.updatePosition(
-        superStructure.elevatorHeight(), superStructure.wristAngle(), intake.getVoltage());
+        superStructure.elevatorHeight(),
+        superStructure.wristAngle(),
+        intake.getVoltage(),
+        led.getFirst3ColorsOnBoth());
     visualizer.updateSetpoint(superStructure.targetingMeters(), superStructure.targetingRads());
   }
 

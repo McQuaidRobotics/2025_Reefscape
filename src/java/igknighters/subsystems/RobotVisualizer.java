@@ -2,17 +2,15 @@ package igknighters.subsystems;
 
 import static igknighters.subsystems.superStructure.SuperStructureConstants.kElevator.*;
 
-import java.util.List;
-
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator.Stage;
+import java.util.ArrayList;
 
 public class RobotVisualizer {
 
@@ -29,11 +27,11 @@ public class RobotVisualizer {
   private final Translation2d ledLeftOrigin = new Translation2d(0.1, .1);
   private final Translation2d ledRightOrigin = new Translation2d(0.3, .1);
   private final double reefWidth = 7.0;
-  
+
   final MechanismRoot2d leftBranchLedRoot;
-  
+
   final MechanismRoot2d rightBranchLedRoot;
-  
+
   final MechanismLigament2d led1Left;
   final MechanismLigament2d led2Left;
   final MechanismLigament2d led3Left;
@@ -41,7 +39,6 @@ public class RobotVisualizer {
   final MechanismLigament2d led1Right;
   final MechanismLigament2d led2Right;
   final MechanismLigament2d led3Right;
-
 
   public void visualizeReef() {
     final MechanismRoot2d rootReef = mechanism.getRoot("Reef", pivotOrigin.getX() + 1.0, 0.0);
@@ -145,15 +142,17 @@ public class RobotVisualizer {
     stage1.setLineWeight(elevatorWidth);
     stage2.setLineWeight(elevatorWidth);
 
-    leftBranchLedRoot = mechanism.getRoot("leftLedRoot", ledLeftOrigin.getX(), ledLeftOrigin.getY());
-    rightBranchLedRoot = mechanism.getRoot("righLedRoot", ledRightOrigin.getX(), ledRightOrigin.getY());
-    led1Left = leftBranchLedRoot.append(new MechanismLigament2d("L1", 5, 0));
+    leftBranchLedRoot =
+        mechanism.getRoot("leftLedRoot", ledLeftOrigin.getX(), ledLeftOrigin.getY());
+    rightBranchLedRoot =
+        mechanism.getRoot("righLedRoot", ledRightOrigin.getX(), ledRightOrigin.getY());
+    led1Left = leftBranchLedRoot.append(new MechanismLigament2d("L1", 5, 90));
     led2Left = led1Left.append(new MechanismLigament2d("L2", 5, 0));
     led3Left = led2Left.append(new MechanismLigament2d("L3", 5, 0));
-    led1Right = rightBranchLedRoot.append(new MechanismLigament2d("L1", 5, 0));
+    led1Right = rightBranchLedRoot.append(new MechanismLigament2d("L1", 5, 90));
     led2Right = led1Right.append(new MechanismLigament2d("L2", 5, 0));
     led3Right = led2Right.append(new MechanismLigament2d("L3", 5, 0));
-    
+
     led1Left.setLineWeight(10);
     led2Left.setLineWeight(10);
     led3Left.setLineWeight(10);
@@ -185,7 +184,8 @@ public class RobotVisualizer {
    * @param elevatorMeters The height of the elevator in meters
    * @param wristRads The angle of the wrist in rads
    */
-  public void updatePosition(double elevatorMeters, double wristRads, double wristVolts, List<Color8Bit> colors) {
+  public void updatePosition(
+      double elevatorMeters, double wristRads, double wristVolts, ArrayList<Color8Bit> colors) {
     rootCurrentCarriage.setPosition(1.25, elevatorMeters - (6.0 * Conv.INCHES_TO_METERS));
     updateWristColor(wristVolts);
     updateLedColors(colors);
@@ -217,7 +217,8 @@ public class RobotVisualizer {
             (int) ((Math.abs(percent) * (-255)) + 255), (int) (Math.abs(percent) * (255)), (int) 0);
     intake.setColor(color);
   }
-  public void updateLedColors(List<Color8Bit> colors){
+
+  public void updateLedColors(ArrayList<Color8Bit> colors) {
     led1Left.setColor(colors.get(0));
     led2Left.setColor(colors.get(1));
     led3Left.setColor(colors.get(2));
@@ -225,6 +226,5 @@ public class RobotVisualizer {
     led1Right.setColor(colors.get(3));
     led2Right.setColor(colors.get(4));
     led3Right.setColor(colors.get(5));
-
   }
 }
