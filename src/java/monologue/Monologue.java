@@ -6,7 +6,6 @@ import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DataLogBackgroundWriter;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -309,9 +308,7 @@ public class Monologue extends GlobalLogged {
       return;
     }
 
-    table.getInstance().startEntryDataLog(
-        wpilog, table.getPath(), path
-    );
+    table.getInstance().startEntryDataLog(wpilog, table.getPath(), path);
 
     RuntimeLog.info("Monologue.capture() called on " + table.getPath() + " with path " + path);
   }

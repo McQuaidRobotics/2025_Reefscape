@@ -5,7 +5,6 @@ import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.SignalLogger;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -88,12 +87,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             new Intake(sharedState, simCtx),
             new Climber(simCtx));
 
-    localizer.reset(
-      new Pose2d(
-        new Translation2d(12.0, 5.0),
-        Rotation2d.kZero
-      )
-    );
+    localizer.reset(new Pose2d(new Translation2d(12.0, 5.0), Rotation2d.kZero));
 
     final var operatorTarget = new OperatorTarget(subsystems, this);
     driverController = new DriverController(0);
@@ -210,6 +204,8 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
       Monologue.setupMonologueDisabled(this, "/Robot", true);
     }
 
+    Monologue.capture(
+        "SmartDashboard", NetworkTableInstance.getDefault().getTable("SmartDashboard"));
     Monologue.capture("Tracer", NetworkTableInstance.getDefault().getTable("Tracer"));
 
     // logs build data to the datalog
