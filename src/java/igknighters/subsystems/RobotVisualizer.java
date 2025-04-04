@@ -146,19 +146,19 @@ public class RobotVisualizer {
         mechanism.getRoot("leftLedRoot", ledLeftOrigin.getX(), ledLeftOrigin.getY());
     rightBranchLedRoot =
         mechanism.getRoot("righLedRoot", ledRightOrigin.getX(), ledRightOrigin.getY());
-    led1Left = leftBranchLedRoot.append(new MechanismLigament2d("L1", 5, 90));
-    led2Left = led1Left.append(new MechanismLigament2d("L2", 5, 0));
-    led3Left = led2Left.append(new MechanismLigament2d("L3", 5, 0));
-    led1Right = rightBranchLedRoot.append(new MechanismLigament2d("L1", 5, 90));
-    led2Right = led1Right.append(new MechanismLigament2d("L2", 5, 0));
-    led3Right = led2Right.append(new MechanismLigament2d("L3", 5, 0));
+    led1Left = leftBranchLedRoot.append(new MechanismLigament2d("L1", .1, 90));
+    led2Left = led1Left.append(new MechanismLigament2d("L2", .1, 0));
+    led3Left = led2Left.append(new MechanismLigament2d("L3", .1, 0));
+    led1Right = rightBranchLedRoot.append(new MechanismLigament2d("L1", .1, 90));
+    led2Right = led1Right.append(new MechanismLigament2d("L2", .1, 0));
+    led3Right = led2Right.append(new MechanismLigament2d("L3", .1, 0));
 
-    led1Left.setLineWeight(10);
-    led2Left.setLineWeight(10);
-    led3Left.setLineWeight(10);
-    led1Right.setLineWeight(10);
-    led2Right.setLineWeight(10);
-    led3Right.setLineWeight(10);
+    led1Left.setLineWeight(7);
+    led2Left.setLineWeight(7);
+    led3Left.setLineWeight(7);
+    led1Right.setLineWeight(7);
+    led2Right.setLineWeight(7);
+    led3Right.setLineWeight(7);
 
     // Monologue.publishSendable("/Visualizers/SuperStructure", mechanism, LogSink.OP);
     SmartDashboard.putData("RobotVisualizer", mechanism);
