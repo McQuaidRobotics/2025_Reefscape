@@ -11,22 +11,23 @@ import monologue.ProceduralStructGenerator;
 
 public enum SuperStructureState implements StructSerializable {
   ScoreL4(MAX_HEIGHT, 29.0 * DEGREES_TO_RADIANS, 1.0),
-  ScoreL3(L3.height + 0.3, -L3.pitch),
-  ScoreL2(L2.height + 0.3, -L2.pitch),
+  ScoreL3(L3.height + 0.25, -L3.pitch),
+  ScoreL2(L2.height + 0.25, -L2.pitch),
   ScoreL1(0.74, 29.0 * DEGREES_TO_RADIANS),
+  StagedL4(L3.height + 0.20, MAX_ANGLE, 2.0),
+  StagedL3(L3.height + 0.25, MAX_ANGLE, 2.0),
+  StagedL2(L2.height + 0.25, MAX_ANGLE, 2.0),
   AlgaeL3(L3.height + 0.17, 25.0 * DEGREES_TO_RADIANS),
   AlgaeL2(L2.height + 0.17, 25.0 * DEGREES_TO_RADIANS),
   AlgaeFloor(MIN_HEIGHT, 15.0 * DEGREES_TO_RADIANS),
-  Stow(MIN_HEIGHT + STAGES[2].rangeOfMotion() - 3.0 * INCHES_TO_METERS, MAX_ANGLE, 2.0),
-  ScoreStagedLow(MIN_HEIGHT + STAGES[2].rangeOfMotion() - 9.0 * INCHES_TO_METERS, MAX_ANGLE, 2.0),
-  ScoreStagedHigh(L3.height + 0.20, MAX_ANGLE, 2.0),
+  Stow(28.25 * INCHES_TO_METERS, MAX_ANGLE, 2.0),
   Processor(MIN_HEIGHT, 0.0, 1.5),
   Net(MAX_HEIGHT - 0.15, MIN_ANGLE, 1.0),
   Net_FLICKED(MAX_HEIGHT, MAX_ANGLE, 1.0),
   // Net(L3.height, -1.0, 1.0),
   // Net_FLICKED(MAX_HEIGHT, -1.0, 1.0),
-  IntakeHpClose(28.25 * INCHES_TO_METERS, -59.0 * DEGREES_TO_RADIANS),
-  IntakeHpFar(26.2 * INCHES_TO_METERS, -53.0 * DEGREES_TO_RADIANS),
+  IntakeHpClose(28.8 * INCHES_TO_METERS, -54.0 * DEGREES_TO_RADIANS),
+  IntakeHpFar(26.2 * INCHES_TO_METERS, -48.0 * DEGREES_TO_RADIANS),
   AntiTilt(MIN_HEIGHT + 0.05, MAX_ANGLE, 1.0);
 
   public final double elevatorMeters;

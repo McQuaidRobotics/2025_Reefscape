@@ -30,7 +30,7 @@ public class ElevatorReal extends Elevator {
               kElevator.MAX_VELOCITY * Conv.RADIANS_TO_ROTATIONS,
               kElevator.MAX_ACCELERATION * Conv.RADIANS_TO_ROTATIONS,
               0.0)
-          .withUpdateFreqHz(0.0);
+          .withUpdateFreqHz(100.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
 
@@ -104,9 +104,12 @@ public class ElevatorReal extends Elevator {
     final var c = constraints.orElse(DEFAULT_CONSTRAINTS);
     super.maxVelocity = c.maxVelocity;
     super.maxAcceleration = c.maxAcceleration;
+    if (super.targetMeters < super.meters) {
+      super.maxAcceleration *= 0.35;
+    }
     controlReq
-        .withVelocity(c.maxVelocity * RADIANS_TO_ROTATIONS)
-        .withAcceleration(c.maxAcceleration * RADIANS_TO_ROTATIONS);
+        .withVelocity(maxVelocity * RADIANS_TO_ROTATIONS)
+        .withAcceleration(maxAcceleration * RADIANS_TO_ROTATIONS);
     if (isLimitTripped && targetPosition < meters) {
       voltageOut(0.0);
     } else {
@@ -156,5 +159,7 @@ public class ElevatorReal extends Elevator {
     super.volts = voltage.getValueAsDouble();
     super.amps = current.getValueAsDouble();
     super.isLimitTripped = limitSwitch.get();
+    log("leaderConnected", leader.isConnected());
+    log("followerConnected", follower.isConnected());
   }
 }

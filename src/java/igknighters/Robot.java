@@ -5,6 +5,9 @@ import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.SignalLogger;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
@@ -19,7 +22,6 @@ import igknighters.commands.autos.AutoRoutines;
 import igknighters.commands.teleop.TeleopSwerveTraditionalCmd;
 import igknighters.commands.tests.TestManager;
 import igknighters.constants.ConstValues;
-import igknighters.constants.FieldConstants;
 import igknighters.controllers.DriverController;
 import igknighters.controllers.OperatorController;
 import igknighters.subsystems.SharedState;
@@ -85,7 +87,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             new Intake(sharedState, simCtx),
             new Climber(simCtx));
 
-    localizer.reset(FieldConstants.POSE2D_CENTER);
+    localizer.reset(new Pose2d(new Translation2d(12.0, 5.0), Rotation2d.kZero));
 
     final var operatorTarget = new OperatorTarget(subsystems, this);
     driverController = new DriverController(0);
@@ -122,7 +124,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
     final var routines = new AutoRoutines(subsystems, localizer, autoFactory);
     AutoRoutines.addCmd(autoChooser, "test", routines::test);
-    AutoRoutines.addCmd(autoChooser, "testMove", routines::testMove);
+    AutoRoutines.addCmd(autoChooser, "testPush", routines::testWithPush);
     autoChooser.addCmd("straight", routines.trajTest("Straight"));
     setupAutoChooser();
 
@@ -196,14 +198,16 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
       Monologue.setupMonologue(
           this,
           "/Robot",
-          new MonologueConfig()
-              .withDatalogPrefix("")
-              .withOptimizeBandwidth(DriverStation::isFMSAttached));
+          new MonologueConfig().withOptimizeBandwidth(DriverStation::isFMSAttached));
     } else {
       // used for tests and CI, does not actually log anything but asserts the logging is setup
       // mostly correct
       Monologue.setupMonologueDisabled(this, "/Robot", true);
     }
+
+    Monologue.capture(
+        "SmartDashboard", NetworkTableInstance.getDefault().getTable("SmartDashboard"));
+    Monologue.capture("Tracer", NetworkTableInstance.getDefault().getTable("Tracer"));
 
     // logs build data to the datalog
     final String meta = "/BuildData/";
@@ -224,6 +228,8 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
         Monologue.log(meta + "GitDirty", "Unknown");
         break;
     }
+    Monologue.log(meta + "Debug", isDebug());
+    Monologue.log(meta + "Demo", isDemo());
 
     BiConsumer<Command, Boolean> logCommandFunction =
         (Command command, Boolean active) -> {
@@ -241,6 +247,8 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
         (Command command) -> {
           logCommandFunction.accept(command, false);
         });
+
+    Monologue.getWpilog().get().flush();
   }
 
   private void setupAutoChooser() {

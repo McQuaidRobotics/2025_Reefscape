@@ -23,6 +23,7 @@ import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
+import igknighters.util.plumbing.TunableValues;
 import java.util.function.DoubleSupplier;
 import wpilibExt.AllianceSymmetry;
 
@@ -38,29 +39,35 @@ public class DriverController {
     final var led = subsystems.led;
     final var climber = subsystems.climber;
 
+    final Trigger shouldAutoAlign =
+        new Trigger(
+            () -> {
+              return TunableValues.getBoolean("driverAssist", true).value()
+                  || DriverStation.isFMSAttached();
+            });
+
     /// FACE BUTTONS
     this.A.or(this.X)
         .whileTrue(IntakeCommands.intakeCoral(intake))
         .whileTrue(
             new TeleopSwerveHeadingCmd(
-                swerve,
-                this,
-                localizer,
-                () -> {
-                  final double angle = 54.0;
-                  if (localizer.translation().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
-                    return AllianceSymmetry.isBlue()
-                        ? Rotation2d.fromDegrees(180 - angle)
-                        : Rotation2d.fromDegrees(angle);
-                  } else {
-                    return AllianceSymmetry.isBlue()
-                        ? Rotation2d.fromDegrees(-(180 - angle))
-                        : Rotation2d.fromDegrees(-angle);
-                  }
-                },
-                kSwerve.CONSTRAINTS)
-            // .unless(TunableValues.getBoolean("intakeAlign", false)::value)
-            )
+                    swerve,
+                    this,
+                    localizer,
+                    () -> {
+                      final double angle = 54.0;
+                      if (localizer.translation().getY() > FieldConstants.FIELD_WIDTH / 2.0) {
+                        return AllianceSymmetry.isBlue()
+                            ? Rotation2d.fromDegrees(180 - angle)
+                            : Rotation2d.fromDegrees(angle);
+                      } else {
+                        return AllianceSymmetry.isBlue()
+                            ? Rotation2d.fromDegrees(-(180 - angle))
+                            : Rotation2d.fromDegrees(-angle);
+                      }
+                    },
+                    kSwerve.CONSTRAINTS)
+                .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .onFalse(
             Commands.waitSeconds(0.33)
@@ -77,27 +84,39 @@ public class DriverController {
     this.B.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Processor))
         .whileTrue(
             new TeleopSwerveHeadingCmd(
-                swerve,
-                this,
-                localizer,
-                () -> AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
-                kSwerve.CONSTRAINTS))
+                    swerve,
+                    this,
+                    localizer,
+                    () -> AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
+                    kSwerve.CONSTRAINTS)
+                .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
         .whileTrue(
             new TeleopSwerveSingleAxisCmd(
-                swerve,
-                this,
-                localizer,
-                () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-                () -> {
-                  final Translation2d line = new Translation2d(7.45, 0.0);
-                  return AllianceSymmetry.isBlue() ? line : AllianceSymmetry.flip(line);
-                },
-                false,
-                kSwerve.CONSTRAINTS))
+                    swerve,
+                    this,
+                    localizer,
+                    () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+                    () -> {
+                      final Translation2d line = new Translation2d(7.25, 0.0);
+                      return AllianceSymmetry.isBlue() ? line : AllianceSymmetry.flip(line);
+                    },
+                    false,
+                    kSwerve.CONSTRAINTS)
+                .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
+
+    // this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
+    //     .whileTrue(
+    //         new TeleopSwerveHeadingCmd(
+    //             swerve,
+    //             this,
+    //             localizer,
+    //             () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
+    //             kSwerve.CONSTRAINTS))
+    //     .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
     this.RB.whileTrue(
@@ -149,8 +168,11 @@ public class DriverController {
 
     this.LT
         .or(LB)
-        .onTrue(IntakeCommands.holdCoral(intake))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+        .and(operatorTarget.wantsAlgae().negate())
+        .onTrue(IntakeCommands.holdCoral(intake));
+    this.LT
+        .or(LB)
         .and(operatorTarget.wantsAlgae())
         .whileTrue(IntakeCommands.intakeAlgae(intake))
         .onFalse(IntakeCommands.holdAlgae(intake));
@@ -164,8 +186,8 @@ public class DriverController {
                     new ScheduleCommand(
                         SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))),
                 Commands.sequence(
-                    IntakeCommands.holdAlgae(intake).withTimeout(0.14),
-                    IntakeCommands.expel(intake).withTimeout(0.25))));
+                    IntakeCommands.holdAlgae(intake).withTimeout(0.07),
+                    IntakeCommands.expel(intake).withTimeout(0.5))));
   }
 
   // Define the buttons on the controller

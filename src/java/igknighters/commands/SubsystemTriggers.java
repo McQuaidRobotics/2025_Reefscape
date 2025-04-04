@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.LEDCommands.LEDSection;
-import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.kLed;
 import igknighters.constants.FieldConstants.FaceSubLocation;
 import igknighters.controllers.DriverController;
@@ -70,19 +69,11 @@ public class SubsystemTriggers {
             })
         .onTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.AntiTilt));
 
-    localizer
-        .near(swerve.getYaw(), 1.0 * Conv.DEGREES_TO_RADIANS)
-        .negate()
-        .and(RobotModeTriggers.disabled())
-        .onTrue(
-            SwerveCommands.orientGyro(swerve, vision, localizer, localizer.pose().getRotation()))
-        .onTrue(Commands.print("Reorienting robot to localizer pose"));
     final Trigger ledIdle = Triggers.subsystemIdle(led);
-    Monologue.log("is robot disabled", RobotModeTriggers.disabled().getAsBoolean());
     final Trigger ledEnabled =
         RobotModeTriggers.disabled()
             .onFalse(
-                LEDCommands.runSplitWithLEDSection(
+                LEDCommands.run(
                     led,
                     new LEDSection(
                         0, 0, LEDPattern.solid(new Color(0, 255, 0)), 36, "enabled index 0"),
@@ -91,7 +82,7 @@ public class SubsystemTriggers {
     final Trigger ledTriggerAutonomous =
         RobotModeTriggers.autonomous()
             .whileTrue(
-                LEDCommands.runSplitWithLEDSection(
+                LEDCommands.run(
                     led,
                     new LEDSection(
                         0, 0, LedUtil.makeRainbow(255, 100), 36, "autonomous rainbow s1"),
@@ -99,14 +90,14 @@ public class SubsystemTriggers {
                         1, 0, LedUtil.makeRainbow(255, 100), 36, "autonomous rainbow s2")));
 
     final Command ledDisabledLed =
-        LEDCommands.runSplitWithLEDSection(
+        LEDCommands.run(
             led,
             new LEDSection(0, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s1"),
             new LEDSection(1, 0, LEDPattern.solid(Color.kRed), 36, "disabled red s2"));
     Triggers.falseOnce().and(RobotModeTriggers.disabled()).whileTrue(ledDisabledLed);
 
     final Command yellowFlash =
-        LEDCommands.runSplitWithLEDSection(
+        LEDCommands.run(
                 led,
                 new LEDSection(0, 0, LedUtil.makeFlash(Color.kYellow, .1), 36, "L1INGS1"),
                 new LEDSection(1, 0, LedUtil.makeFlash(Color.kYellow, .1), 37, "L1INGS2"))
@@ -115,7 +106,7 @@ public class SubsystemTriggers {
     final Command algaeFlash =
         Commands.defer(
             () -> {
-              return LEDCommands.runSplitWithLEDSection(
+              return LEDCommands.run(
                       led,
                       new LEDSection(
                           1,
@@ -136,7 +127,7 @@ public class SubsystemTriggers {
     final Command leftFlash =
         Commands.defer(
             () -> {
-              return LEDCommands.runSplitWithLEDSection(
+              return LEDCommands.run(
                       led,
                       new LEDSection(
                           0,
@@ -158,7 +149,7 @@ public class SubsystemTriggers {
     final Command flashRight =
         Commands.defer(
             () -> {
-              return LEDCommands.runSplitWithLEDSection(
+              return LEDCommands.run(
                       led,
                       new LEDSection(
                           1,
@@ -199,11 +190,13 @@ public class SubsystemTriggers {
                             || DriverStation.isDisabled();
                       }
                     })
-                .ignoringDisable(true));
+                .ignoringDisable(true)
+                .withName("LedTargetingFlash"));
 
     new Trigger(() -> vision.timeSinceLastSample() < 0.1)
         .whileTrue(
             Commands.startEnd(
-                () -> driverController.rumble(0.03), () -> driverController.rumble(0.0)));
+                    () -> driverController.rumble(0.03), () -> driverController.rumble(0.0))
+                .withName("RumbleForTag"));
   }
 }

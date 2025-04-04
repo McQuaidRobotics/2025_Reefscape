@@ -24,6 +24,7 @@ import igknighters.commands.IntakeCommands;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SuperStructureCommands.MoveOrder;
 import igknighters.commands.SwerveCommands;
+import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.intake.Intake;
 import igknighters.subsystems.intake.Intake.Holding;
@@ -51,7 +52,7 @@ public class AutoCommands {
   protected final SuperStructure superStructure;
   protected final Intake intake;
 
-  private static final double timeBeforeIntakeMove, timeBeforeL4Move;
+  private static final double timeBeforeL4Move;
 
   static {
     final TrapezoidProfile profile =
@@ -66,11 +67,7 @@ public class AutoCommands {
 
     profile.calculate(0.01, stowState, l4State);
     timeBeforeL4Move = profile.timeLeftUntil(SuperStructureState.ScoreL3.elevatorMeters);
-    // System.out.println("Time before L4 move: " + timeBeforeL4Move);
-    // System.out.println("Total Move Time: " + profile.totalTime());
-    // System.out.println("Time after stop: " + (profile.totalTime() - timeBeforeL4Move));
     profile.calculate(0.01, stowState, intakeStake);
-    timeBeforeIntakeMove = profile.totalTime();
   }
 
   protected AutoCommands(AutoFactory factory, Subsystems subsystems, Localizer localizer) {
@@ -130,7 +127,7 @@ public class AutoCommands {
   public void orchestrateScoring(AutoTrajectory traj) {
     traj.active()
         .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
-    traj.atTimeBeforeEnd(timeBeforeL4Move * 1.4)
+    traj.atTimeBeforeEnd(timeBeforeL4Move)
         .onTrue(
             loggedCmd(
                 SuperStructureCommands.holdAt(
@@ -139,9 +136,6 @@ public class AutoCommands {
 
   public void orchestrateIntake(AutoTrajectory traj) {
     traj.active()
-        .onTrue(loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)));
-    traj.atTimeBeforeEnd(
-            Math.min(timeBeforeIntakeMove * 1.625, traj.getRawTrajectory().getTotalTime() * 0.90))
         .onTrue(
             loggedCmd(
                 SuperStructureCommands.holdAt(superStructure, SuperStructureState.IntakeHpClose)))
@@ -171,7 +165,7 @@ public class AutoCommands {
       }
     }
 
-    private Command finishAlignment(AutoTrajectory trajectory) {
+    private Command finishAlignment(AutoTrajectory trajectory, double distOffset) {
       if (trajectory.getFinalPose().isPresent()) {
         Supplier<Command> cmdSup =
             () -> {
@@ -179,7 +173,7 @@ public class AutoCommands {
               finalPose =
                   finalPose.plus(
                       new Transform2d(
-                          0.0,
+                          distOffset,
                           Monologue.log("gpOffset", -intake.gamepieceYOffset()),
                           Rotation2d.kZero));
               GlobalField.setObject("FinishAlignment" + counter.incrementAndGet(), finalPose);
@@ -187,8 +181,8 @@ public class AutoCommands {
                       SwerveCommands.moveToSimple(swerve, localizer, finalPose)
                           .until(
                               localizer
-                                  .near(finalPose.getTranslation(), 0.04)
-                                  .and(movingSlowerThan(swerve, 0.1)))
+                                  .near(finalPose.getTranslation(), 0.03)
+                                  .and(movingSlowerThan(swerve, 0.08)))
                           .withName("FinishAlignment"))
                   .andThen(SwerveCommands.stop(swerve));
             };
@@ -209,7 +203,7 @@ public class AutoCommands {
       orchestrateScoring(traj);
       bodyCommand.addCommands(
           afterIntake(traj),
-          finishAlignment(traj),
+          finishAlignment(traj, 7.0 * Conv.INCHES_TO_METERS),
           Commands.runOnce(scoreTimer::restart),
           loggedCmd(
               Commands.waitUntil(
@@ -236,7 +230,7 @@ public class AutoCommands {
           Commands.sequence(
                   // SwerveCommands.driveVolts(swerve, Rotation2d.kZero, 1.0).withTimeout(0.33),
                   Commands.runOnce(intakeTimer::restart),
-                  finishAlignment(traj),
+                  finishAlignment(traj, 1.0 * Conv.INCHES_TO_METERS),
                   Commands.repeatingSequence(SwerveCommands.stop(swerve)))
               .until(IntakeCommands.isHolding(intake, Holding.CORAL))
               .finallyDo(() -> System.out.println("Intake took: " + intakeTimer.get())));

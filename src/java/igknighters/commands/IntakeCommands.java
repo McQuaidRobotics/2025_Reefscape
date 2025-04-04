@@ -68,8 +68,6 @@ public class IntakeCommands {
   }
 
   public static Command holdCoral(Intake intake) {
-    return IntakeCommands.runCurrent(intake, -12.5)
-        .until(isHolding(intake, Holding.CORAL).negate())
-        .withName("HoldCoral");
+    return IntakeCommands.runCurrent(intake, -12.5).withName("HoldCoral");
   }
 }

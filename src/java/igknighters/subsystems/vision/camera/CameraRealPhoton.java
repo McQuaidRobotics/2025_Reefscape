@@ -39,9 +39,7 @@ public class CameraRealPhoton extends Camera {
 
     poseEstimator =
         new PhotonPoseEstimator(
-            FieldConstants.APRIL_TAG_FIELD,
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            this.robotToCamera);
+            FieldConstants.APRIL_TAG_FIELD, PoseStrategy.AVERAGE_BEST_TARGETS, this.robotToCamera);
     poseEstimator.setTagModel(TargetModel.kAprilTag36h11);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
@@ -141,7 +139,7 @@ public class CameraRealPhoton extends Camera {
     final var results = camera.getAllUnreadResults();
     if (DriverStation.isDisabled()) {
       clearHeading();
-      poseEstimator.setPrimaryStrategy(PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+      poseEstimator.setPrimaryStrategy(PoseStrategy.MULTI_TAG_PNP_ON_RIO);
     }
     for (var result : results) {
       ArrayList<PhotonTrackedTarget> newTargets = new ArrayList<>();
