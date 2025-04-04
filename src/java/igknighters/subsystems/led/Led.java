@@ -18,6 +18,7 @@ public class Led implements ExclusiveSubsystem {
 
   /**
    * applies the given buffer to the leds and sets the previous buffer
+   *
    * @param buffer
    */
   public void animate(AddressableLEDBuffer buffer) {
@@ -27,6 +28,7 @@ public class Led implements ExclusiveSubsystem {
 
   /**
    * This method returns index 0, 1, 2 on first strip and 37, 38, 39 which is on the other strip
+   *
    * @return ArrayList<Color8Bit> first three colors on both street
    */
   public ArrayList<Color8Bit> getFirst3ColorsOnBoth() {

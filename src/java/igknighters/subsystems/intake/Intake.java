@@ -66,12 +66,14 @@ public class Intake implements ExclusiveSubsystem {
   public void setTryingToHold(Holding holding) {
     tryingToHold = holding;
   }
-  
+
   public double getVoltage() {
     return rollers.getVoltage();
   }
+
   /**
    * Uses the CanRange sensor in the intake to get the distance from sensor to gamepiece
+   *
    * @return the distance to the gamepiece
    */
   public double gamepieceYOffset() {
