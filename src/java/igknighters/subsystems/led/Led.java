@@ -16,16 +16,24 @@ public class Led implements ExclusiveSubsystem {
     pwm1 = new PWMDriver(0);
   }
 
+  /**
+   * applies the given buffer to the leds and sets the previous buffer
+   * @param buffer
+   */
   public void animate(AddressableLEDBuffer buffer) {
     prevBuffer = buffer;
     pwm1.applyBuffer(buffer);
   }
 
+  /**
+   * This method returns index 0, 1, 2 on first strip and 37, 38, 39 which is on the other strip
+   * @return ArrayList<Color8Bit> first three colors on both street
+   */
   public ArrayList<Color8Bit> getFirst3ColorsOnBoth() {
     ArrayList<Color8Bit> colors = new ArrayList<>();
     for (int i = 0; i < 6; i++) {
       if (i > 2) {
-        int index = 37 + i;
+        int index = 34 + i;
         colors.add(
             new Color8Bit(
                 prevBuffer.getRed(index), prevBuffer.getGreen(index), prevBuffer.getBlue(index)));

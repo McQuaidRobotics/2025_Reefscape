@@ -36,7 +36,6 @@ public class Intake implements ExclusiveSubsystem {
   }
 
   private final Rollers rollers;
-  private final IntakeVisualizer intakeVisualizer = new IntakeVisualizer();
 
   public Intake(SharedState shared, SimCtx simCtx) {
     this.shared = shared;
@@ -67,11 +66,14 @@ public class Intake implements ExclusiveSubsystem {
   public void setTryingToHold(Holding holding) {
     tryingToHold = holding;
   }
-
+  
   public double getVoltage() {
     return rollers.getVoltage();
   }
-
+  /**
+   * Uses the CanRange sensor in the intake to get the distance from sensor to gamepiece
+   * @return the distance to the gamepiece
+   */
   public double gamepieceYOffset() {
     if (!rollers.isLaserTripped()) {
       return 0;
@@ -81,7 +83,6 @@ public class Intake implements ExclusiveSubsystem {
 
   public void periodic() {
     rollers.periodic();
-    intakeVisualizer.updatePosition(rollers.getVoltage());
 
     if (DriverStation.isDisabled()) {
       tryingToHold = Holding.NONE;

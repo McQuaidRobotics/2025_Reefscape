@@ -39,7 +39,9 @@ public class RobotVisualizer {
   final MechanismLigament2d led1Right;
   final MechanismLigament2d led2Right;
   final MechanismLigament2d led3Right;
-
+  /**
+   * @return a fully drawn reef
+   */
   public void visualizeReef() {
     final MechanismRoot2d rootReef = mechanism.getRoot("Reef", pivotOrigin.getX() + 1.0, 0.0);
 
@@ -209,15 +211,19 @@ public class RobotVisualizer {
     }
   }
 
-  public void updateWristColor(double value) { // wrong bc
-    var percent = value / 12.0;
+  /**
+   * takes voltage and converts it into a color
+   * @param voltage
+   */
+  public void updateWristColor(double voltage) {
+    var percent = voltage / 12.0;
 
     var color =
         new Color8Bit(
             (int) ((Math.abs(percent) * (-255)) + 255), (int) (Math.abs(percent) * (255)), (int) 0);
     intake.setColor(color);
   }
-
+  
   public void updateLedColors(ArrayList<Color8Bit> colors) {
     led1Left.setColor(colors.get(0));
     led2Left.setColor(colors.get(1));
