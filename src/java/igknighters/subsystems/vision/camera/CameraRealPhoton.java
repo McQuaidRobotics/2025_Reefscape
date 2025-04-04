@@ -139,7 +139,7 @@ public class CameraRealPhoton extends Camera {
     final var results = camera.getAllUnreadResults();
     if (DriverStation.isDisabled()) {
       clearHeading();
-      poseEstimator.setPrimaryStrategy(PoseStrategy.MULTI_TAG_PNP_ON_RIO);
+      poseEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
     }
     for (var result : results) {
       ArrayList<PhotonTrackedTarget> newTargets = new ArrayList<>();
