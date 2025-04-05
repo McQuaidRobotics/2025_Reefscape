@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public class VisionConstants {
   public static final class kVision {
-    public static final double ROOT_TRUST = 0.75;
+    public static final double ROOT_TRUST = 0.55;
 
     public static final double MAX_Z_DELTA = 0.2;
     public static final double MAX_ANGLE_DELTA = 5.0 * Conv.DEGREES_TO_RADIANS;
@@ -80,9 +80,10 @@ public class VisionConstants {
     public static final LerpTable DISTANCE_TRUST_COEFFICIENT =
         new LerpTable(
             new LerpTable.LerpTableEntry(0.0, 1.0),
-            new LerpTable.LerpTableEntry(1.5, 1.0),
-            new LerpTable.LerpTableEntry(2.5, 0.8),
-            new LerpTable.LerpTableEntry(5.0, 0.5),
+            new LerpTable.LerpTableEntry(0.65, 1.0),
+            new LerpTable.LerpTableEntry(1.5, 0.7),
+            new LerpTable.LerpTableEntry(2.5, 0.3),
+            new LerpTable.LerpTableEntry(5.0, 0.1),
             new LerpTable.LerpTableEntry(8.0, 0.0));
 
     public static final LerpTable LINEAR_VELOCITY_TRUST_COEFFICIENT =

@@ -1,6 +1,5 @@
 package igknighters.subsystems.vision;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -173,17 +172,17 @@ public class Vision implements SharedSubsystem {
     trust *= kVision.ANGULAR_VELOCITY_TRUST_COEFFICIENT.lerp(velo.omega());
 
     // If the vision rotation varies significantly from the gyro rotation reduce the trust
-    Rotation2d rotation = localizer.pose().getRotation();
-    if (Math.abs(
-            MathUtil.angleModulus(rotation.getRadians())
-                - MathUtil.angleModulus(update.pose().getRotation().getRadians()))
-        > Math.toRadians(5.0)) {
-      trust /= 2.0;
-    }
+    // Rotation2d rotation = localizer.pose().getRotation();
+    // if (Math.abs(
+    //         MathUtil.angleModulus(rotation.getRadians())
+    //             - MathUtil.angleModulus(update.pose().getRotation().getRadians()))
+    //     > Math.toRadians(5.0)) {
+    //   trust /= 2.0;
+    // }
 
-    if (faults.infeasiblePosition) {
-      trust /= 3.0;
-    }
+    // if (faults.infeasiblePosition) {
+    //   trust /= 3.0;
+    // }
 
     return Optional.of(new VisionSample(update.pose(), update.timestamp(), trust));
   }
