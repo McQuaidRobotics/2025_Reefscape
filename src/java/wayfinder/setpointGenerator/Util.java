@@ -10,7 +10,6 @@ import edu.wpi.first.util.struct.StructSerializable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Optional;
-import monologue.Monologue;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.FixedSizeArray;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
@@ -367,7 +366,6 @@ class Util {
     final double aMag = Math.hypot(aX, aY);
     final double aDir = Math.atan2(aY, aX);
     final double aMax = constraints.translation().maxAcceleration();
-    Monologue.log("/test/aMax", aMax);
     if (aMag > aMax) {
       final double stepX = Math.cos(aDir) * aMax * dt;
       final double stepY = Math.sin(aDir) * aMax * dt;
