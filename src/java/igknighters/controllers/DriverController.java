@@ -100,7 +100,7 @@ public class DriverController {
                     localizer,
                     () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
                     () -> {
-                      final Translation2d line = new Translation2d(7.25, 0.0);
+                      final Translation2d line = new Translation2d(7.3, 0.0);
                       return AllianceSymmetry.isBlue() ? line : AllianceSymmetry.flip(line);
                     },
                     false,

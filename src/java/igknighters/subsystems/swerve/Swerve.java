@@ -153,7 +153,8 @@ public class Swerve implements ExclusiveSubsystem {
   }
 
   public void drive(Speeds speeds, ChassisConstraints constraints) {
-    RobotSpeeds robotSpeeds = speeds.asRobotRelative(getYaw());
+    Rotation2d yaw = getYaw();
+    RobotSpeeds robotSpeeds = speeds.asRobotRelative(yaw);
     log("targetSpeed", robotSpeeds);
 
     if (!Double.isFinite(robotSpeeds.vx())
@@ -174,13 +175,14 @@ public class Swerve implements ExclusiveSubsystem {
       setpoint =
           setpointGeneratorBeta.generateSetpoint(
               setpoint,
-              robotSpeeds.toWpilib(),
+              yaw,
+              robotSpeeds,
               Optional.ofNullable(constraints),
               ConstValues.PERIODIC_TIME);
     } else {
       setpoint =
           setpointGeneratorBeta.generateSimpleSetpoint(
-              setpoint, robotSpeeds, ConstValues.PERIODIC_TIME);
+              setpoint, yaw, robotSpeeds, ConstValues.PERIODIC_TIME);
     }
 
     setModuleStates(setpoint.moduleStates());
@@ -191,12 +193,13 @@ public class Swerve implements ExclusiveSubsystem {
   }
 
   public void drivePreProfiled(Speeds speeds) {
+    Rotation2d yaw = getYaw();
     RobotSpeeds robotSpeeds = speeds.asRobotRelative(getYaw());
     log("targetSpeed", robotSpeeds);
 
     setpoint =
         setpointGeneratorBeta.generateSimpleSetpoint(
-            setpoint, robotSpeeds, ConstValues.PERIODIC_TIME);
+            setpoint, yaw, robotSpeeds, ConstValues.PERIODIC_TIME);
 
     setModuleStates(setpoint.moduleStates());
   }
@@ -225,7 +228,7 @@ public class Swerve implements ExclusiveSubsystem {
     return localizer.pose().getRotation();
   }
 
-  public double getYawForNow() {
+  public double getRawYaw() {
     return gyro.getYawRads();
   }
 

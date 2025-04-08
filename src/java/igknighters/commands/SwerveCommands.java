@@ -104,16 +104,16 @@ public class SwerveCommands {
       Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
     final ChassisConstraints preciseConstraints =
         new ChassisConstraints(
-            new Constraints(
-                kSwerve.MAX_DRIVE_VELOCITY * 0.45,
-                SharedState.maximumAcceleration(SuperStructureState.Stow.elevatorMeters)),
+            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.3, kSwerve.MAX_DRIVE_ACCELERATION),
             new Constraints(
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.65));
     final ChassisConstraints roughConstraints =
         new ChassisConstraints(
-            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.70, kSwerve.MAX_DRIVE_ACCELERATION),
             new Constraints(
-                kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.65));
+                kSwerve.MAX_DRIVE_VELOCITY * 0.70,
+                SharedState.maximumAcceleration(SuperStructureState.Stow.elevatorMeters)),
+            new Constraints(
+                kSwerve.MAX_ANGULAR_VELOCITY * 10.0, kSwerve.MAX_ANGULAR_VELOCITY * 10.0));
 
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(
@@ -128,11 +128,11 @@ public class SwerveCommands {
     final RepulsorFieldPlanner roughPlanner =
         new RepulsorFieldPlanner(
             new PositionalController(
-                TranslationController.unprofiled(3.0, 0.0, 0.0, 0.0),
-                ControllerFactories.basicRotationalController()),
+                TranslationController.unprofiled(2.25, 0.0, 0.0, 0.0),
+                ControllerFactories.lowToleranceRotationalController()),
             PathObstacles.Other.obstacles);
 
-    final Transform2d roughPoseOffset = new Transform2d(-0.4, 0, Rotation2d.kZero);
+    final Transform2d roughPoseOffset = new Transform2d(-0.3, 0, Rotation2d.kZero);
     return Commands.sequence(
             followRepulsor(
                     roughPlanner, swerve, localizer, target.plus(roughPoseOffset), roughConstraints)
