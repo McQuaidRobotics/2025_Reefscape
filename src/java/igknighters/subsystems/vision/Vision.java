@@ -2,7 +2,6 @@ package igknighters.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -59,20 +58,13 @@ public class Vision implements SharedSubsystem {
         ProceduralStructGenerator.genRecord(VisionSample.class);
   }
 
-  private Rotation2d rotationAtTimestamp(double timestamp) {
-    return localizer
-        .pose(Timer.getFPGATimestamp() - timestamp)
-        .map(Pose2d::getRotation)
-        .orElse(null);
-  }
-
   private Camera makeCamera(CameraConfig config, SimCtx simCtx) {
     try {
       if (Robot.isSimulation()) {
-        return new CameraSimPhoton(config, simCtx, this::rotationAtTimestamp);
+        return new CameraSimPhoton(config, simCtx);
         // return new CameraDisabled(config.cameraName(), config.cameraTransform());
       } else {
-        return new CameraRealPhoton(config, this::rotationAtTimestamp);
+        return new CameraRealPhoton(config);
         // return new CameraDisabled(config.cameraName(), config.cameraTransform());
       }
     } catch (Exception e) {

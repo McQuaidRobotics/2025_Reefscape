@@ -14,10 +14,10 @@ import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
 import igknighters.subsystems.vision.VisionConstants.kVision;
 import igknighters.util.logging.BootupLogger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -44,7 +44,7 @@ public class CameraRealPhoton extends Camera {
   private ArrayList<Integer> seenTags = new ArrayList<>();
   private ArrayList<VisionUpdate> updates = new ArrayList<>();
 
-  public CameraRealPhoton(CameraConfig config, Function<Double, Rotation2d> gyroYawSupplier) {
+  public CameraRealPhoton(CameraConfig config) {
     this.camera = new PhotonCamera(config.cameraName());
     this.cameraMatrix = Optional.of(config.intrinsics().cameraMatrix());
     this.distortionMatrix = Optional.of(config.intrinsics().distortionMatrix());
@@ -176,8 +176,7 @@ public class CameraRealPhoton extends Camera {
     for (var result : results) {
       if (result.hasTargets()) {
         result = pruneTags(result);
-        Optional<EstimatedRobotPose> estRoboPose =
-            poseEstimator.update(result, cameraMatrix, distortionMatrix, CONSTRAINED_PARAMS);
+        Optional<EstimatedRobotPose> estRoboPose = poseEstimator.update(result, cameraMatrix, distortionMatrix, CONSTRAINED_PARAMS);
         if (estRoboPose.isPresent()) {
           Optional<VisionUpdate> u = update(estRoboPose.get());
           if (u.isPresent()) {
