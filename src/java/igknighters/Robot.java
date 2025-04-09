@@ -104,7 +104,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             localizer::pose,
             pose -> {
               localizer.reset(pose);
-              subsystems.vision.resetHeading();
               subsystems.swerve.setYaw(pose.getRotation());
             },
             new AutoController(subsystems.swerve, localizer),

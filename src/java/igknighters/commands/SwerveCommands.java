@@ -14,7 +14,6 @@ import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.ControllerFactories;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
-import igknighters.subsystems.vision.Vision;
 import igknighters.util.plumbing.TunableValues;
 import monologue.GlobalField;
 import wayfinder.controllers.PositionalController;
@@ -45,21 +44,19 @@ public class SwerveCommands {
     return swerve.runOnce(() -> swerve.drive(RobotSpeeds.kZero)).withName("commandStopDrives");
   }
 
-  public static Command orientGyro(
-      Swerve swerve, Vision vision, Localizer localizer, Rotation2d orientation) {
+  public static Command orientGyro(Swerve swerve, Localizer localizer, Rotation2d orientation) {
     return swerve.runOnce(
         () -> {
-          vision.resetHeading();
           swerve.setYaw(orientation);
           var pose = new Pose2d(localizer.pose().getTranslation(), orientation);
           localizer.reset(pose);
         });
   }
 
-  public static Command orientGyro(Swerve swerve, Vision vision, Localizer localizer) {
+  public static Command orientGyro(Swerve swerve, Localizer localizer) {
     return Commands.either(
-        orientGyro(swerve, vision, localizer, Rotation2d.kZero),
-        orientGyro(swerve, vision, localizer, Rotation2d.kPi),
+        orientGyro(swerve, localizer, Rotation2d.kZero),
+        orientGyro(swerve, localizer, Rotation2d.kPi),
         AllianceSymmetry::isBlue);
   }
 

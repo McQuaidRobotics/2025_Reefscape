@@ -1,15 +1,18 @@
 package igknighters.subsystems.vision.camera;
 
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N8;
+import edu.wpi.first.wpilibj.Timer;
 import igknighters.constants.AprilTags;
 import igknighters.constants.FieldConstants;
+import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
-import igknighters.subsystems.vision.Vision.VisionUpdateFlaws;
+import igknighters.subsystems.vision.VisionConstants.kVision;
 import igknighters.util.logging.BootupLogger;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,16 +21,24 @@ import java.util.function.Function;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /** An abstraction for a photon camera. */
 public class CameraRealPhoton extends Camera {
+  private static final Optional<ConstrainedSolvepnpParams> CONSTRAINED_PARAMS =
+      Optional.of(new ConstrainedSolvepnpParams(true, 0.0));
+
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
   private final PhotonPoseEstimator poseEstimator;
   private final double trustScalar;
+
+  private final Optional<Matrix<N3, N3>> cameraMatrix;
+  private final Optional<Matrix<N8, N1>> distortionMatrix;
 
   private Optional<VisionUpdate> previousUpdate = Optional.empty();
   private ArrayList<Integer> seenTags = new ArrayList<>();
@@ -35,16 +46,18 @@ public class CameraRealPhoton extends Camera {
 
   public CameraRealPhoton(CameraConfig config, Function<Double, Rotation2d> gyroYawSupplier) {
     this.camera = new PhotonCamera(config.cameraName());
+    this.cameraMatrix = Optional.of(config.intrinsics().cameraMatrix());
+    this.distortionMatrix = Optional.of(config.intrinsics().distortionMatrix());
     this.robotToCamera = config.cameraTransform();
 
     poseEstimator =
         new PhotonPoseEstimator(
-            FieldConstants.APRIL_TAG_FIELD, PoseStrategy.AVERAGE_BEST_TARGETS, this.robotToCamera);
+            FieldConstants.APRIL_TAG_FIELD, PoseStrategy.CONSTRAINED_SOLVEPNP, this.robotToCamera);
     poseEstimator.setTagModel(TargetModel.kAprilTag36h11);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
     if (config.cameraName().contains("back")) {
-      trustScalar = 0.33;
+      trustScalar = 0.65;
     } else {
       trustScalar = 1.0;
     }
@@ -52,23 +65,32 @@ public class CameraRealPhoton extends Camera {
     BootupLogger.bootupLog("    " + config.cameraName() + " camera initialized (real)");
   }
 
+  private double normalizedDistanceFromCenter(PhotonTrackedTarget target) {
+    final double HEIGHT = 800;
+    final double WIDTH = 1280;
+    double sumX = 0.0;
+    double sumY = 0.0;
+    for (var corner : target.minAreaRectCorners) {
+      sumX += corner.x - WIDTH / 2.0;
+      sumY += corner.y - HEIGHT / 2.0;
+    }
+    double avgX = sumX / target.minAreaRectCorners.size();
+    double avgY = sumY / target.minAreaRectCorners.size();
+    return Math.hypot(avgX, avgY) / Math.hypot(WIDTH / 2.0, HEIGHT / 2.0);
+  }
+
   private Optional<VisionUpdate> update(EstimatedRobotPose estRoboPose) {
     for (PhotonTrackedTarget target : estRoboPose.targetsUsed) {
-      int minId = AprilTags.TAGS[0].ID;
-      int maxId = AprilTags.TAGS[AprilTags.TAGS.length - 1].ID;
-      if (target.fiducialId < minId && target.fiducialId > maxId) {
-        previousUpdate = Optional.empty();
-        return previousUpdate;
-      }
       seenTags.add(target.fiducialId);
     }
 
-    VisionUpdateFlaws faults = VisionUpdateFlaws.empty();
-    double avgDistance;
-    Pose2d pose = estRoboPose.estimatedPose.toPose2d();
     log("tagsUsed", estRoboPose.targetsUsed.size());
 
-    avgDistance =
+    double trust = trustScalar;
+
+    Pose2d pose = estRoboPose.estimatedPose.toPose2d();
+
+    double avgDistance =
         estRoboPose.targetsUsed.stream()
             .map(PhotonTrackedTarget::getBestCameraToTarget)
             .map(Transform3d::getTranslation)
@@ -77,18 +99,37 @@ public class CameraRealPhoton extends Camera {
             .average()
             .orElseGet(() -> 100.0);
 
+    double sumArea =
+        estRoboPose.targetsUsed.stream()
+            .map(PhotonTrackedTarget::getArea)
+            .mapToDouble(Double::doubleValue)
+            .sum();
+
+    double avgNormalizedPixelsFromCenter =
+        estRoboPose.targetsUsed.stream()
+            .map(this::normalizedDistanceFromCenter)
+            .mapToDouble(Double::doubleValue)
+            .average()
+            .orElseGet(() -> 0.0);
+
     if (previousUpdate.isPresent()) {
-      faults =
-          VisionUpdateFlaws.solve(
-              estRoboPose.estimatedPose,
-              new Pose3d(previousUpdate.get().pose()),
-              estRoboPose.timestampSeconds - previousUpdate.get().timestamp(),
-              avgDistance,
-              seenTags,
-              trustScalar);
+      double timeSinceLastUpdate = estRoboPose.timestampSeconds - previousUpdate.get().timestamp();
+      double distanceFromLastUpdate =
+          pose.getTranslation().getDistance(previousUpdate.get().pose().getTranslation());
+      if (distanceFromLastUpdate > timeSinceLastUpdate * kSwerve.MAX_DRIVE_VELOCITY) {
+        return Optional.empty();
+      }
     }
 
-    var u = new VisionUpdate(pose, estRoboPose.timestampSeconds, faults);
+    for (int tagId : seenTags) {
+      trust *= kVision.TAG_RANKINGS.getOrDefault(tagId, 0.0);
+    }
+
+    trust *= kVision.DISTANCE_TRUST_COEFFICIENT.lerp(avgDistance);
+    trust *= kVision.AREA_TRUST_COEFFICIENT.lerp(sumArea);
+    trust *= kVision.PIXEL_OFFSET_TRUST_COEFFICIENT.lerp(avgNormalizedPixelsFromCenter);
+
+    var u = new VisionUpdate(pose, estRoboPose.timestampSeconds, trust);
     previousUpdate = Optional.of(u);
 
     return previousUpdate;
@@ -116,45 +157,29 @@ public class CameraRealPhoton extends Camera {
     return seenTags;
   }
 
-  @Override
-  public void updateHeading(double timestamp, Rotation2d heading) {
-    poseEstimator.addHeadingData(timestamp, heading);
-  }
-
-  @Override
-  public void clearHeading() {
-    try {
-      var field = PhotonPoseEstimator.class.getDeclaredField("headingBuffer");
-      field.setAccessible(true);
-      var buffer = (TimeInterpolatableBuffer<?>) field.get(poseEstimator);
-      buffer.clear();
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      e.printStackTrace();
+  private PhotonPipelineResult pruneTags(PhotonPipelineResult result) {
+    ArrayList<PhotonTrackedTarget> newTargets = new ArrayList<>();
+    for (var target : result.targets) {
+      if (AprilTags.observalbleTag(target.fiducialId)) {
+        newTargets.add(target);
+      }
     }
+    result.targets = newTargets;
+    return result;
   }
 
   @Override
   public void periodic() {
+    poseEstimator.addHeadingData(Timer.getFPGATimestamp(), Rotation2d.kZero);
     seenTags.clear();
     final var results = camera.getAllUnreadResults();
-    if (DriverStation.isDisabled()) {
-      clearHeading();
-      poseEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
-    }
     for (var result : results) {
-      ArrayList<PhotonTrackedTarget> newTargets = new ArrayList<>();
-      for (var target : result.targets) {
-        if (AprilTags.observalbleTag(target.fiducialId)) {
-          newTargets.add(target);
-        }
-      }
-      result.targets = newTargets;
       if (result.hasTargets()) {
-        var estRoboPose =
-            poseEstimator.update(
-                result, camera.getCameraMatrix(), camera.getDistCoeffs(), Optional.empty());
+        result = pruneTags(result);
+        Optional<EstimatedRobotPose> estRoboPose =
+            poseEstimator.update(result, cameraMatrix, distortionMatrix, CONSTRAINED_PARAMS);
         if (estRoboPose.isPresent()) {
-          var u = update(estRoboPose.get());
+          Optional<VisionUpdate> u = update(estRoboPose.get());
           if (u.isPresent()) {
             updates.add(u.get());
           }

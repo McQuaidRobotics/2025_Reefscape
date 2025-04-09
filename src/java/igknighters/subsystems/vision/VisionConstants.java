@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public class VisionConstants {
   public static final class kVision {
-    public static final double ROOT_TRUST = 0.55;
+    public static final double ROOT_TRUST = 1.0;
 
     public static final double MAX_Z_DELTA = 0.2;
     public static final double MAX_ANGLE_DELTA = 5.0 * Conv.DEGREES_TO_RADIANS;
@@ -82,9 +82,24 @@ public class VisionConstants {
             new LerpTable.LerpTableEntry(0.0, 1.0),
             new LerpTable.LerpTableEntry(0.65, 1.0),
             new LerpTable.LerpTableEntry(1.5, 0.7),
-            new LerpTable.LerpTableEntry(2.5, 0.3),
-            new LerpTable.LerpTableEntry(5.0, 0.1),
+            new LerpTable.LerpTableEntry(2.5, 0.4),
+            new LerpTable.LerpTableEntry(5.0, 0.25),
             new LerpTable.LerpTableEntry(8.0, 0.0));
+
+    public static final LerpTable AREA_TRUST_COEFFICIENT =
+        new LerpTable(
+            new LerpTable.LerpTableEntry(0.0, 0.0),
+            new LerpTable.LerpTableEntry(0.2, 0.25),
+            new LerpTable.LerpTableEntry(1.0, 0.35),
+            new LerpTable.LerpTableEntry(4.0, 0.75),
+            new LerpTable.LerpTableEntry(10.0, 1.0));
+
+    public static final LerpTable PIXEL_OFFSET_TRUST_COEFFICIENT =
+        new LerpTable(
+            new LerpTable.LerpTableEntry(0.0, 1.0),
+            new LerpTable.LerpTableEntry(0.2, 1.0),
+            new LerpTable.LerpTableEntry(0.65, 0.75),
+            new LerpTable.LerpTableEntry(1.0, 0.35));
 
     public static final LerpTable LINEAR_VELOCITY_TRUST_COEFFICIENT =
         new LerpTable(
@@ -125,5 +140,7 @@ public class VisionConstants {
             put(22, 1.0); // REEF
           }
         };
+
+    public static final double MIN_TARGET_AREA = 0.25; // 0.25% of the image area
   }
 }
