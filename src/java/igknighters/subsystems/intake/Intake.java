@@ -3,6 +3,7 @@ package igknighters.subsystems.intake;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.DriverStation;
+import igknighters.DeviceManager;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.SharedState;
@@ -37,10 +38,10 @@ public class Intake implements ExclusiveSubsystem {
 
   private final Rollers rollers;
 
-  public Intake(SharedState shared, SimCtx simCtx) {
+  public Intake(SharedState shared, DeviceManager deviceManager, SimCtx simCtx) {
     this.shared = shared;
     if (Robot.isReal()) {
-      rollers = new RollersReal();
+      rollers = new RollersReal(deviceManager);
     } else {
       rollers = new RollerSim(simCtx);
     }

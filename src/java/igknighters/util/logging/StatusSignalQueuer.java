@@ -1,4 +1,4 @@
-package igknighters.util.can;
+package igknighters.util.logging;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -23,7 +23,7 @@ public class StatusSignalQueuer {
   private final Receiver<TimestampedDouble>[] receivers;
 
   @SuppressWarnings("unchecked")
-  public StatusSignalQueuer(int frequency, StatusSignal<?>... signals) {
+  public StatusSignalQueuer(int frequency, BaseStatusSignal... signals) {
     this.frequency = frequency;
     this.signals = new BaseStatusSignal[signals.length];
     this.previousFrequencies = new double[signals.length];
@@ -31,7 +31,7 @@ public class StatusSignalQueuer {
     final List<Receiver<TimestampedDouble>> receivers = new ArrayList<>();
     for (int i = 0; i < signals.length; i++) {
       previousFrequencies[i] = signals[i].getAppliedUpdateFrequency();
-      this.signals[i] = signals[i].clone();
+      this.signals[i] = ((StatusSignal<?>) signals[i]).clone();
       final Channel<TimestampedDouble> channel = new Channel<>(new TimestampedDouble[0]);
       senders.add(channel.sender());
       receivers.add(channel.openReceiver(64, Channel.ThreadSafetyMarker.CONCURRENT));

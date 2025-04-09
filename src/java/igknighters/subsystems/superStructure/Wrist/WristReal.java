@@ -17,10 +17,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.DriverStation;
+import igknighters.DeviceManager;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.SuperStructureConstants;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kWrist;
-import igknighters.util.can.CANSignalManager;
 import java.util.Optional;
 
 public class WristReal extends Wrist {
@@ -41,9 +41,9 @@ public class WristReal extends Wrist {
       new VoltageOut(0.0).withUpdateFreqHz(0.0).withEnableFOC(true);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
 
-  public WristReal() {
-    wrist.getConfigurator().apply(wristConfiguration());
-    encoder.getConfigurator().apply(wristCaNcoderConfiguration());
+  public WristReal(DeviceManager deviceManager) {
+    deviceManager.bringUp(this, "motor", wrist, wristConfiguration());
+    deviceManager.bringUp(this, "encoder", encoder, wristCaNcoderConfiguration());
 
     position = wrist.getPosition();
     velocity = wrist.getVelocity();
@@ -51,11 +51,6 @@ public class WristReal extends Wrist {
     voltage = wrist.getMotorVoltage();
 
     this.radians = encoder.getPosition(false).waitForUpdate(2.5).getValue().in(Radians);
-
-    CANSignalManager.registerSignals(
-        SuperStructureConstants.CANBUS, position, velocity, amps, voltage);
-
-    CANSignalManager.registerDevices(wrist, encoder);
   }
 
   private final TalonFXConfiguration wristConfiguration() {

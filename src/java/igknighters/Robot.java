@@ -33,7 +33,6 @@ import igknighters.subsystems.superStructure.SuperStructure;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
 import igknighters.util.UnitTestableRobot;
-import igknighters.util.can.CANSignalManager;
 import igknighters.util.logging.WatchdogSilencer;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,6 +55,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
   public final Localizer localizer = new Localizer();
 
   public final SimCtx simCtx = new SimCtx(localizer, isSimulation());
+  public final DeviceManager deviceManager = new DeviceManager();
 
   private final DriverController driverController;
   private final OperatorController operatorController;
@@ -80,12 +80,12 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     final SharedState sharedState = new SharedState();
     subsystems =
         new Subsystems(
-            new Swerve(sharedState, localizer, simCtx),
+            new Swerve(sharedState, localizer, deviceManager, simCtx),
             new Vision(sharedState, localizer, simCtx),
             new Led(),
-            new SuperStructure(sharedState, simCtx),
-            new Intake(sharedState, simCtx),
-            new Climber(simCtx));
+            new SuperStructure(sharedState, deviceManager, simCtx),
+            new Intake(sharedState, deviceManager, simCtx),
+            new Climber(deviceManager, simCtx));
 
     localizer.reset(new Pose2d(new Translation2d(12.0, 5.0), Rotation2d.kZero));
 
@@ -137,7 +137,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
   public void robotPeriodic() {
     loopCount.incrementAndGet();
     Tracer.traceFunc("SimCtx", simCtx::update);
-    Tracer.traceFunc("CANSignalRefresh", CANSignalManager::refreshSignals);
+    Tracer.traceFunc("DeviceManager", deviceManager::update);
     Tracer.traceFunc("Localizer", localizer::update);
     Tracer.traceFunc("CommandScheduler", scheduler::run);
     Tracer.traceFunc("Monologue", Monologue::updateAll);

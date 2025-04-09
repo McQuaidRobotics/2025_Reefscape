@@ -3,7 +3,6 @@ package igknighters.util.logging;
 import com.ctre.phoenix6.StatusSignal;
 import igknighters.constants.ConstValues;
 import igknighters.constants.ConstValues.kCharacterization.MechanismId;
-import igknighters.util.can.StatusSignalQueuer;
 import igknighters.util.plumbing.Channel.Receiver;
 import java.util.Optional;
 import monologue.TimeSensitiveLogger;

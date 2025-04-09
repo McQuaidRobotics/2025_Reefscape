@@ -15,14 +15,13 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import igknighters.DeviceManager;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kDriveMotor;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kSteerMotor;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.swerve.odometryThread.RealSwerveOdometryThread;
-import igknighters.util.can.CANRetrier;
-import igknighters.util.can.CANSignalManager;
 import igknighters.util.logging.BootupLogger;
 import monologue.Annotations.IgnoreLogged;
 import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
@@ -45,7 +44,7 @@ public class SwerveModuleReal extends SwerveModule {
 
   private Rotation2d lastAngle = new Rotation2d();
 
-  public SwerveModuleReal(final int moduleId, final RealSwerveOdometryThread odoThread) {
+  public SwerveModuleReal(final int moduleId, DeviceManager deviceManager, RealSwerveOdometryThread odoThread) {
     super("SwerveModule[" + moduleId + "]");
     this.odoThread = odoThread;
 
@@ -56,13 +55,18 @@ public class SwerveModuleReal extends SwerveModule {
     steerMotor = new TalonFX((moduleId * 2) + 2, kSwerve.CANBUS);
     steerEncoder = new CANcoder((moduleId * 2) + 2, kSwerve.CANBUS);
 
-    CANRetrier.retryStatusCode(
-        () -> driveMotor.getConfigurator().apply(driveMotorConfig(), 1.0), 5);
-    CANRetrier.retryStatusCode(
-        () -> steerMotor.getConfigurator().apply(steerMotorConfig(steerEncoder.getDeviceID()), 1.0),
-        5);
-    CANRetrier.retryStatusCode(
-        () -> steerEncoder.getConfigurator().apply(cancoderConfig(rotationOffset), 1.0), 5);
+    // CANRetrier.retryStatusCode(
+    //     () -> driveMotor.getConfigurator().apply(driveMotorConfig(), 1.0), 5);
+    // CANRetrier.retryStatusCode(
+    //     () -> steerMotor.getConfigurator().apply(steerMotorConfig(steerEncoder.getDeviceID()), 1.0),
+    //     5);
+    // CANRetrier.retryStatusCode(
+    //     () -> steerEncoder.getConfigurator().apply(cancoderConfig(rotationOffset), 1.0), 5);
+
+    deviceManager.bringUp(this, "driveMotor", driveMotor, driveMotorConfig());
+    deviceManager.bringUp(this, "steerMotor", steerMotor, steerMotorConfig(steerEncoder.getDeviceID()));
+    deviceManager.bringUp(this, "steerEncoder", steerEncoder, cancoderConfig(rotationOffset));
+
 
     driveVoltSignal = driveMotor.getMotorVoltage();
     driveAmpSignal = driveMotor.getTorqueCurrent();
@@ -73,27 +77,22 @@ public class SwerveModuleReal extends SwerveModule {
     steerAbsoluteSignal = steerEncoder.getAbsolutePosition();
     steerAbsoluteVeloSignal = steerEncoder.getVelocity();
 
-    CANSignalManager.registerSignals(
-        kSwerve.CANBUS,
-        driveVoltSignal,
-        driveAmpSignal,
-        steerVoltSignal,
-        steerAmpSignal,
-        steerAbsoluteSignal,
-        steerAbsoluteVeloSignal);
-
     odoThread.addModuleStatusSignals(
         moduleId,
-        driveMotor.getPosition(),
-        driveMotor.getVelocity(),
-        steerMotor.getPosition(),
-        steerMotor.getVelocity());
+        driveMotor.getPosition().clone(),
+        driveMotor.getVelocity().clone(),
+        steerMotor.getPosition().clone(),
+        steerMotor.getVelocity().clone());
 
     driveMotor.optimizeBusUtilization(0.0, 1.0);
     steerMotor.optimizeBusUtilization(0.0, 1.0);
     steerEncoder.optimizeBusUtilization(0.0, 1.0);
 
-    CANRetrier.retryStatusCode(() -> driveMotor.setPosition(0.0, 0.1), 3);
+    deviceManager.retryStatusCode(
+        () -> driveMotor.setPosition(0.0, 0.1),
+        "set drive motor position",
+        3
+    );
 
     driveMotorClosedReq = new VelocityVoltage(0).withEnableFOC(true).withUpdateFreqHz(0);
 

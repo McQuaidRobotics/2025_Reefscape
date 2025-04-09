@@ -15,10 +15,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
+import igknighters.DeviceManager;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.climber.ClimberConstants;
 import igknighters.subsystems.climber.ClimberConstants.PivotConstants;
-import igknighters.util.can.CANSignalManager;
 
 public class PivotReal extends Pivot {
 
@@ -28,7 +28,7 @@ public class PivotReal extends Pivot {
       new TalonFX(PivotConstants.FOLLOWER_MOTOR_ID, ClimberConstants.CANBUS);
   private final CANcoder encoder = new CANcoder(PivotConstants.ENCODER_ID, ClimberConstants.CANBUS);
 
-  private final BaseStatusSignal position, velocity, amps, voltage, encoderPosition;
+  private final BaseStatusSignal amps, voltage, encoderPosition;
 
   private final VoltageOut controlReq = new VoltageOut(0.0).withUpdateFreqHz(0.0);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
@@ -36,17 +36,19 @@ public class PivotReal extends Pivot {
 
   private final PIDController pidController = new PIDController(20.0, 0.0, 0.0);
 
-  public PivotReal() {
-    leader.getConfigurator().apply(motorConfiguration());
+  public PivotReal(DeviceManager deviceManager) {
+    deviceManager.bringUp(this, "leader", leader, motorConfiguration());
     var cfg = new TalonFXConfiguration();
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    follower.getConfigurator().apply(cfg);
-    encoder.getConfigurator().apply(encoderConfiguration());
+    deviceManager.bringUp(this, "follower", follower, cfg);
+    deviceManager.bringUp(this, "encoder", encoder, encoderConfiguration());
 
-    follower.setControl(new Follower(leader.getDeviceID(), true));
+    deviceManager.retryStatusCodeFatal(
+      () -> follower.setControl(new Follower(leader.getDeviceID(), true)),
+      "set climb follower control request",
+      10
+    );
 
-    position = leader.getPosition();
-    velocity = leader.getVelocity();
     amps = leader.getStatorCurrent();
     voltage = leader.getMotorVoltage();
 
@@ -57,11 +59,6 @@ public class PivotReal extends Pivot {
     encoder.getVelocity(false).setUpdateFrequency(125);
 
     encoderPosition = encoder.getAbsolutePosition(false);
-
-    CANSignalManager.registerSignals(
-        ClimberConstants.CANBUS, position, velocity, amps, voltage, encoderPosition);
-
-    CANSignalManager.registerDevices(leader, encoder);
   }
 
   private final TalonFXConfiguration motorConfiguration() {
@@ -75,9 +72,6 @@ public class PivotReal extends Pivot {
         PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
 
     cfg.Voltage.PeakReverseVoltage = -5.5;
-
-    // cfg.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.MAX_VELOCITY;
-    // cfg.MotionMagic.MotionMagicAcceleration = PivotConstants.MAX_ACCELERATION;
 
     cfg.CurrentLimits.StatorCurrentLimit = PivotConstants.STATOR_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLimit = PivotConstants.SUPPLY_CURRENT_LIMIT;

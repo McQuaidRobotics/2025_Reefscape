@@ -9,6 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
+import igknighters.DeviceManager;
 import igknighters.Localizer;
 import igknighters.Robot;
 import igknighters.SimCtx;
@@ -96,7 +97,7 @@ public class Swerve implements ExclusiveSubsystem {
 
   private SwerveSetpoint setpoint = SwerveSetpoint.zeroed();
 
-  public Swerve(SharedState shared, Localizer localizer, SimCtx simCtx) {
+  public Swerve(SharedState shared, Localizer localizer, DeviceManager deviceManager, SimCtx simCtx) {
     sharedState = shared;
     this.localizer = localizer;
     final boolean useSham = true;
@@ -130,12 +131,12 @@ public class Swerve implements ExclusiveSubsystem {
           new RealSwerveOdometryThread(250, localizer.swerveDataSender());
       swerveMods =
           new SwerveModule[] {
-            new SwerveModuleReal(0, ot),
-            new SwerveModuleReal(1, ot),
-            new SwerveModuleReal(2, ot),
-            new SwerveModuleReal(3, ot)
+            new SwerveModuleReal(0, deviceManager, ot),
+            new SwerveModuleReal(1, deviceManager, ot),
+            new SwerveModuleReal(2, deviceManager, ot),
+            new SwerveModuleReal(3, deviceManager, ot)
           };
-      gyro = new GyroReal(ot);
+      gyro = new GyroReal(deviceManager, ot);
       odometryThread = ot;
     }
 

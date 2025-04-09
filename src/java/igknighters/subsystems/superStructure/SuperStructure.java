@@ -2,6 +2,7 @@ package igknighters.subsystems.superStructure;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import igknighters.DeviceManager;
 import igknighters.Robot;
 import igknighters.SimCtx;
 import igknighters.subsystems.SharedState;
@@ -32,29 +33,12 @@ public class SuperStructure implements ExclusiveSubsystem {
   @Log(key = "Elevator")
   private final Elevator elevator;
 
-  // /**
-  //  * Checks for potential collisions
-  //  *
-  //  * @param elevHeight The height of the elevator in meters
-  //  * @param theta
-  //  * @return position the wrist should be at in rads
-  //  */
-  // private static double avoid(double elevHeight, double theta) {
-  //   double wristY = elevHeight - kWrist.LENGTH * Math.sin(theta);
-  //   if (wristY < SuperStructureConstants.COLLISION_HEIGHT) {
-  //     return Math.asin((elevHeight - SuperStructureConstants.COLLISION_HEIGHT) / kWrist.LENGTH);
-  //   }
-  //   return theta;
-  // }
-
-  public SuperStructure(SharedState shared, SimCtx simCtx) {
+  public SuperStructure(SharedState shared, DeviceManager manager, SimCtx simCtx) {
     this.shared = shared;
     visualizer = new SuperStructureVisualizer();
     if (Robot.isReal()) {
-      wrist = new WristReal();
-      // elevator = new ElevatorDisabled();
-      elevator = new ElevatorReal();
-      // wrist = new WristDisabled();
+      wrist = new WristReal(manager);
+      elevator = new ElevatorReal(manager);
     } else {
       wrist = new WristSim(simCtx);
       elevator = new ElevatorSim(simCtx);

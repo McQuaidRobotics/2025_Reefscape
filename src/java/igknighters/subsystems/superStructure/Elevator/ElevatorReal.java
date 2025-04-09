@@ -14,10 +14,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
+import igknighters.DeviceManager;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.SuperStructureConstants;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator;
-import igknighters.util.can.CANSignalManager;
 import java.util.Optional;
 
 public class ElevatorReal extends Elevator {
@@ -37,12 +37,17 @@ public class ElevatorReal extends Elevator {
   private final BaseStatusSignal position, velocity, voltage, current;
   private final DigitalInput limitSwitch;
 
-  public ElevatorReal() {
+  public ElevatorReal(DeviceManager deviceManager) {
     leader = new TalonFX(kElevator.LEADER_ID, SuperStructureConstants.CANBUS);
     follower = new TalonFX(kElevator.FOLLOWER_ID, SuperStructureConstants.CANBUS);
-    leader.getConfigurator().apply(elevatorLeaderConfiguration());
-    follower.getConfigurator().apply(elevatorFollowerConfiguration());
-    follower.setControl(new Follower(kElevator.LEADER_ID, true));
+    deviceManager.bringUp(this, "leader", leader, elevatorLeaderConfiguration());
+    deviceManager.bringUp(this, "follower", follower, elevatorFollowerConfiguration());
+
+    deviceManager.retryStatusCodeFatal(
+      () -> follower.setControl(new Follower(kElevator.LEADER_ID, true)),
+      "set elevator follower control request",
+      10
+    );
 
     position = leader.getPosition();
     velocity = leader.getVelocity();
@@ -50,11 +55,6 @@ public class ElevatorReal extends Elevator {
     current = leader.getTorqueCurrent();
 
     limitSwitch = new DigitalInput(kElevator.LIMIT_SWITCH_ID);
-
-    CANSignalManager.registerSignals(
-        SuperStructureConstants.CANBUS, position, velocity, voltage, current);
-
-    CANSignalManager.registerDevices(leader, follower);
 
     leader.setPosition(kElevator.MIN_HEIGHT / kElevator.PULLEY_CIRCUMFERENCE);
   }

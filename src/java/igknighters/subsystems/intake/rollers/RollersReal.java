@@ -16,11 +16,11 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.DriverStation;
+import igknighters.DeviceManager;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.intake.IntakeConstants;
 import igknighters.subsystems.intake.IntakeConstants.RollerConstants;
 import igknighters.util.LerpTable;
-import igknighters.util.can.CANSignalManager;
 
 public class RollersReal extends Rollers {
   private static final double INTAKE_WIDTH = 14.0 * Conv.INCHES_TO_METERS;
@@ -43,7 +43,7 @@ public class RollersReal extends Rollers {
   private final TorqueCurrentFOC currentReq = new TorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
   private final StatusSignal<ReverseLimitValue> laserTrippedSignal;
-  private final BaseStatusSignal current, voltage, velocity, acceleration, temperature, distance;
+  private final BaseStatusSignal current, voltage, velocity, distance;
 
   private final LinearFilter movingAverage = LinearFilter.movingAverage(5);
   private final Debouncer intakeDebouncer = new Debouncer(0.14, DebounceType.kRising);
@@ -76,28 +76,15 @@ public class RollersReal extends Rollers {
     return cfg;
   }
 
-  public RollersReal() {
+  public RollersReal(DeviceManager deviceManager) {
     laserTrippedSignal = intakeMotor.getReverseLimit();
     current = intakeMotor.getTorqueCurrent();
     voltage = intakeMotor.getMotorVoltage();
     velocity = intakeMotor.getVelocity();
-    acceleration = intakeMotor.getAcceleration();
-    temperature = intakeMotor.getDeviceTemp();
     distance = distanceSensor.getDistance();
-    intakeMotor.getConfigurator().apply(intakeConfiguration());
-    distanceSensor.getConfigurator().apply(intakeSensorConfiguration());
 
-    CANSignalManager.registerSignals(
-        IntakeConstants.CANBUS,
-        laserTrippedSignal,
-        current,
-        voltage,
-        velocity,
-        acceleration,
-        temperature,
-        distance);
-
-    CANSignalManager.registerDevices(intakeMotor, distanceSensor);
+    deviceManager.bringUp(this, "motor", intakeMotor, intakeConfiguration(), laserTrippedSignal);
+    deviceManager.bringUp(this, "sensor", distanceSensor, intakeSensorConfiguration());
   }
 
   @Override
@@ -134,10 +121,7 @@ public class RollersReal extends Rollers {
             - (INTAKE_WIDTH / 2.0);
 
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
-    log("radiansPerSecondPerSecond", acceleration.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS);
     log("gamepieceDistInches", gamepieceDistance * Conv.METERS_TO_INCHES);
-    log("rpm", velocity.getValueAsDouble() * 60.0);
-    log("temp", temperature.getValueAsDouble());
     log("isStalling", isStalling());
   }
 }
