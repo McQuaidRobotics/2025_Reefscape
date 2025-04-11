@@ -44,10 +44,9 @@ public class PivotReal extends Pivot {
     deviceManager.bringUp(this, "encoder", encoder, encoderConfiguration());
 
     deviceManager.retryStatusCodeFatal(
-      () -> follower.setControl(new Follower(leader.getDeviceID(), true)),
-      "set climb follower control request",
-      10
-    );
+        () -> follower.setControl(new Follower(leader.getDeviceID(), true)),
+        "set climb follower control request",
+        10);
 
     amps = leader.getStatorCurrent();
     voltage = leader.getMotorVoltage();

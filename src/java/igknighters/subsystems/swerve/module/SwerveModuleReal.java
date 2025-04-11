@@ -44,7 +44,8 @@ public class SwerveModuleReal extends SwerveModule {
 
   private Rotation2d lastAngle = new Rotation2d();
 
-  public SwerveModuleReal(final int moduleId, DeviceManager deviceManager, RealSwerveOdometryThread odoThread) {
+  public SwerveModuleReal(
+      final int moduleId, DeviceManager deviceManager, RealSwerveOdometryThread odoThread) {
     super("SwerveModule[" + moduleId + "]");
     this.odoThread = odoThread;
 
@@ -58,15 +59,16 @@ public class SwerveModuleReal extends SwerveModule {
     // CANRetrier.retryStatusCode(
     //     () -> driveMotor.getConfigurator().apply(driveMotorConfig(), 1.0), 5);
     // CANRetrier.retryStatusCode(
-    //     () -> steerMotor.getConfigurator().apply(steerMotorConfig(steerEncoder.getDeviceID()), 1.0),
+    //     () -> steerMotor.getConfigurator().apply(steerMotorConfig(steerEncoder.getDeviceID()),
+    // 1.0),
     //     5);
     // CANRetrier.retryStatusCode(
     //     () -> steerEncoder.getConfigurator().apply(cancoderConfig(rotationOffset), 1.0), 5);
 
     deviceManager.bringUp(this, "driveMotor", driveMotor, driveMotorConfig());
-    deviceManager.bringUp(this, "steerMotor", steerMotor, steerMotorConfig(steerEncoder.getDeviceID()));
+    deviceManager.bringUp(
+        this, "steerMotor", steerMotor, steerMotorConfig(steerEncoder.getDeviceID()));
     deviceManager.bringUp(this, "steerEncoder", steerEncoder, cancoderConfig(rotationOffset));
-
 
     driveVoltSignal = driveMotor.getMotorVoltage();
     driveAmpSignal = driveMotor.getTorqueCurrent();
@@ -89,10 +91,7 @@ public class SwerveModuleReal extends SwerveModule {
     steerEncoder.optimizeBusUtilization(0.0, 1.0);
 
     deviceManager.retryStatusCode(
-        () -> driveMotor.setPosition(0.0, 0.1),
-        "set drive motor position",
-        3
-    );
+        () -> driveMotor.setPosition(0.0, 0.1), "set drive motor position", 3);
 
     driveMotorClosedReq = new VelocityVoltage(0).withEnableFOC(true).withUpdateFreqHz(0);
 

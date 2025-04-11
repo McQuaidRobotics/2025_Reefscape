@@ -44,10 +44,9 @@ public class ElevatorReal extends Elevator {
     deviceManager.bringUp(this, "follower", follower, elevatorFollowerConfiguration());
 
     deviceManager.retryStatusCodeFatal(
-      () -> follower.setControl(new Follower(kElevator.LEADER_ID, true)),
-      "set elevator follower control request",
-      10
-    );
+        () -> follower.setControl(new Follower(kElevator.LEADER_ID, true)),
+        "set elevator follower control request",
+        10);
 
     position = leader.getPosition();
     velocity = leader.getVelocity();

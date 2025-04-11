@@ -13,15 +13,13 @@ public class ClimberCommands {
 
   public static Command stage(Climber climber) {
     return climber
-        .run(
-            () -> climber.setPivotPosition(ClimberConstants.PivotConstants.STAGE_ANGLE))
+        .run(() -> climber.setPivotPosition(ClimberConstants.PivotConstants.STAGE_ANGLE))
         .withName("ClimberStage");
   }
 
   public static Command climb(Climber climber) {
     return climber
-        .run(
-            () -> climber.setPivotPosition(ClimberConstants.PivotConstants.ASCEND_ANGLE))
+        .run(() -> climber.setPivotPosition(ClimberConstants.PivotConstants.ASCEND_ANGLE))
         .until(() -> climber.isPivotAtPosition(ClimberConstants.PivotConstants.ASCEND_ANGLE, 0.1))
         .andThen(climber.run(() -> climber.voltageOut(-0.475)))
         .withName("ClimberClimb");

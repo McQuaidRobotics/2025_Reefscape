@@ -87,7 +87,8 @@ public class DeviceManager {
    * @param retryLimit The retry limit.
    * @return Whether the status code is ok.
    */
-  public boolean retryStatusCode(Supplier<StatusCode> statusCodeSup, String action, int retryLimit) {
+  public boolean retryStatusCode(
+      Supplier<StatusCode> statusCodeSup, String action, int retryLimit) {
     for (int i = 0; i < retryLimit; i++) {
       if (statusCodeSup.get().isOK()) return true;
     }
@@ -105,7 +106,8 @@ public class DeviceManager {
    * @param retryLimit The retry limit.
    * @return Whether the status code is ok.
    */
-  public boolean retryStatusCodeFatal(Supplier<StatusCode> statusCodeSup, String action, int retryLimit) {
+  public boolean retryStatusCodeFatal(
+      Supplier<StatusCode> statusCodeSup, String action, int retryLimit) {
     for (int i = 0; i < retryLimit; i++) {
       if (statusCodeSup.get().isOK()) return true;
     }
@@ -122,6 +124,10 @@ public class DeviceManager {
 
     CANNetwork(String name) {
       this.name = name;
+      if (Robot.isSimulation()) {
+        this.bus = null;
+        return;
+      }
       this.bus = new CANBus(name);
     }
 
@@ -258,22 +264,25 @@ public class DeviceManager {
   }
 
   /**
-   * Bring up a device and log its status signals.
-   * This will set the update frequency for all signals to 100Hz and optimize bus utilization.
-   * It will also apply the given configuration to the device.
-   * <p>
-   * The signals that are implicitly logged are:
+   * Bring up a device and log its status signals. This will set the update frequency for all
+   * signals to 100Hz and optimize bus utilization. It will also apply the given configuration to
+   * the device.
+   *
+   * <p>The signals that are implicitly logged are:
+   *
    * <ul>
-   * <li>Position</li>
-   * <li>Velocity</li>
-   * <li>Acceleration</li>
-   * <li>Motor Voltage</li>
-   * <li>Torque Current</li>
-   * <li>Supply Current</li>
-   * <li>Device Temperature</li>
-   * <li>Control Mode</li>
+   *   <li>Position
+   *   <li>Velocity
+   *   <li>Acceleration
+   *   <li>Motor Voltage
+   *   <li>Torque Current
+   *   <li>Supply Current
+   *   <li>Device Temperature
+   *   <li>Control Mode
    * </ul>
+   *
    * <p>
+   *
    * @param container the container to log to
    * @param name the name of the device
    * @param device the device to bring up
@@ -302,18 +311,11 @@ public class DeviceManager {
     retryStatusCodeFatal(
         () -> BaseStatusSignal.setUpdateFrequencyForAll(100.0, allSignalsArray),
         "Update Status Signal Frequency for " + name,
-        5
-    );
+        5);
     retryStatusCodeFatal(
-      () -> device.optimizeBusUtilization(4.0, 1.0),
-      "Optimize Bus Utilization for " + name,
-      5
-    );
+        () -> device.optimizeBusUtilization(4.0, 1.0), "Optimize Bus Utilization for " + name, 5);
     retryStatusCodeFatal(
-      () -> device.getConfigurator().apply(config, 1.0),
-      "Apply Config for " + name,
-      5
-    );
+        () -> device.getConfigurator().apply(config, 1.0), "Apply Config for " + name, 5);
     final var de = getNetworkEntry(device.getNetwork()).addDevice(name, device, allSignalsArray);
     deviceLoggers.add(
         () -> {
@@ -345,20 +347,13 @@ public class DeviceManager {
       device.getAbsolutePosition(false), device.getPosition(false), device.getMagnetHealth(false)
     };
     retryStatusCodeFatal(
-      () -> BaseStatusSignal.setUpdateFrequencyForAll(100.0, genericSignals),
-      "Update Status Signal Frequency for " + name,
-      5
-    );
+        () -> BaseStatusSignal.setUpdateFrequencyForAll(100.0, genericSignals),
+        "Update Status Signal Frequency for " + name,
+        5);
     retryStatusCodeFatal(
-      () -> device.optimizeBusUtilization(4.0, 1.0),
-      "Optimize Bus Utilization for " + name,
-      5
-    );
+        () -> device.optimizeBusUtilization(4.0, 1.0), "Optimize Bus Utilization for " + name, 5);
     retryStatusCodeFatal(
-      () -> device.getConfigurator().apply(config, 1.0),
-      "Apply Config for " + name,
-      5
-    );
+        () -> device.getConfigurator().apply(config, 1.0), "Apply Config for " + name, 5);
     final var de = getNetworkEntry(device.getNetwork()).addDevice(name, device, genericSignals);
     deviceLoggers.add(
         () -> {
@@ -389,20 +384,13 @@ public class DeviceManager {
       device.getYaw(false)
     };
     retryStatusCodeFatal(
-      () -> BaseStatusSignal.setUpdateFrequencyForAll(100.0, genericSignals),
-      "Update Status Signal Frequency for " + name,
-      5
-    );
+        () -> BaseStatusSignal.setUpdateFrequencyForAll(100.0, genericSignals),
+        "Update Status Signal Frequency for " + name,
+        5);
     retryStatusCodeFatal(
-      () -> device.optimizeBusUtilization(4.0, 1.0),
-      "Optimize Bus Utilization for " + name,
-      5
-    );
+        () -> device.optimizeBusUtilization(4.0, 1.0), "Optimize Bus Utilization for " + name, 5);
     retryStatusCodeFatal(
-      () -> device.getConfigurator().apply(config, 1.0),
-      "Apply Config for " + name,
-      5
-    );
+        () -> device.getConfigurator().apply(config, 1.0), "Apply Config for " + name, 5);
     final var de = getNetworkEntry(device.getNetwork()).addDevice(name, device, genericSignals);
     deviceLoggers.add(
         () -> {
@@ -421,28 +409,20 @@ public class DeviceManager {
     container.log(name + "/config", CtreStructs.PIGEON_2_CONFIG_STRUCT, config);
   }
 
-  public void bringUp(Logged container, String name, CANrange device, CANrangeConfiguration config) {
+  public void bringUp(
+      Logged container, String name, CANrange device, CANrangeConfiguration config) {
     String summaryPath = name + "/summary";
     BaseStatusSignal[] genericSignals = {
-      device.getAmbientSignal(false),
-      device.getDistance(false),
-      device.getIsDetected(false)
+      device.getAmbientSignal(false), device.getDistance(false), device.getIsDetected(false)
     };
     retryStatusCodeFatal(
-      () -> BaseStatusSignal.setUpdateFrequencyForAll(100.0, genericSignals),
-      "Update Status Signal Frequency for " + name,
-      5
-    );
+        () -> BaseStatusSignal.setUpdateFrequencyForAll(100.0, genericSignals),
+        "Update Status Signal Frequency for " + name,
+        5);
     retryStatusCodeFatal(
-      () -> device.optimizeBusUtilization(4.0, 1.0),
-      "Optimize Bus Utilization for " + name,
-      5
-    );
+        () -> device.optimizeBusUtilization(4.0, 1.0), "Optimize Bus Utilization for " + name, 5);
     retryStatusCodeFatal(
-      () -> device.getConfigurator().apply(config, 1.0),
-      "Apply Config for " + name,
-      5
-    );
+        () -> device.getConfigurator().apply(config, 1.0), "Apply Config for " + name, 5);
     final var de = getNetworkEntry(device.getNetwork()).addDevice(name, device, genericSignals);
     deviceLoggers.add(
         () -> {

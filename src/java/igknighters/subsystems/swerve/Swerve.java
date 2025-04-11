@@ -97,7 +97,8 @@ public class Swerve implements ExclusiveSubsystem {
 
   private SwerveSetpoint setpoint = SwerveSetpoint.zeroed();
 
-  public Swerve(SharedState shared, Localizer localizer, DeviceManager deviceManager, SimCtx simCtx) {
+  public Swerve(
+      SharedState shared, Localizer localizer, DeviceManager deviceManager, SimCtx simCtx) {
     sharedState = shared;
     this.localizer = localizer;
     final boolean useSham = true;

@@ -247,14 +247,14 @@ public class CtreStructs {
   }
 
   public record CANRangeSummary(
-    double distance,
-    double isDetected,
-    double ambientSignal,
-    boolean isConnected,
-    boolean hasReset,
-    double latency)
-    implements StructSerializable {
-  public static final Struct<CANRangeSummary> struct =
-      ProceduralStructGenerator.genRecord(CANRangeSummary.class);
-}
+      double distance,
+      double isDetected,
+      double ambientSignal,
+      boolean isConnected,
+      boolean hasReset,
+      double latency)
+      implements StructSerializable {
+    public static final Struct<CANRangeSummary> struct =
+        ProceduralStructGenerator.genRecord(CANRangeSummary.class);
+  }
 }
