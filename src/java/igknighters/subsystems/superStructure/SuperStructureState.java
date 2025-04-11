@@ -22,10 +22,7 @@ public enum SuperStructureState implements StructSerializable {
   AlgaeFloor(MIN_HEIGHT, 15.0 * DEGREES_TO_RADIANS),
   Stow(28.25 * INCHES_TO_METERS, MAX_ANGLE, 2.0),
   Processor(MIN_HEIGHT, 0.0, 1.5),
-  Net(MAX_HEIGHT - 0.15, MIN_ANGLE, 1.0),
-  Net_FLICKED(MAX_HEIGHT, MAX_ANGLE, 1.0),
-  // Net(L3.height, -1.0, 1.0),
-  // Net_FLICKED(MAX_HEIGHT, -1.0, 1.0),
+  Net(MAX_HEIGHT, MAX_ANGLE, 1.0),
   IntakeHpClose(28.95 * INCHES_TO_METERS, -54.0 * DEGREES_TO_RADIANS),
   IntakeHpFar(26.2 * INCHES_TO_METERS, -48.0 * DEGREES_TO_RADIANS),
   AntiTilt(MIN_HEIGHT + 0.05, MAX_ANGLE, 1.0);
