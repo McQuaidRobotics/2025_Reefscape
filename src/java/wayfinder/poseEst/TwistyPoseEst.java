@@ -11,6 +11,14 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 public class TwistyPoseEst {
+  public record VisionScalars(double thresholdForTheta, double thetaScalar, double translationScalar) {
+    public VisionScalars {
+      thresholdForTheta = MathUtil.clamp(thresholdForTheta, 0.0, 1.0);
+      thetaScalar = MathUtil.clamp(thetaScalar, 0.0, 1.0);
+      translationScalar = MathUtil.clamp(translationScalar, 0.0, 1.0);
+    }
+  }
+
   private final class TimestampedTwist2d extends Twist2d {
     public final double timestamp;
 
@@ -142,17 +150,17 @@ public class TwistyPoseEst {
    * @param timestamp the timestamp of the sample
    * @param weight the weight of the sample (0.0 to 1.0)
    */
-  public void addVisionSample(Pose2d pose, double timestamp, double weight) {
+  public void addVisionSample(VisionScalars scalars, Pose2d pose, double timestamp, double weight) {
     weight = MathUtil.clamp(weight, 0.0, 1.0);
     if (timestamp < oldestTimestamp()) {
       return;
     }
     Pose2d lastPose = poseAtTimestamp(timestamp);
     Twist2d twist = lastPose.log(pose);
-    twist.dx *= weight;
-    twist.dy *= weight;
-    if (weight > 0.9) {
-      twist.dtheta *= 0.05 * weight;
+    twist.dx *= weight * scalars.translationScalar;
+    twist.dy *= weight * scalars.translationScalar;
+    if (weight > scalars.thresholdForTheta) {
+      twist.dtheta *= scalars.thetaScalar * weight;
     } else {
       twist.dtheta *= 0.0;
     }

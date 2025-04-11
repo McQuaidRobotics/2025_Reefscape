@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import igknighters.constants.AprilTags;
 import igknighters.constants.FieldConstants;
@@ -128,6 +129,10 @@ public class CameraRealPhoton extends Camera {
     trust *= kVision.DISTANCE_TRUST_COEFFICIENT.lerp(avgDistance);
     trust *= kVision.AREA_TRUST_COEFFICIENT.lerp(sumArea);
     trust *= kVision.PIXEL_OFFSET_TRUST_COEFFICIENT.lerp(avgNormalizedPixelsFromCenter);
+
+    if (DriverStation.isDisabled()) {
+      trust = 1.0;
+    }
 
     var u = new VisionUpdate(pose, estRoboPose.timestampSeconds, trust);
     previousUpdate = Optional.of(u);
