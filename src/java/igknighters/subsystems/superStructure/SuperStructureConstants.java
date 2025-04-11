@@ -45,14 +45,14 @@ public class SuperStructureConstants {
     public static final double MOI =
         (PULLEY_RADIUS * PULLEY_RADIUS) * (21.0 * Conv.POUNDS_TO_KILOGRAMS);
 
-    public static final double MIN_HEIGHT = 13.1 * Conv.INCHES_TO_METERS;
-    public static final double MAX_HEIGHT = 80.5 * Conv.INCHES_TO_METERS;
+    public static final double MIN_HEIGHT = 16.1 * Conv.INCHES_TO_METERS;
+    public static final double MAX_HEIGHT = 83.5 * Conv.INCHES_TO_METERS;
     public static final double DEFAULT_TOLERANCE = 0.75 * Conv.INCHES_TO_METERS;
 
     public static final double kP = 8.0;
     public static final double kD = 0.0;
-    public static final double kG = 0.52;
-    public static final double kS = 0.0;
+    public static final double kG = 0.42;
+    public static final double kS = 0.1;
     public static final double kV = kKrakenX60Foc.kV * GEAR_RATIO;
     public static final double kA = 0.00;
 
