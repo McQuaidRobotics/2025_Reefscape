@@ -188,7 +188,7 @@ public class AutoCommands {
             };
         return Commands.defer(cmdSup, Set.of(swerve));
       } else {
-        DriverStation.reportError("womp womp", false);
+        DriverStation.reportError("there is no final pose in the auto routine", false);
         return Commands.none();
       }
     }
