@@ -20,7 +20,7 @@ public enum SuperStructureState implements StructSerializable {
   StagedL2(L2.height + 0.25, MAX_ANGLE, 2.0),
   AlgaeL3(L3.height + 0.17, 25.0 * DEGREES_TO_RADIANS),
   AlgaeL2(L2.height + 0.17, 25.0 * DEGREES_TO_RADIANS),
-  AlgaeFloor(MIN_HEIGHT, 32.0 * DEGREES_TO_RADIANS),
+  AlgaeFloor(MIN_HEIGHT, 27.0 * DEGREES_TO_RADIANS),
   Stow(28.25 * INCHES_TO_METERS, MAX_ANGLE, 2.0),
   Processor(MIN_HEIGHT, 7.5 * DEGREES_TO_RADIANS, 1.5),
   Net(MAX_HEIGHT, ALGAE_MAX_ANGLE + 5.0 * Conv.DEGREES_TO_RADIANS, 1.0),
