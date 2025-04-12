@@ -87,10 +87,10 @@ public class VisionConstants {
     public static final LerpTable AREA_TRUST_COEFFICIENT =
         new LerpTable(
             new LerpTable.LerpTableEntry(0.0, 0.0),
-            new LerpTable.LerpTableEntry(0.2, 0.25),
-            new LerpTable.LerpTableEntry(1.0, 0.35),
+            new LerpTable.LerpTableEntry(0.2, 0.45),
+            new LerpTable.LerpTableEntry(1.0, 0.55),
             new LerpTable.LerpTableEntry(4.0, 0.75),
-            new LerpTable.LerpTableEntry(10.0, 1.0));
+            new LerpTable.LerpTableEntry(7.5, 1.0));
 
     public static final LerpTable PIXEL_OFFSET_TRUST_COEFFICIENT =
         new LerpTable(
