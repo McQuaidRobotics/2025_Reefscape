@@ -99,7 +99,8 @@ public class SwerveSetpointGenerator {
    */
   public SwerveSetpoint generateSetpoint(
       final SwerveSetpoint prevSetpoint,
-      ChassisSpeeds desiredRobotRelativeSpeeds,
+      Rotation2d heading,
+      Speeds desiredSpeeds,
       Optional<ChassisConstraints> constraintsOpt,
       double dt) {
     double inputVoltage = RobotController.getBatteryVoltage();
@@ -111,23 +112,17 @@ public class SwerveSetpointGenerator {
     double maxSpeed = maxDriveVelocityMPS * Math.min(1, inputVoltage / 12);
 
     // Limit the max velocities in desired state based on constraints
+    ChassisSpeeds desiredRobotRelativeSpeeds;
     if (constraintsOpt.isPresent()) {
-      ChassisConstraints constraints = constraintsOpt.get();
-      maxSpeed = Math.min(maxSpeed, constraints.translation().maxVelocity());
-      double linearVel =
-          Math.hypot(
-              desiredRobotRelativeSpeeds.vxMetersPerSecond,
-              desiredRobotRelativeSpeeds.vyMetersPerSecond);
-      if (linearVel > constraints.translation().maxVelocity()) {
-        double mult = constraints.translation().maxVelocity() / linearVel;
-        desiredRobotRelativeSpeeds.vxMetersPerSecond *= mult;
-        desiredRobotRelativeSpeeds.vyMetersPerSecond *= mult;
-      }
-      desiredRobotRelativeSpeeds.omegaRadiansPerSecond =
-          MathUtil.clamp(
-              desiredRobotRelativeSpeeds.omegaRadiansPerSecond,
-              -constraints.rotation().maxVelocity(),
-              constraints.rotation().maxVelocity());
+      desiredRobotRelativeSpeeds =
+          Util.constrainSpeeds(
+              prevSetpoint.fieldSpeeds(),
+              desiredSpeeds.asFieldRelative(heading),
+              heading,
+              constraintsOpt.get(),
+              dt);
+    } else {
+      desiredRobotRelativeSpeeds = desiredSpeeds.asRobotRelative(heading).toWpilib();
     }
 
     // https://github.com/wpilibsuite/allwpilib/issues/7332
@@ -199,11 +194,14 @@ public class SwerveSetpointGenerator {
 
     logger.log("finalVars", vars, LocalVars.struct);
 
-    return new SwerveSetpoint(Speeds.fromRobotRelative(retSpeeds), outputStates);
+    return new SwerveSetpoint(Speeds.fromRobotRelative(retSpeeds), outputStates, heading);
   }
 
   public SwerveSetpoint generateSimpleSetpoint(
-      final SwerveSetpoint prevSetpoint, RobotSpeeds desiredRobotRelativeSpeeds, double dt) {
+      final SwerveSetpoint prevSetpoint,
+      Rotation2d heading,
+      RobotSpeeds desiredRobotRelativeSpeeds,
+      double dt) {
     AdvancedSwerveModuleState[] outputStates = new AdvancedSwerveModuleState[NUM_MODULES];
     SwerveModuleState[] desiredModuleStates =
         kinematics.toSwerveModuleStates(desiredRobotRelativeSpeeds.toWpilib());
@@ -214,7 +212,9 @@ public class SwerveSetpointGenerator {
     }
 
     return new SwerveSetpoint(
-        Speeds.fromRobotRelative(kinematics.toChassisSpeeds(desiredModuleStates)), outputStates);
+        Speeds.fromRobotRelative(kinematics.toChassisSpeeds(desiredModuleStates)),
+        outputStates,
+        heading);
   }
 
   private static void checkNeedToSteer(LocalVars vars) {

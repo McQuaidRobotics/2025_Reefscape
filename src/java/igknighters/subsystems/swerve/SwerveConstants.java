@@ -32,14 +32,14 @@ public class SwerveConstants {
 
   public static final class ModuleConstants {
     public static final class kWheel {
-      public static final double RADIUS = 1.936 * Conv.INCHES_TO_METERS;
+      public static final double RADIUS = 1.926 * Conv.INCHES_TO_METERS;
       public static final double DIAMETER = RADIUS * 2.0;
       public static final double CIRCUMFERENCE = DIAMETER * Math.PI;
       public static final double COF = 1.8;
     }
 
     public static final class kDriveMotor {
-      public static final double GEAR_RATIO = SwerveGearRatios.L1_DRIVE_KRAKEN;
+      public static final double GEAR_RATIO = SwerveGearRatios.L2_DRIVE_KRAKEN;
 
       public static final boolean INVERT = false;
       public static final boolean NEUTRAL_MODE_BRAKE = false;

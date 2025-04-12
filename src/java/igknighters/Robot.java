@@ -122,8 +122,9 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             });
 
     final var routines = new AutoRoutines(subsystems, localizer, autoFactory);
-    AutoRoutines.addCmd(autoChooser, "test", routines::test);
-    AutoRoutines.addCmd(autoChooser, "testPush", routines::testWithPush);
+    AutoRoutines.addCmd(autoChooser, "threePieceL4", routines::threePieceL4);
+    AutoRoutines.addCmd(autoChooser, "threePieceL4WithPush", routines::threePieceL4WithPush);
+    AutoRoutines.addCmd(autoChooser, "CenterL4", routines::centralL4);
     autoChooser.addCmd("straight", routines.trajTest("Straight"));
     setupAutoChooser();
 

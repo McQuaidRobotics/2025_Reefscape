@@ -46,17 +46,21 @@ public class AutoRoutines extends AutoCommands {
     chooser.addCmd(name + " Right", () -> auto.generate(false));
   }
 
-  public Command test(boolean leftSide) {
-    return newAuto("test", leftSide)
+  public Command threePieceL4(boolean leftSide) {
+    return newAuto("threePieceL4", leftSide)
         .addTrajectories(
             StartingOutside, FarLeft_R, Intake, CloseLeft_L, Intake, CloseLeft_R, Intake, FarLeft_L)
         .build();
   }
 
-  public Command testWithPush(boolean leftSide) {
+  public Command threePieceL4WithPush(boolean leftSide) {
     return Commands.sequence(
         new ProxyCommand(
             SwerveCommands.drive(swerve, Speeds.fromRobotRelative(-2.5, 0, 0)).withTimeout(0.25)),
-        test(leftSide));
+        threePieceL4(leftSide));
+  }
+
+  public Command centralL4(boolean leftSide) {
+    return newAuto("centralL4", leftSide).addTrajectories(StartingCenter, FarMid_R).build();
   }
 }

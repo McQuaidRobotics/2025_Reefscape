@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import monologue.GlobalField;
 import monologue.Logged;
+import monologue.Monologue;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
@@ -166,6 +167,11 @@ public class OperatorTarget implements StructSerializable {
           return Commands.parallel(
               SwerveCommands.lineupReef(
                   subsystems.swerve, localizer, targetLocation, PathObstacles.fromReefSide(side)),
+              Commands.run(
+                  () ->
+                      Monologue.log(
+                          "/robot/dist",
+                          localizer.translation().getDistance(targetLocation.getTranslation()))),
               Commands.sequence(
                   SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
                       .until(isNearPose(localizer, targetLocation.getTranslation(), 2.0)),

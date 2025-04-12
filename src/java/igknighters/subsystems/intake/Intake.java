@@ -16,7 +16,7 @@ import monologue.ProceduralStructGenerator;
 public class Intake implements ExclusiveSubsystem {
   private final SharedState shared;
 
-  @Log private Holding currentlyHolding = Holding.NONE;
+  @Log private Holding currentlyHolding = Holding.CORAL;
   @Log private Holding tryingToHold = Holding.NONE;
 
   public enum Holding implements StructSerializable {
@@ -96,5 +96,6 @@ public class Intake implements ExclusiveSubsystem {
       }
     }
     shared.holdingAlgae = getHolding() == Holding.ALGAE;
+    log("gamepieceYOffset", gamepieceYOffset());
   }
 }

@@ -157,6 +157,8 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
                 getAcceleration(),
                 Timer.getFPGATimestamp() - log("latency", getDataLatency())));
       }
+    } catch (Exception e) {
+      DriverStation.reportError(e.getMessage(), e.getStackTrace());
     } finally {
       isRunning.set(false);
     }
