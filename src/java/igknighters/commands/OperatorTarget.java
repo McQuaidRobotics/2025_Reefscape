@@ -12,12 +12,14 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.SuperStructureCommands.MoveOrder;
+import igknighters.commands.teleop.TeleopSwerveTraditionalCmd;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.kLed;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.FaceSubLocation;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
+import igknighters.controllers.DriverController;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.led.Led;
 import igknighters.subsystems.led.LedUtil;
@@ -27,7 +29,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import monologue.GlobalField;
 import monologue.Logged;
-import monologue.Monologue;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
@@ -142,6 +143,11 @@ public class OperatorTarget implements StructSerializable {
     return new Trigger(() -> localizer.translation().getDistance(translation) < dist);
   }
 
+  private Trigger isNearTarget(Localizer localizer, double dist) {
+    return new Trigger(
+        () -> localizer.translation().getDistance(targetLocation().getTranslation()) < dist);
+  }
+
   private Trigger isSlowerThan(double speed) {
     return new Trigger(() -> subsystems.swerve.getFieldSpeeds().magnitude() < speed);
   }
@@ -154,34 +160,45 @@ public class OperatorTarget implements StructSerializable {
                 || superStructureState.equals(SuperStructureState.AlgaeL3));
   }
 
-  public Command gotoTargetCmd(Localizer localizer) {
+  private Command gotoTargetCmdScoreComponent(Localizer localizer) {
+    final MoveOrder preferredMoveOrder =
+        superStructureState.equals(SuperStructureState.ScoreL4)
+            ? MoveOrder.ELEVATOR_FIRST
+            : MoveOrder.SIMULTANEOUS;
+    final SuperStructureState stagedState =
+        stagedStateMap.getOrDefault(superStructureState, superStructureState);
+    return Commands.sequence(
+        SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
+            .until(isNearTarget(localizer, 2.0)),
+        SuperStructureCommands.holdAt(
+                subsystems.superStructure, superStructureState.minHeight(stagedState))
+            .until(isNearTarget(localizer, 0.04).and(isSlowerThan(0.4))),
+        SuperStructureCommands.holdAt(
+            subsystems.superStructure, superStructureState, preferredMoveOrder));
+  }
+
+  private Command gotoTargetCmdLineupComponent(Localizer localizer, DriverController controller) {
+    final Command lineup =
+        SwerveCommands.lineupReef(
+            subsystems.swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side));
+    if (superStructureState.equals(SuperStructureState.ScoreL1)
+        || superStructureState.equals(SuperStructureState.AlgaeL2)
+        || superStructureState.equals(SuperStructureState.AlgaeL3)) {
+      return lineup
+          .until(isNearTarget(localizer, 0.1).and(isSlowerThan(0.05)))
+          .andThen(new TeleopSwerveTraditionalCmd(subsystems.swerve, controller));
+    } else {
+      return lineup;
+    }
+  }
+
+  public Command gotoTargetCmd(Localizer localizer, DriverController controller) {
     final Supplier<Command> coral =
         () -> {
-          final SuperStructureState stagedState =
-              stagedStateMap.getOrDefault(superStructureState, superStructureState);
-          final MoveOrder preferredMoveOrder =
-              superStructureState.equals(SuperStructureState.ScoreL4)
-                  ? MoveOrder.ELEVATOR_FIRST
-                  : MoveOrder.SIMULTANEOUS;
           final var targetLocation = targetLocation();
           return Commands.parallel(
-              SwerveCommands.lineupReef(
-                  subsystems.swerve, localizer, targetLocation, PathObstacles.fromReefSide(side)),
-              Commands.run(
-                  () ->
-                      Monologue.log(
-                          "/robot/dist",
-                          localizer.translation().getDistance(targetLocation.getTranslation()))),
-              Commands.sequence(
-                  SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
-                      .until(isNearPose(localizer, targetLocation.getTranslation(), 2.0)),
-                  SuperStructureCommands.holdAt(
-                          subsystems.superStructure, superStructureState.minHeight(stagedState))
-                      .until(
-                          isNearPose(localizer, targetLocation.getTranslation(), 0.04)
-                              .and(isSlowerThan(0.4))),
-                  SuperStructureCommands.holdAt(
-                      subsystems.superStructure, superStructureState, preferredMoveOrder)),
+              gotoTargetCmdLineupComponent(localizer, controller),
+              gotoTargetCmdScoreComponent(localizer),
               Commands.sequence(
                   LEDCommands.run(subsystems.led, LedUtil.makeBounce(kLed.TargetingColor, 1.0))
                       .until(
