@@ -96,5 +96,6 @@ public class Intake implements ExclusiveSubsystem {
       }
     }
     shared.holdingAlgae = getHolding() == Holding.ALGAE;
+    log("gamepieceYOffset", gamepieceYOffset());
   }
 }

@@ -118,11 +118,7 @@ public class SwerveCommands {
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(
             new PositionalController(
-                // new ControllerSequence<>(
-                //     TranslationController.profiled(2.0, 0, 0, false),
-                //     TranslationController.unprofiled(4.0, 0.0, 0.05, 0.025)
-                // ),
-                TranslationController.unprofiled(4.0, 0.0, 0.05, 0.025),
+                TranslationController.unprofiled(4.0, 0.0, 0.05, 0.01),
                 ControllerFactories.basicRotationalController()),
             obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
