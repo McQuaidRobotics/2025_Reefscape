@@ -11,7 +11,8 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 public class TwistyPoseEst {
-  public record VisionScalars(double thresholdForTheta, double thetaScalar, double translationScalar) {
+  public record VisionScalars(
+      double thresholdForTheta, double thetaScalar, double translationScalar) {
     public VisionScalars {
       thresholdForTheta = MathUtil.clamp(thresholdForTheta, 0.0, 1.0);
       thetaScalar = MathUtil.clamp(thetaScalar, 0.0, 1.0);

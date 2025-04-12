@@ -24,8 +24,7 @@ import wayfinder.poseEst.TwistyPoseEst.VisionScalars;
 import wpilibExt.Tracer;
 
 public class Localizer implements Logged {
-  private static final VisionScalars VISION_SCALARS = 
-      new VisionScalars(0.9, 0.05, 1.0);
+  private static final VisionScalars VISION_SCALARS = new VisionScalars(0.9, 0.05, 1.0);
 
   public static boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
     if (Math.abs(toleranceRadians) > Math.PI) {
@@ -114,7 +113,8 @@ public class Localizer implements Logged {
       if (sample.timestamp() < resetTime) {
         continue;
       }
-      poseEstimator.addVisionSample(VISION_SCALARS, sample.pose(), sample.timestamp(), sample.trust());
+      poseEstimator.addVisionSample(
+          VISION_SCALARS, sample.pose(), sample.timestamp(), sample.trust());
     }
     log("visionLatency", sumLatency / visionSamples.size());
     Tracer.endTrace();

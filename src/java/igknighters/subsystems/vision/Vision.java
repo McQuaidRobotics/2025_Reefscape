@@ -1,5 +1,6 @@
 package igknighters.subsystems.vision;
 
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.util.struct.Struct;
@@ -28,6 +29,10 @@ import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Tracer;
 
 public class Vision implements SharedSubsystem {
+  static {
+    OpenCvLoader.forceStaticLoad();
+  }
+
   private final SharedState shared;
   @IgnoreLogged private final Localizer localizer;
 
