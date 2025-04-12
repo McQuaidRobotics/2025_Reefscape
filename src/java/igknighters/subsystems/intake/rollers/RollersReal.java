@@ -27,11 +27,10 @@ public class RollersReal extends Rollers {
   private static final double CORAL_HALF_WIDTH = 2.25 * Conv.INCHES_TO_METERS;
   private static final LerpTable DISTANCE_LERP =
       new LerpTable(
-          new LerpTable.LerpTableEntry(2.1 * Conv.INCHES_TO_METERS, 0.5 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(5.85 * Conv.INCHES_TO_METERS, 3.725 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(8.6 * Conv.INCHES_TO_METERS, 6 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(
-              12.0 * Conv.INCHES_TO_METERS, 8.375 * Conv.INCHES_TO_METERS));
+          new LerpTable.LerpTableEntry(2.25 * Conv.INCHES_TO_METERS, 0.8 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(5.8 * Conv.INCHES_TO_METERS, 3.725 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(8.45 * Conv.INCHES_TO_METERS, 6.25 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(11.7 * Conv.INCHES_TO_METERS, 9.0 * Conv.INCHES_TO_METERS));
 
   private final TalonFX intakeMotor =
       new TalonFX(RollerConstants.INTAKE_MOTOR_ID, IntakeConstants.CANBUS);

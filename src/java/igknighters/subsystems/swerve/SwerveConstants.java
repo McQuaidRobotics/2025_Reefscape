@@ -39,7 +39,7 @@ public class SwerveConstants {
     }
 
     public static final class kDriveMotor {
-      public static final double GEAR_RATIO = SwerveGearRatios.L1_DRIVE_KRAKEN;
+      public static final double GEAR_RATIO = SwerveGearRatios.L2_DRIVE_KRAKEN;
 
       public static final boolean INVERT = false;
       public static final boolean NEUTRAL_MODE_BRAKE = false;
