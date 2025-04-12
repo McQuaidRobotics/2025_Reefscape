@@ -7,10 +7,11 @@ import static igknighters.subsystems.superStructure.SuperStructureConstants.kWri
 
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
+import igknighters.constants.ConstValues.Conv;
 import monologue.ProceduralStructGenerator;
 
 public enum SuperStructureState implements StructSerializable {
-  ScoreL4(MAX_HEIGHT, 29.0 * DEGREES_TO_RADIANS, 1.0),
+  ScoreL4(MAX_HEIGHT, 38.0 * DEGREES_TO_RADIANS, 1.0),
   ScoreL3(L3.height + 0.25, -L3.pitch),
   ScoreL2(L2.height + 0.25, -L2.pitch),
   ScoreL1(0.74, 29.0 * DEGREES_TO_RADIANS),
@@ -19,13 +20,10 @@ public enum SuperStructureState implements StructSerializable {
   StagedL2(L2.height + 0.25, MAX_ANGLE, 2.0),
   AlgaeL3(L3.height + 0.17, 25.0 * DEGREES_TO_RADIANS),
   AlgaeL2(L2.height + 0.17, 25.0 * DEGREES_TO_RADIANS),
-  AlgaeFloor(MIN_HEIGHT, 15.0 * DEGREES_TO_RADIANS),
+  AlgaeFloor(MIN_HEIGHT, 32.0 * DEGREES_TO_RADIANS),
   Stow(28.25 * INCHES_TO_METERS, MAX_ANGLE, 2.0),
-  Processor(MIN_HEIGHT, 0.0, 1.5),
-  Net(MAX_HEIGHT - 0.15, MIN_ANGLE, 1.0),
-  Net_FLICKED(MAX_HEIGHT, MAX_ANGLE, 1.0),
-  // Net(L3.height, -1.0, 1.0),
-  // Net_FLICKED(MAX_HEIGHT, -1.0, 1.0),
+  Processor(MIN_HEIGHT, 7.5 * DEGREES_TO_RADIANS, 1.5),
+  Net(MAX_HEIGHT, ALGAE_MAX_ANGLE + 5.0 * Conv.DEGREES_TO_RADIANS, 1.0),
   IntakeHpClose(28.95 * INCHES_TO_METERS, -54.0 * DEGREES_TO_RADIANS),
   IntakeHpFar(26.2 * INCHES_TO_METERS, -48.0 * DEGREES_TO_RADIANS),
   AntiTilt(MIN_HEIGHT + 0.05, MAX_ANGLE, 1.0);

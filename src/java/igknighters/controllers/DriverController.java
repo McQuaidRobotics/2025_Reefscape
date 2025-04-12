@@ -1,7 +1,6 @@
 package igknighters.controllers;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,7 +14,6 @@ import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
-import igknighters.commands.teleop.TeleopSwerveSingleAxisCmd;
 // import igknighters.commands.tests.WheelRadiusCharacterization;
 // import igknighters.commands.tests.WheelRadiusCharacterization.Direction;
 import igknighters.constants.FieldConstants;
@@ -94,29 +92,14 @@ public class DriverController {
 
     this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
         .whileTrue(
-            new TeleopSwerveSingleAxisCmd(
+            new TeleopSwerveHeadingCmd(
                     swerve,
                     this,
                     localizer,
                     () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-                    () -> {
-                      final Translation2d line = new Translation2d(7.3, 0.0);
-                      return AllianceSymmetry.isBlue() ? line : AllianceSymmetry.flip(line);
-                    },
-                    false,
                     kSwerve.CONSTRAINTS)
                 .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
-
-    // this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
-    //     .whileTrue(
-    //         new TeleopSwerveHeadingCmd(
-    //             swerve,
-    //             this,
-    //             localizer,
-    //             () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-    //             kSwerve.CONSTRAINTS))
-    //     .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
     this.RB.whileTrue(
@@ -130,7 +113,8 @@ public class DriverController {
     this.Back.onTrue(
         Commands.sequence(
                 SuperStructureCommands.home(superStructure, true),
-                SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
+                new ScheduleCommand(
+                    SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)))
             .withName("HomeAndHoldStow"));
 
     this.Start.onTrue(SwerveCommands.orientGyro(swerve, vision, localizer));
@@ -176,18 +160,6 @@ public class DriverController {
         .and(operatorTarget.wantsAlgae())
         .whileTrue(IntakeCommands.intakeAlgae(intake))
         .onFalse(IntakeCommands.holdAlgae(intake));
-
-    this.RB
-        .and(Y)
-        .onTrue(
-            Commands.parallel(
-                Commands.sequence(
-                    SuperStructureCommands.moveTo(superStructure, SuperStructureState.Net_FLICKED),
-                    new ScheduleCommand(
-                        SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))),
-                Commands.sequence(
-                    IntakeCommands.holdAlgae(intake).withTimeout(0.07),
-                    IntakeCommands.expel(intake).withTimeout(0.5))));
   }
 
   // Define the buttons on the controller

@@ -36,6 +36,7 @@ public class SuperStructureConstants {
       new Stage(Stage.FIRST_STAGE_HEIGHT - Stage.TUBE_HEIGHT * 3.0, 2.125),
       new Stage(Conv.INCHES_TO_METERS * 8.0, 4.5)
     };
+
     public static final double TOTAL_RANGE_OF_MOTION =
         STAGES[0].rangeOfMotion()
             + STAGES[1].rangeOfMotion()
@@ -45,14 +46,14 @@ public class SuperStructureConstants {
     public static final double MOI =
         (PULLEY_RADIUS * PULLEY_RADIUS) * (21.0 * Conv.POUNDS_TO_KILOGRAMS);
 
-    public static final double MIN_HEIGHT = 13.1 * Conv.INCHES_TO_METERS;
-    public static final double MAX_HEIGHT = 80.5 * Conv.INCHES_TO_METERS;
+    public static final double MIN_HEIGHT = 16.1 * Conv.INCHES_TO_METERS;
+    public static final double MAX_HEIGHT = 82.75 * Conv.INCHES_TO_METERS;
     public static final double DEFAULT_TOLERANCE = 0.75 * Conv.INCHES_TO_METERS;
 
     public static final double kP = 8.0;
     public static final double kD = 0.0;
-    public static final double kG = 0.52;
-    public static final double kS = 0.0;
+    public static final double kG = 0.42;
+    public static final double kS = 0.1;
     public static final double kV = kKrakenX60Foc.kV * GEAR_RATIO;
     public static final double kA = 0.00;
 
@@ -80,7 +81,7 @@ public class SuperStructureConstants {
     public static final int CANCODER_ID = 11;
 
     public static final boolean INVERT_MOTOR = true;
-    public static final boolean INVERT_ENCODER = false;
+    public static final boolean INVERT_ENCODER = true;
     public static final double GEAR_RATIO = (5.0 / 1.0) * (5.0 / 1.0) * (60.0 / 30.0);
 
     public static final double KP = 90.0;
@@ -96,7 +97,7 @@ public class SuperStructureConstants {
     public static final double ALGAE_MAX_ACCELERATION = MAX_ACCELERATION * 0.75;
 
     public static final double DEFAULT_TOLERANCE = 1.3 * Conv.DEGREES_TO_RADIANS;
-    public static final double ANGLE_OFFSET = 0.18115234375;
+    public static final double ANGLE_OFFSET = -0.424560546875;
 
     public static final double STATOR_CURRENT_LIMIT = 50.0;
     public static final double SUPPLY_CURRENT_LIMIT = 40.0;
