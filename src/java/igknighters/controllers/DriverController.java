@@ -130,7 +130,8 @@ public class DriverController {
     this.Back.onTrue(
         Commands.sequence(
                 SuperStructureCommands.home(superStructure, true),
-                new ScheduleCommand(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)))
+                new ScheduleCommand(
+                    SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow)))
             .withName("HomeAndHoldStow"));
 
     this.Start.onTrue(SwerveCommands.orientGyro(swerve, vision, localizer));

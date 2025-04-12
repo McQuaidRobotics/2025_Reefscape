@@ -10,7 +10,7 @@ import edu.wpi.first.util.struct.StructSerializable;
 import monologue.ProceduralStructGenerator;
 
 public enum SuperStructureState implements StructSerializable {
-  ScoreL4(MAX_HEIGHT, 29.0 * DEGREES_TO_RADIANS, 1.0),
+  ScoreL4(MAX_HEIGHT, 40.0 * DEGREES_TO_RADIANS, 1.0),
   ScoreL3(L3.height + 0.25, -L3.pitch),
   ScoreL2(L2.height + 0.25, -L2.pitch),
   ScoreL1(0.74, 29.0 * DEGREES_TO_RADIANS),
