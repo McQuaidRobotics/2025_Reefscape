@@ -1,7 +1,6 @@
 package monologue;
 
 import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 
 public class TimeSensitiveLogger {
   public record TimestampedDouble(double value, double timestamp) {}
@@ -9,7 +8,7 @@ public class TimeSensitiveLogger {
   private final DoubleLogEntry logEntry;
 
   public TimeSensitiveLogger(String key) {
-    logEntry = new DoubleLogEntry(DataLogManager.getLog(), key);
+    logEntry = new DoubleLogEntry(Monologue.getWpilog().get(), key);
   }
 
   private long secondsToMicros(double seconds) {

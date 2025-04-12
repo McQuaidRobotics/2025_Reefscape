@@ -2,9 +2,9 @@ package igknighters.subsystems.led.driver;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import monologue.Monologue;
+import monologue.Logged;
 
-public class PWMDriver {
+public class PWMDriver implements Logged {
 
   private final AddressableLED led;
   private final AddressableLEDBuffer previousBuffer;
@@ -31,7 +31,7 @@ public class PWMDriver {
       newBuffer = true;
       led.setData(appliedBuffer);
     }
-    Monologue.log("new buffer", newBuffer);
+    log("new buffer", newBuffer);
   }
 
   public void periodic() {}

@@ -1,12 +1,17 @@
 package monologue;
 
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.util.FileLogger;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DataLogBackgroundWriter;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import monologue.LoggingTree.StaticObjectNode;
+import monologue.MonoDatalogHelpers.DriverStationState;
 
 /**
  * The Monologue class is the main entry point for the Monologue library. It is responsible for
@@ -28,11 +33,10 @@ import monologue.LoggingTree.StaticObjectNode;
  * did it wrong. If you would like to run Monologue in whole robot Unit Tests you can use {@link
  * #setupMonologueDisabled(Logged, String, boolean)} to disable logging and only run the error
  * checking.
- *
- * <p><b>WARNING:</b> Any use of `DatalogManager` before Monologue.setupMonologue() is undefined
- * behavior and can result in a crash.
  */
 public class Monologue extends GlobalLogged {
+  static final boolean SEND_TO_DATALOG_IN_JAVA = true;
+
   /** The Monologue library wide OPTIMIZE_BANDWIDTH flag, is used to divert logging */
   private static boolean OPTIMIZE_BANDWIDTH = true;
 
@@ -41,6 +45,9 @@ public class Monologue extends GlobalLogged {
   private static boolean HAS_SETUP_BEEN_CALLED = false;
   private static boolean IS_DISABLED = false;
   private static boolean THROW_ON_WARN = false;
+
+  private static DataLogBackgroundWriter wpilog;
+  private static final DriverStationState dsState = new DriverStationState();
 
   private static final ArrayList<Runnable> prematureCalls = new ArrayList<Runnable>();
   private static final ArrayList<StaticObjectNode> trees = new ArrayList<StaticObjectNode>();
@@ -52,7 +59,7 @@ public class Monologue extends GlobalLogged {
    */
   public static record MonologueConfig(
       BooleanSupplier optimizeBandwidthSupplier,
-      String datalogPrefix,
+      String datalogDirectory,
       boolean throwOnWarn,
       boolean allowNonFinalLoggedFields) {
     public MonologueConfig {
@@ -62,14 +69,13 @@ public class Monologue extends GlobalLogged {
 
         optimizeBandwidthSupplier = () -> false;
       }
-      if (datalogPrefix == null) {
-        RuntimeLog.warn("datalogPrefix cannot be null in MonologueConfig, falling back to \"NT:\"");
-        datalogPrefix = "NT:";
+      if (datalogDirectory == null) {
+        datalogDirectory = "";
       }
     }
 
     public MonologueConfig() {
-      this(() -> false, "NT:", false, false);
+      this(() -> false, "", false, false);
     }
 
     /**
@@ -80,7 +86,7 @@ public class Monologue extends GlobalLogged {
      */
     public MonologueConfig withOptimizeBandwidth(BooleanSupplier optimizeBandwidth) {
       return new MonologueConfig(
-          optimizeBandwidth, datalogPrefix, throwOnWarn, allowNonFinalLoggedFields);
+          optimizeBandwidth, datalogDirectory, throwOnWarn, allowNonFinalLoggedFields);
     }
 
     /**
@@ -91,18 +97,18 @@ public class Monologue extends GlobalLogged {
      */
     public MonologueConfig withOptimizeBandwidth(boolean optimizeBandwidth) {
       return new MonologueConfig(
-          () -> optimizeBandwidth, datalogPrefix, throwOnWarn, allowNonFinalLoggedFields);
+          () -> optimizeBandwidth, datalogDirectory, throwOnWarn, allowNonFinalLoggedFields);
     }
 
     /**
-     * Updates the datalogPrefix.
+     * Updates the datalogDirectory.
      *
-     * @param datalogPrefix The new datalogPrefix
-     * @return A new MonologueConfig object with the updated datalogPrefix
+     * @param datalogDirectory The new datalogDirectory
+     * @return A new MonologueConfig object with the updated datalogDirectory
      */
-    public MonologueConfig withDatalogPrefix(String datalogPrefix) {
+    public MonologueConfig withDatalogDirectory(String datalogDirectory) {
       return new MonologueConfig(
-          optimizeBandwidthSupplier, datalogPrefix, throwOnWarn, allowNonFinalLoggedFields);
+          optimizeBandwidthSupplier, datalogDirectory, throwOnWarn, allowNonFinalLoggedFields);
     }
 
     /**
@@ -114,7 +120,7 @@ public class Monologue extends GlobalLogged {
      */
     public MonologueConfig withThrowOnWarning(boolean throwOnWarn) {
       return new MonologueConfig(
-          optimizeBandwidthSupplier, datalogPrefix, throwOnWarn, allowNonFinalLoggedFields);
+          optimizeBandwidthSupplier, datalogDirectory, throwOnWarn, allowNonFinalLoggedFields);
     }
 
     /**
@@ -127,7 +133,7 @@ public class Monologue extends GlobalLogged {
      */
     public MonologueConfig withAllowNonFinalLoggedFields(boolean allowNonFinalLoggedFields) {
       return new MonologueConfig(
-          optimizeBandwidthSupplier, datalogPrefix, throwOnWarn, allowNonFinalLoggedFields);
+          optimizeBandwidthSupplier, datalogDirectory, throwOnWarn, allowNonFinalLoggedFields);
     }
   }
 
@@ -139,7 +145,7 @@ public class Monologue extends GlobalLogged {
    * well.
    *
    * @param loggable the root Logged object to log
-   * @param rootpath the root path to log to\
+   * @param rootpath the root path to log to
    * @param config the configuration for the Monologue library
    * @apiNote Should only be called once, if another {@link Logged} tree needs to be created use
    *     {@link #logTree(Logged, String)} for additional trees
@@ -151,12 +157,16 @@ public class Monologue extends GlobalLogged {
       return;
     }
 
+    wpilog =
+        new DataLogBackgroundWriter(
+            MonoDatalogHelpers.makeLogDir(config.datalogDirectory()),
+            MonoDatalogHelpers.makeLogFilename(""),
+            0.05,
+            "Monologue");
+
     GlobalField.publish();
 
-    DataLogManager.logNetworkTables(false);
-    NetworkTableInstance.getDefault()
-        .startEntryDataLog(DataLogManager.getLog(), "/Robot", config.datalogPrefix);
-    // DriverStation.startDataLog(DataLogManager.getLog(), true);
+    // DriverStation.startDataLog(wpilog, true);
 
     // create and start a timer to time the setup process
     Timer timer = new Timer();
@@ -256,6 +266,8 @@ public class Monologue extends GlobalLogged {
     Eval.exploreNodes(Eval.getLoggedClasses(loggable.getClass()), node);
     Logged.addNode(loggable, node);
 
+    wpilog.flush();
+
     trees.add(node);
   }
 
@@ -277,6 +289,71 @@ public class Monologue extends GlobalLogged {
     for (StaticObjectNode tree : trees) {
       tree.log(null);
     }
+    MonoDatalogHelpers.updateLogName(wpilog, dsState);
+  }
+
+  public static void capture(String path, NetworkTable table) {
+    if (isMonologueDisabled()) return;
+    if (!hasBeenSetup()) {
+      prematureLog(() -> capture(path, table));
+      return;
+    }
+
+    if (path == null || path.isEmpty()) {
+      RuntimeLog.warn("Invalid path for Monologue.capture(): " + path);
+      return;
+    }
+    if (table == null) {
+      RuntimeLog.warn("Invalid table for Monologue.capture(): " + table);
+      return;
+    }
+
+    table.getInstance().startEntryDataLog(wpilog, table.getPath(), path);
+
+    RuntimeLog.info("Monologue.capture() called on " + table.getPath() + " with path " + path);
+  }
+
+  @SuppressWarnings("resource")
+  public static void capture(String path, File file) {
+    if (isMonologueDisabled()) return;
+    if (!hasBeenSetup()) {
+      prematureLog(() -> capture(path, file));
+      return;
+    }
+
+    if (path == null || path.isEmpty()) {
+      RuntimeLog.warn("Invalid path for Monologue.capture(): " + path);
+      return;
+    }
+    if (file == null) {
+      RuntimeLog.warn("Invalid file for Monologue.capture(): " + file);
+      return;
+    }
+
+    new FileLogger(file.getAbsolutePath(), wpilog, path);
+
+    RuntimeLog.info("Monologue.capture() called on " + file.getPath() + " with path " + path);
+  }
+
+  public static void captureDriverStation(boolean logJoysticks) {
+    if (isMonologueDisabled()) return;
+    if (!hasBeenSetup()) {
+      prematureLog(() -> captureDriverStation(logJoysticks));
+      return;
+    }
+
+    DriverStation.startDataLog(wpilog, logJoysticks);
+
+    RuntimeLog.info("Monologue.captureDriverStation() called");
+  }
+
+  /**
+   * Fetches the wpilog that Monologue is outputting to if any.
+   *
+   * @return the wpilog that Monologue is outputting to, empty if monologue is not setup
+   */
+  public static Optional<DataLog> getWpilog() {
+    return Optional.ofNullable(wpilog);
   }
 
   static void prematureLog(Runnable runnable) {

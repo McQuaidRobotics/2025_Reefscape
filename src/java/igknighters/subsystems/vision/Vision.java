@@ -225,9 +225,7 @@ public class Vision implements SharedSubsystem {
           .map(Optional::get)
           .forEach(
               sample -> {
-                if (sample.trust > 0.6) {
-                  timerSinceLastSample.restart();
-                }
+                timerSinceLastSample.restart();
                 visionSender.send(sample);
               });
 

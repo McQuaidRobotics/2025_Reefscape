@@ -134,13 +134,15 @@ public class SwerveCommands {
 
     final Transform2d roughPoseOffset = new Transform2d(-0.4, 0, Rotation2d.kZero);
     return Commands.sequence(
-        followRepulsor(
-                roughPlanner, swerve, localizer, target.plus(roughPoseOffset), roughConstraints)
-            .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation()))
-            .unless(
-                () ->
-                    localizer.pose().getTranslation().getDistance(target.getTranslation()) < 0.375),
-        followRepulsor(precisePlanner, swerve, localizer, target, preciseConstraints));
+            followRepulsor(
+                    roughPlanner, swerve, localizer, target.plus(roughPoseOffset), roughConstraints)
+                .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation()))
+                .unless(
+                    () ->
+                        localizer.pose().getTranslation().getDistance(target.getTranslation())
+                            < 0.375),
+            followRepulsor(precisePlanner, swerve, localizer, target, preciseConstraints))
+        .withName("lineupReef");
   }
 
   public static Command moveToSimple(Swerve swerve, Localizer localizer, Pose2d target) {
@@ -156,18 +158,19 @@ public class SwerveCommands {
             ControllerFactories.shortRangeTranslationController(),
             ControllerFactories.basicRotationalController());
     return Commands.sequence(
-        swerve.runOnce(
-            () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
-        swerve.run(
-            () -> {
-              var speeds =
-                  roughController.calculate(
-                      ConstValues.PERIODIC_TIME,
-                      localizer.pose(),
-                      swerve.getFieldSpeeds(),
-                      target,
-                      constraints);
-              swerve.drive(speeds, constraints);
-            }));
+            swerve.runOnce(
+                () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),
+            swerve.run(
+                () -> {
+                  var speeds =
+                      roughController.calculate(
+                          ConstValues.PERIODIC_TIME,
+                          localizer.pose(),
+                          swerve.getFieldSpeeds(),
+                          target,
+                          constraints);
+                  swerve.drive(speeds, constraints);
+                }))
+        .withName("moveToSimple");
   }
 }

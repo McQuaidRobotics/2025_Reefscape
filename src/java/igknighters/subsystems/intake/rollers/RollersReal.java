@@ -12,6 +12,8 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitValue;
 import com.ctre.phoenix6.signals.UpdateModeValue;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
@@ -25,13 +27,11 @@ public class RollersReal extends Rollers {
   private static final double CORAL_HALF_WIDTH = 2.25 * Conv.INCHES_TO_METERS;
   private static final LerpTable DISTANCE_LERP =
       new LerpTable(
-          new LerpTable.LerpTableEntry(0.036, 0.5 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(0.092, 1.875 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(0.141, 3.625 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(0.171, 4.875 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(0.222, 6.625 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(0.258, 8.0 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(0.316, 9.55 * Conv.INCHES_TO_METERS));
+          new LerpTable.LerpTableEntry(2.1 * Conv.INCHES_TO_METERS, 0.5 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(5.85 * Conv.INCHES_TO_METERS, 3.725 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(8.6 * Conv.INCHES_TO_METERS, 6 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(
+              12.0 * Conv.INCHES_TO_METERS, 8.375 * Conv.INCHES_TO_METERS));
 
   private final TalonFX intakeMotor =
       new TalonFX(RollerConstants.INTAKE_MOTOR_ID, IntakeConstants.CANBUS);
@@ -46,6 +46,7 @@ public class RollersReal extends Rollers {
   private final BaseStatusSignal current, voltage, velocity, acceleration, temperature, distance;
 
   private final LinearFilter movingAverage = LinearFilter.movingAverage(5);
+  private final Debouncer intakeDebouncer = new Debouncer(0.14, DebounceType.kRising);
 
   private TalonFXConfiguration intakeConfiguration() {
     var cfg = new TalonFXConfiguration();
@@ -63,7 +64,7 @@ public class RollersReal extends Rollers {
 
   private CANrangeConfiguration intakeSensorConfiguration() {
     var cfg = new CANrangeConfiguration();
-    cfg.ProximityParams.ProximityThreshold = 0.37;
+    cfg.ProximityParams.ProximityThreshold = 0.33;
     cfg.ProximityParams.ProximityHysteresis = 0.02;
     cfg.FovParams.FOVRangeX = 7.0;
     cfg.FovParams.FOVRangeY = 7.0;
@@ -124,7 +125,9 @@ public class RollersReal extends Rollers {
     super.controlledLastCycle = false;
     super.amps = current.getValueAsDouble();
     super.volts = voltage.getValueAsDouble();
-    super.laserTripped = laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround;
+    super.laserTripped =
+        intakeDebouncer.calculate(
+            laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround);
     super.gamepieceDistance =
         (DISTANCE_LERP.lerp(movingAverage.calculate(distance.getValueAsDouble()))
                 + CORAL_HALF_WIDTH)

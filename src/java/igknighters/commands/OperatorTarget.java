@@ -4,20 +4,25 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.SuperStructureCommands.MoveOrder;
 import igknighters.constants.ConstValues.Conv;
+import igknighters.constants.ConstValues.kLed;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.FaceSubLocation;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.led.Led;
+import igknighters.subsystems.led.LedUtil;
 import igknighters.subsystems.superStructure.SuperStructureState;
+import java.util.EnumMap;
 import java.util.Set;
 import java.util.function.Supplier;
 import monologue.GlobalField;
@@ -27,6 +32,15 @@ import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
 
 public class OperatorTarget implements StructSerializable {
+  private static final EnumMap<SuperStructureState, SuperStructureState> stagedStateMap =
+      new EnumMap<>(SuperStructureState.class) {
+        {
+          put(SuperStructureState.ScoreL4, SuperStructureState.StagedL4);
+          put(SuperStructureState.ScoreL3, SuperStructureState.ScoreL3);
+          put(SuperStructureState.ScoreL2, SuperStructureState.ScoreL2);
+        }
+      };
+
   private boolean wasUpdated = false;
   private boolean hasTarget = false;
   private FaceSubLocation faceSubLocation = FaceSubLocation.CENTER;
@@ -73,13 +87,21 @@ public class OperatorTarget implements StructSerializable {
   }
 
   public Pose2d targetLocation() {
-    double backoffDist = (kRobotIntrinsics.CHASSIS_WIDTH / 2.0) + (5.0 * Conv.INCHES_TO_METERS);
-    var ret =
-        switch (faceSubLocation) {
-          case LEFT -> side.alignScoreLeft(backoffDist, subsystems.intake.gamepieceYOffset());
-          case RIGHT -> side.alignScoreRight(backoffDist, subsystems.intake.gamepieceYOffset());
-          case CENTER -> side.alignScoreCenter(backoffDist, subsystems.intake.gamepieceYOffset());
-        };
+    Pose2d ret;
+    if (!wantsAlgae().getAsBoolean()) {
+      double backoffDist = (kRobotIntrinsics.CHASSIS_WIDTH / 2.0);
+      if (!superStructureState.equals(SuperStructureState.ScoreL1)) {
+        backoffDist += 5.0 * Conv.INCHES_TO_METERS;
+      }
+      ret =
+          switch (faceSubLocation) {
+            case LEFT -> side.alignScoreLeft(backoffDist, subsystems.intake.gamepieceYOffset());
+            case RIGHT -> side.alignScoreRight(backoffDist, subsystems.intake.gamepieceYOffset());
+            case CENTER -> side.alignScoreCenter(backoffDist, subsystems.intake.gamepieceYOffset());
+          };
+    } else {
+      ret = side.alignScoreCenter(kRobotIntrinsics.CHASSIS_WIDTH / 2.0, 0);
+    }
     if (AllianceSymmetry.isBlue()) {
       return ret;
     } else {
@@ -132,37 +154,48 @@ public class OperatorTarget implements StructSerializable {
   }
 
   public Command gotoTargetCmd(Localizer localizer) {
-    Supplier<Command> c =
+    final Supplier<Command> coral =
         () -> {
-          SuperStructureState preferredStow;
-          if (superStructureState.elevatorMeters > SuperStructureState.ScoreL3.elevatorMeters) {
-            preferredStow = SuperStructureState.ScoreStagedHigh;
-          } else if (superStructureState.elevatorMeters
-              > SuperStructureState.ScoreL2.elevatorMeters) {
-            preferredStow = SuperStructureState.Stow;
-          } else {
-            preferredStow = SuperStructureState.ScoreStagedLow;
-          }
+          final SuperStructureState stagedState =
+              stagedStateMap.getOrDefault(superStructureState, superStructureState);
           final MoveOrder preferredMoveOrder =
-              superStructureState.elevatorMeters > SuperStructureState.ScoreL3.elevatorMeters
+              superStructureState.equals(SuperStructureState.ScoreL4)
                   ? MoveOrder.ELEVATOR_FIRST
                   : MoveOrder.SIMULTANEOUS;
+          final var targetLocation = targetLocation();
           return Commands.parallel(
               SwerveCommands.lineupReef(
-                  subsystems.swerve, localizer, targetLocation(), PathObstacles.fromReefSide(side)),
+                  subsystems.swerve, localizer, targetLocation, PathObstacles.fromReefSide(side)),
               Commands.sequence(
                   SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
-                      .until(isNearPose(localizer, targetLocation().getTranslation(), 2.0)),
+                      .until(isNearPose(localizer, targetLocation.getTranslation(), 2.0)),
                   SuperStructureCommands.holdAt(
-                          subsystems.superStructure, superStructureState.minHeight(preferredStow))
+                          subsystems.superStructure, superStructureState.minHeight(stagedState))
                       .until(
-                          isNearPose(localizer, targetLocation().getTranslation(), 0.04)
+                          isNearPose(localizer, targetLocation.getTranslation(), 0.04)
                               .and(isSlowerThan(0.4))),
                   SuperStructureCommands.holdAt(
-                      subsystems.superStructure, superStructureState, preferredMoveOrder)));
+                      subsystems.superStructure, superStructureState, preferredMoveOrder)),
+              Commands.sequence(
+                  LEDCommands.run(subsystems.led, LedUtil.makeBounce(kLed.TargetingColor, 1.0))
+                      .until(
+                          isNearPose(localizer, targetLocation.getTranslation(), 0.04)
+                              .and(isSlowerThan(0.2))
+                              .and(
+                                  SuperStructureCommands.isAt(
+                                      subsystems.superStructure, superStructureState))),
+                  new ScheduleCommand(
+                          IntakeCommands.expel(
+                              subsystems.intake,
+                              () -> superStructureState.equals(SuperStructureState.ScoreL1)))
+                      .onlyIf(
+                          () ->
+                              superStructureState.equals(SuperStructureState.ScoreL1)
+                                  || superStructureState.equals(SuperStructureState.ScoreL2)
+                                  || superStructureState.equals(SuperStructureState.ScoreL3)),
+                  LEDCommands.run(subsystems.led, LedUtil.makeFlash(Color.kSnow, 0.25))));
         };
-    return makeRefreshableCmd(c, subsystems.swerve, subsystems.superStructure)
-        .unless(wantsAlgae())
+    return makeRefreshableCmd(coral, subsystems.swerve, subsystems.superStructure)
         .unless(hasTarget().negate())
         .withName("TeleopAlignFull");
   }
