@@ -48,8 +48,7 @@ public class AutoRoutines extends AutoCommands {
 
   public Command threePieceL4(boolean leftSide) {
     return newAuto("threePieceL4", leftSide)
-        .addTrajectories(
-            StartingOutside, FarLeft_R, Intake, CloseLeft_L, Intake, CloseLeft_R, Intake, FarLeft_L)
+        .addTrajectories(StartingOutside, FarLeft_R, Intake, CloseLeft_L, Intake, CloseLeft_R)
         .build();
   }
 

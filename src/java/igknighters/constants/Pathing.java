@@ -80,8 +80,8 @@ public class Pathing {
   };
 
   private static final Obstacle[] REEF_LARGE = {
-    new Obstacle.TeardropObstacle(new Translation2d(4.49, 4), 1.4, 2.5, 1.5, 0.7, 1.2),
-    new Obstacle.TeardropObstacle(new Translation2d(13.08, 4), 1.4, 2.5, 1.5, 0.7, 1.2),
+    new Obstacle.TeardropObstacle(new Translation2d(4.49, 4), 1.4, 2.5, 1.0, 0.7, 1.2),
+    new Obstacle.TeardropObstacle(new Translation2d(13.08, 4), 1.4, 2.5, 1.0, 0.7, 1.2),
   };
 
   private static final Obstacle[] WALL =
