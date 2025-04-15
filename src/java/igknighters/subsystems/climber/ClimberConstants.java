@@ -24,11 +24,8 @@ public class ClimberConstants {
 
     public static final double STAGE_ANGLE = 20.0 * Conv.DEGREES_TO_RADIANS;
     public static final double ASCEND_ANGLE = -125.0 * Conv.DEGREES_TO_RADIANS;
+    public static final double STOW_ANGLE = -170.0 * Conv.DEGREES_TO_RADIANS;
 
     public static final double ANGLE_OFFSET = -0.03271484375;
-  }
-
-  public class ElectroMagnetConstants {
-    public static final int RELAY_PORT = 0;
   }
 }

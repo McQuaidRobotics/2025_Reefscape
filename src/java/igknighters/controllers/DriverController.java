@@ -140,7 +140,7 @@ public class DriverController {
 
     this.DPD.onTrue(ClimberCommands.stage(climber));
 
-    this.DPL.whileTrue(ClimberCommands.testMagnet(climber));
+    this.DPL.whileTrue(Commands.none());
 
     this.DPU.onTrue(ClimberCommands.climb(climber));
 
