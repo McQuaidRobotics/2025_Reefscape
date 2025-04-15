@@ -3,9 +3,9 @@ package igknighters.commands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.constants.ConstValues;
 import igknighters.constants.Pathing.PathObstacles;
@@ -26,18 +26,9 @@ import wpilibExt.Speeds;
 import wpilibExt.Speeds.RobotSpeeds;
 
 public class SwerveCommands {
-  /**
-   * Gets the angle between two points
-   *
-   * @param currentTrans The current translation
-   * @param pose The pose to get the angle to
-   * @param angleOffet An offset to add to the angle
-   * @return The angle between the two points
-   */
-  public static Rotation2d rotationRelativeToPose(Translation2d currentTrans, Translation2d pose) {
-    double angleBetween =
-        Math.atan2(pose.getY() - currentTrans.getY(), pose.getX() - currentTrans.getX());
-    return Rotation2d.fromRadians(angleBetween);
+
+  public static Trigger isSlowerThan(Swerve swerve, double speed) {
+    return new Trigger(() -> swerve.getFieldSpeeds().magnitude() < speed);
   }
 
   public static Command commandStopDrives(final Swerve swerve) {

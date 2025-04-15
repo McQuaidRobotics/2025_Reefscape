@@ -128,7 +128,7 @@ public class DriverController {
     // // TRIGGERS
     this.LT
         .and(operatorTarget.hasTarget())
-        .whileTrue(operatorTarget.gotoTargetCmd(localizer, this));
+        .whileTrue(operatorTarget.gotoTargetCmd(this));
 
     this.RT.onTrue(
         IntakeCommands.bounce(intake)

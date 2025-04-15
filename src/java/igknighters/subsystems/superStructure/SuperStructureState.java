@@ -16,8 +16,6 @@ public enum SuperStructureState implements StructSerializable {
   ScoreL2(L2.height + 0.25, -L2.pitch),
   ScoreL1(0.74, 29.0 * DEGREES_TO_RADIANS),
   StagedL4(L3.height + 0.30, -0.85, 2.0),
-  StagedL3(L3.height + 0.25, MAX_ANGLE, 2.0),
-  StagedL2(L2.height + 0.25, MAX_ANGLE, 2.0),
   AlgaeL3(L3.height + 0.17, 25.0 * DEGREES_TO_RADIANS),
   AlgaeL2(L2.height + 0.17, 25.0 * DEGREES_TO_RADIANS),
   AlgaeFloor(MIN_HEIGHT, 27.0 * DEGREES_TO_RADIANS),

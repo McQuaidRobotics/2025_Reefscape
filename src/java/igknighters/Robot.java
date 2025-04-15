@@ -89,7 +89,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
     localizer.reset(new Pose2d(new Translation2d(12.0, 5.0), Rotation2d.kZero));
 
-    final var operatorTarget = new OperatorTarget(subsystems, this);
+    final var operatorTarget = new OperatorTarget(localizer, subsystems, this);
     driverController = new DriverController(0);
     driverController.bind(localizer, subsystems, operatorTarget);
     operatorController = new OperatorController(1);
