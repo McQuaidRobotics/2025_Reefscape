@@ -51,14 +51,17 @@ public class SuperStructureCommands {
         () -> superStructure.isAt(superStructure.elevatorHeight(), wristRads, 1000.0, tolerance));
   }
 
-
   public sealed interface MoveOrder {
 
     public static Simultaneous SIMULTANEOUS = new Simultaneous();
     public static WristFirst WRIST_FIRST = new WristFirst(kWrist.DEFAULT_TOLERANCE * 2.0);
-    public static ElevatorFirst ELEVATOR_FIRST = new ElevatorFirst(kElevator.DEFAULT_TOLERANCE * 2.0);
+    public static ElevatorFirst ELEVATOR_FIRST =
+        new ElevatorFirst(kElevator.DEFAULT_TOLERANCE * 2.0);
+
     public static record Simultaneous() implements MoveOrder {}
+
     public static record WristFirst(double toleranceRads) implements MoveOrder {}
+
     public static record ElevatorFirst(double toleranceMeters) implements MoveOrder {}
   }
 
@@ -68,27 +71,22 @@ public class SuperStructureCommands {
         superStructure.run(() -> superStructure.goTo(state.elevatorMeters, state.wristRads));
     Command tmp;
     if (order instanceof WristFirst wristFirst) {
-      tmp = superStructure
-      .run(() -> superStructure.goTo(superStructure.elevatorHeight(), state.wristRads))
-      .until(
-          () ->
-              superStructure.isAt(
-                  0.0,
-                  state.wristRads,
-                  1000.0,
-                  wristFirst.toleranceRads()))
-      .andThen(simultaneous);
+      tmp =
+          superStructure
+              .run(() -> superStructure.goTo(superStructure.elevatorHeight(), state.wristRads))
+              .until(
+                  () ->
+                      superStructure.isAt(0.0, state.wristRads, 1000.0, wristFirst.toleranceRads()))
+              .andThen(simultaneous);
     } else if (order instanceof ElevatorFirst elevatorFirst) {
-      tmp = superStructure
-        .run(() -> superStructure.goTo(state.elevatorMeters, superStructure.wristAngle()))
-        .until(
-            () ->
-                superStructure.isAt(
-                    state.elevatorMeters,
-                    0.0,
-                    elevatorFirst.toleranceMeters(),
-                    1000.0))
-        .andThen(simultaneous);
+      tmp =
+          superStructure
+              .run(() -> superStructure.goTo(state.elevatorMeters, superStructure.wristAngle()))
+              .until(
+                  () ->
+                      superStructure.isAt(
+                          state.elevatorMeters, 0.0, elevatorFirst.toleranceMeters(), 1000.0))
+              .andThen(simultaneous);
     } else {
       tmp = simultaneous;
     }

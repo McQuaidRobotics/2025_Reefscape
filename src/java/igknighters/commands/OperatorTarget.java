@@ -1,5 +1,7 @@
 package igknighters.commands;
 
+import static igknighters.commands.SwerveCommands.isSlowerThan;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -33,7 +35,6 @@ import monologue.Logged;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
-import static igknighters.commands.SwerveCommands.isSlowerThan;;
 
 public class OperatorTarget implements StructSerializable {
   private static final EnumMap<SuperStructureState, SuperStructureState> stagedStateMap =
@@ -166,7 +167,9 @@ public class OperatorTarget implements StructSerializable {
   }
 
   private Trigger nearAndSlow(Pose2d targetLocation, double dist, double speed) {
-    return localizer.near(targetLocation.getTranslation(), dist).and(isSlowerThan(subsystems.swerve, speed));
+    return localizer
+        .near(targetLocation.getTranslation(), dist)
+        .and(isSlowerThan(subsystems.swerve, speed));
   }
 
   private Command gotoTargetCmdScoreComponent(Pose2d target) {
@@ -176,20 +179,24 @@ public class OperatorTarget implements StructSerializable {
             : MoveOrder.SIMULTANEOUS;
     final SuperStructureState stagedState =
         stagedStateMap.getOrDefault(superStructureState, superStructureState);
-    Command coral = Commands.sequence(
-        SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
-            .until(localizer.near(target.getTranslation(), 1.45)),
-        SuperStructureCommands.holdAt(
-                subsystems.superStructure, superStructureState.minHeight(stagedState))
-            .until(nearAndSlow(target, 0.04, 0.4)),
-        SuperStructureCommands.holdAt(
-            subsystems.superStructure, superStructureState, preferredMoveOrder));
-    Command algae = Commands.parallel(
-      Commands.runOnce(() -> {
-        this.superStructureState = algaeHeightMap.getOrDefault(side, superStructureState);
-      }),
-      SuperStructureCommands.holdAt(subsystems.superStructure, algaeHeightMap.getOrDefault(side, superStructureState))
-    );
+    Command coral =
+        Commands.sequence(
+            SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
+                .until(localizer.near(target.getTranslation(), 1.45))
+                .unless(targeting(SuperStructureState.ScoreL1)),
+            SuperStructureCommands.holdAt(
+                    subsystems.superStructure, superStructureState.minHeight(stagedState))
+                .until(nearAndSlow(target, 0.04, 0.4)),
+            SuperStructureCommands.holdAt(
+                subsystems.superStructure, superStructureState, preferredMoveOrder));
+    Command algae =
+        Commands.parallel(
+            Commands.runOnce(
+                () -> {
+                  this.superStructureState = algaeHeightMap.getOrDefault(side, superStructureState);
+                }),
+            SuperStructureCommands.holdAt(
+                subsystems.superStructure, algaeHeightMap.getOrDefault(side, superStructureState)));
     return Commands.either(algae, coral, wantsAlgae());
   }
 
@@ -204,13 +211,16 @@ public class OperatorTarget implements StructSerializable {
     if (superStructureState.equals(SuperStructureState.ScoreL1)
         || superStructureState.equals(SuperStructureState.AlgaeL2)
         || superStructureState.equals(SuperStructureState.AlgaeL3)) {
-      final Command lineupBackedUp = SwerveCommands.lineupReef(
-        subsystems.swerve, localizer, target.plus(ALGAE_BACKOFF), PathObstacles.fromReefSide(side));
+      final Command lineupBackedUp =
+          SwerveCommands.lineupReef(
+              subsystems.swerve,
+              localizer,
+              target.plus(ALGAE_BACKOFF),
+              PathObstacles.fromReefSide(side));
       return Commands.sequence(
-        lineupBackedUp.until(superStructureAtSetpoint()),
-        lineup.until(nearAndSlow(target, 0.1, 0.05)),
-        new TeleopSwerveTraditionalCmd(subsystems.swerve, controller)
-      );
+          lineupBackedUp.until(superStructureAtSetpoint()),
+          lineup.until(nearAndSlow(target, 0.1, 0.05)),
+          new TeleopSwerveTraditionalCmd(subsystems.swerve, controller));
     } else {
       return lineup;
     }

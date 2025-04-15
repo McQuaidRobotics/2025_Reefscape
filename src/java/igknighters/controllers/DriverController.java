@@ -126,9 +126,7 @@ public class DriverController {
     this.RS.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.ScoreL1, led));
 
     // // TRIGGERS
-    this.LT
-        .and(operatorTarget.hasTarget())
-        .whileTrue(operatorTarget.gotoTargetCmd(this));
+    this.LT.and(operatorTarget.hasTarget()).whileTrue(operatorTarget.gotoTargetCmd(this));
 
     this.RT.onTrue(
         IntakeCommands.bounce(intake)
