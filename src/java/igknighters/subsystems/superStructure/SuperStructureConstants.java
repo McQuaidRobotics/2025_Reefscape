@@ -58,7 +58,8 @@ public class SuperStructureConstants {
     public static final double kA = 0.00;
 
     public static final double MAX_VELOCITY = (12.0 - kS - kG) / kV;
-    public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.1;
+    public static final double MAX_ACCELERATION = MAX_VELOCITY / 0.07;
+    public static final double MAX_ACCELERATION_AUTO = MAX_VELOCITY / 0.14;
     public static final double ALGAE_MAX_VELOCITY = MAX_VELOCITY;
     public static final double ALGAE_MAX_ACCELERATION = MAX_ACCELERATION * 0.8;
 
@@ -68,7 +69,7 @@ public class SuperStructureConstants {
     public static final double HOMING_VOLTAGE = -kS - 2.0;
 
     public static final double STATOR_CURRENT_LIMIT = 100.0;
-    public static final double SUPPLY_CURRENT_LIMIT = 45.0;
+    public static final double SUPPLY_CURRENT_LIMIT = 70.0;
   }
 
   public class kWrist {

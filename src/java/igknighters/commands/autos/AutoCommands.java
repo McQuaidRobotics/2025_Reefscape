@@ -59,7 +59,7 @@ public class AutoCommands {
         new TrapezoidProfile(
             new TrapezoidProfile.Constraints(
                 kElevator.MAX_VELOCITY * kElevator.PULLEY_RADIUS,
-                kElevator.MAX_ACCELERATION * kElevator.PULLEY_RADIUS));
+                kElevator.MAX_ACCELERATION_AUTO * kElevator.PULLEY_RADIUS));
     final var stowState = new TrapezoidProfile.State(SuperStructureState.Stow.elevatorMeters, 0.0);
     final var intakeStake =
         new TrapezoidProfile.State(SuperStructureState.IntakeHpClose.elevatorMeters, 0.0);
