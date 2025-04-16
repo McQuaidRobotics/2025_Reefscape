@@ -20,7 +20,10 @@ import igknighters.commands.SubsystemTriggers;
 import igknighters.commands.autos.AutoController;
 import igknighters.commands.autos.AutoRoutines;
 import igknighters.commands.teleop.TeleopSwerveTraditionalCmd;
+import igknighters.commands.tests.SubsystemTests;
 import igknighters.commands.tests.TestManager;
+import igknighters.commands.tests.WheelRadiusCharacterization;
+import igknighters.commands.tests.WheelRadiusCharacterization.Direction;
 import igknighters.constants.ConstValues;
 import igknighters.controllers.DriverController;
 import igknighters.controllers.OperatorController;
@@ -129,6 +132,12 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     setupAutoChooser();
 
     testManager = new TestManager();
+    testManager.addTestRoutine(
+        "WheelCharacterization",
+        new WheelRadiusCharacterization(subsystems.swerve, Direction.COUNTER_CLOCKWISE));
+    testManager.addTestRoutine(
+        "SuperStructure", SubsystemTests.test(subsystems.superStructure));
+    testManager.addTestRoutine("Climber", SubsystemTests.test(subsystems.climber));
 
     System.gc();
   }
@@ -141,11 +150,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     Tracer.traceFunc("Localizer", localizer::update);
     Tracer.traceFunc("CommandScheduler", scheduler::run);
     Tracer.traceFunc("Monologue", Monologue::updateAll);
-    Tracer.traceFunc(
-        "Choosers",
-        () -> {
-          testManager.update();
-        });
+    Tracer.traceFunc("Choosers", testManager::update);
   }
 
   @Override
@@ -204,8 +209,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
       Monologue.setupMonologueDisabled(this, "/Robot", true);
     }
 
-    Monologue.capture(
-        "SmartDashboard", NetworkTableInstance.getDefault().getTable("SmartDashboard"));
     Monologue.capture("Tracer", NetworkTableInstance.getDefault().getTable("Tracer"));
 
     // logs build data to the datalog
