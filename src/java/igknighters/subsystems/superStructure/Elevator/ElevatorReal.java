@@ -105,7 +105,7 @@ public class ElevatorReal extends Elevator {
     super.maxVelocity = c.maxVelocity;
     super.maxAcceleration = c.maxAcceleration;
     if (super.targetMeters < super.meters) {
-      super.maxAcceleration *= 0.35;
+      super.maxAcceleration *= 0.25;
     }
     controlReq
         .withVelocity(maxVelocity * RADIANS_TO_ROTATIONS)
