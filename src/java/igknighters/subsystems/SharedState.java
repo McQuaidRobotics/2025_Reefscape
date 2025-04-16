@@ -17,7 +17,7 @@ public class SharedState {
   }
 
   public static double maximumAcceleration(double elevatorHeight) {
-    return ((9.81 * (kSwerve.DRIVEBASE_WIDTH / 2.0)) / calcCgHeight(elevatorHeight)) * 0.8;
+    return ((9.81 * (kSwerve.DRIVEBASE_WIDTH / 2.0)) / calcCgHeight(elevatorHeight));
   }
 
   public double maximumAcceleration() {
