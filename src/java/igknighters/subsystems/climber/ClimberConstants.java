@@ -5,7 +5,7 @@ import igknighters.constants.ConstValues.Conv;
 public class ClimberConstants {
   public static final String CANBUS = "rio";
 
-  public class PivotConstants {
+  public class kPivot {
     public static final double GEAR_RATIO = (5.0 * 5.0 * 5.0) * (30.0 / 12.0);
     public static final int LEADER_MOTOR_ID = 14;
     public static final int FOLLOWER_MOTOR_ID = 15;
