@@ -38,7 +38,7 @@ public class SubsystemTests {
     for (SuperStructureState state : STATE_TEST_ORDER) {
       testCommand.addCommands(
           SuperStructureCommands.moveTo(superStructure, state),
-          SuperStructureCommands.holdAt(superStructure, state).withTimeout(1.5));
+          SuperStructureCommands.holdAt(superStructure, state).withTimeout(0.75));
     }
 
     return testCommand;
