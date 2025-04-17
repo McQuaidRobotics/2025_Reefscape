@@ -98,7 +98,7 @@ public class SuperStructureConstants {
     public static final double ALGAE_MAX_ACCELERATION = MAX_ACCELERATION * 0.75;
 
     public static final double DEFAULT_TOLERANCE = 1.3 * Conv.DEGREES_TO_RADIANS;
-    public static final double ANGLE_OFFSET = -0.424560546875;
+    public static final double ANGLE_OFFSET = -0.75789;
 
     public static final double STATOR_CURRENT_LIMIT = 50.0;
     public static final double SUPPLY_CURRENT_LIMIT = 40.0;
