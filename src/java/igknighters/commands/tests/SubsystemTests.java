@@ -46,12 +46,9 @@ public class SubsystemTests {
 
   public static Command test(Climber climber) {
     return Commands.sequence(
-        ClimberCommands.stage(climber)
-          .withTimeout(3.0),
+        ClimberCommands.stage(climber).withTimeout(3.0),
         ClimberCommands.climb(climber)
-          .until(() -> climber.isPivotAtPosition(-135.0 * Conv.DEGREES_TO_RADIANS, 0.1)),
-        ClimberCommands.stow(climber)
-          .withTimeout(3.0)
-    );
+            .until(() -> climber.isPivotAtPosition(-135.0 * Conv.DEGREES_TO_RADIANS, 0.1)),
+        ClimberCommands.stow(climber).withTimeout(3.0));
   }
 }

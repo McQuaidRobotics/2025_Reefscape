@@ -22,10 +22,8 @@ import igknighters.util.can.CANSignalManager;
 
 public class PivotReal extends Pivot {
 
-  private final TalonFX leader =
-      new TalonFX(kPivot.LEADER_MOTOR_ID, ClimberConstants.CANBUS);
-  private final TalonFX follower =
-      new TalonFX(kPivot.FOLLOWER_MOTOR_ID, ClimberConstants.CANBUS);
+  private final TalonFX leader = new TalonFX(kPivot.LEADER_MOTOR_ID, ClimberConstants.CANBUS);
+  private final TalonFX follower = new TalonFX(kPivot.FOLLOWER_MOTOR_ID, ClimberConstants.CANBUS);
   private final CANcoder encoder = new CANcoder(kPivot.ENCODER_ID, ClimberConstants.CANBUS);
 
   private final BaseStatusSignal position, velocity, amps, voltage, encoderPosition;

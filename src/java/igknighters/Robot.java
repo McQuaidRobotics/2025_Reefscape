@@ -135,8 +135,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     testManager.addTestRoutine(
         "WheelCharacterization",
         new WheelRadiusCharacterization(subsystems.swerve, Direction.COUNTER_CLOCKWISE));
-    testManager.addTestRoutine(
-        "SuperStructure", SubsystemTests.test(subsystems.superStructure));
+    testManager.addTestRoutine("SuperStructure", SubsystemTests.test(subsystems.superStructure));
     testManager.addTestRoutine("Climber", SubsystemTests.test(subsystems.climber));
 
     System.gc();

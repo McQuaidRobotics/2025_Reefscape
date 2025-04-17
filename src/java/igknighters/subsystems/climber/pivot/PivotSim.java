@@ -45,8 +45,7 @@ public class PivotSim extends Pivot {
             // MechanismDynamics.forArm(Pound.of(9.0), Inches.of(6)),
             MechanismDynamics.zero(),
             HardLimits.of(
-                Rotations.of(kPivot.REVERSE_LIMIT),
-                Rotations.of(kPivot.FORWARD_LIMIT + 0.02)),
+                Rotations.of(kPivot.REVERSE_LIMIT), Rotations.of(kPivot.FORWARD_LIMIT + 0.02)),
             0,
             simCtx.robot().timing());
     simCtx.robot().addMechanism(wristMechanism);
@@ -59,8 +58,7 @@ public class PivotSim extends Pivot {
     shamMCX.configSensorToMechanismRatio(kPivot.GEAR_RATIO);
     shamMCX.configureCurrentLimit(
         CurrentLimits.of(
-            Amps.of(kPivot.STATOR_CURRENT_LIMIT),
-            Amps.of(kPivot.SUPPLY_CURRENT_LIMIT)));
+            Amps.of(kPivot.STATOR_CURRENT_LIMIT), Amps.of(kPivot.SUPPLY_CURRENT_LIMIT)));
   }
 
   @Override
