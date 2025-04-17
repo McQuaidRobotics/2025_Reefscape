@@ -13,8 +13,6 @@ public class ClimberConstants {
     public static final double KP = 200.0;
     public static final double KI = 10.0;
     public static final double KD = 5.0;
-    public static final double FORWARD_LIMIT = 0.17 * Conv.ROTATIONS_TO_RADIANS;
-    public static final double REVERSE_LIMIT = -0.373047 * Conv.ROTATIONS_TO_RADIANS;
     public static final boolean INVERT_MOTOR = false;
 
     public static final double STATOR_CURRENT_LIMIT = 120.0;
@@ -24,7 +22,7 @@ public class ClimberConstants {
 
     public static final double STAGE_ANGLE = 20.0 * Conv.DEGREES_TO_RADIANS;
     public static final double ASCEND_ANGLE = -125.0 * Conv.DEGREES_TO_RADIANS;
-    public static final double STOW_ANGLE = -170.0 * Conv.DEGREES_TO_RADIANS;
+    public static final double STOW_ANGLE = -155.0 * Conv.DEGREES_TO_RADIANS;
 
     public static final double ANGLE_OFFSET = -0.03271484375;
   }

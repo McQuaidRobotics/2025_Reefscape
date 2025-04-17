@@ -28,7 +28,6 @@ public class PivotReal extends Pivot {
 
   private final BaseStatusSignal position, velocity, amps, voltage, encoderPosition;
 
-  private final VoltageOut controlReq = new VoltageOut(0.0).withUpdateFreqHz(0.0);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
 
@@ -65,17 +64,7 @@ public class PivotReal extends Pivot {
   private final TalonFXConfiguration motorConfiguration() {
     var cfg = new TalonFXConfiguration();
 
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        kPivot.FORWARD_LIMIT * Conv.RADIANS_TO_ROTATIONS;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-        kPivot.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
-
     cfg.Voltage.PeakReverseVoltage = -5.5;
-
-    // cfg.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.MAX_VELOCITY;
-    // cfg.MotionMagic.MotionMagicAcceleration = PivotConstants.MAX_ACCELERATION;
 
     cfg.CurrentLimits.StatorCurrentLimit = kPivot.STATOR_CURRENT_LIMIT;
     cfg.CurrentLimits.SupplyCurrentLimit = kPivot.SUPPLY_CURRENT_LIMIT;
@@ -106,10 +95,7 @@ public class PivotReal extends Pivot {
   public void setPositionRads(double moveToRads) {
     super.targetRads = moveToRads;
     controlledLastCycle = true;
-    log("moveToRads", moveToRads);
-    leader.setControl(
-        controlReq.withOutput(
-            log("controllerOutput", pidController.calculate(radians, moveToRads))));
+    voltageOut(pidController.calculate(radians, moveToRads));
   }
 
   @Override
@@ -125,6 +111,11 @@ public class PivotReal extends Pivot {
   public void voltageOut(double voltage) {
     super.targetRads = Double.NaN;
     controlledLastCycle = true;
+    if (voltage < 0.0 && super.radians < kPivot.STOW_ANGLE) {
+      voltage = 0.0;
+    } else if (voltage > 0.0 && super.radians > kPivot.STAGE_ANGLE) {
+      voltage = 0.0;
+    }
     leader.setControl(voltageOut.withOutput(voltage));
   }
 

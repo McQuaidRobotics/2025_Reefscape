@@ -44,8 +44,7 @@ public class PivotSim extends Pivot {
             Friction.of(DCMotor.getKrakenX60Foc(1), Volt.of(1.0)),
             // MechanismDynamics.forArm(Pound.of(9.0), Inches.of(6)),
             MechanismDynamics.zero(),
-            HardLimits.of(
-                Rotations.of(kPivot.REVERSE_LIMIT), Rotations.of(kPivot.FORWARD_LIMIT + 0.02)),
+            HardLimits.of(Rotations.of(kPivot.STOW_ANGLE), Rotations.of(kPivot.STAGE_ANGLE + 0.02)),
             0,
             simCtx.robot().timing());
     simCtx.robot().addMechanism(wristMechanism);
