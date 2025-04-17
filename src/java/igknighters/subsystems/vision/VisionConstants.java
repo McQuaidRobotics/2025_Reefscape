@@ -26,11 +26,11 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
-                  906.87,
-                  906.68,
-                  616.15,
-                  375.52,
-                  new double[] {0.047, -0.071, -0.001, 0, 0.018, -0.002, 0.005, 0.001})),
+                899.32,
+                899.04,
+                610.20,
+                386.27,
+                  new double[] {0.054, -0.074, 0, 0, 0.017, -0.003, 0.01, 0.004})),
           new CameraConfig(
               "front_right",
               new Pose3d(
@@ -38,11 +38,11 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
-                  912.37,
-                  911.65,
-                  694.01,
-                  410.10,
-                  new double[] {0.045, -0.062, 0.001, 0, 0.012, -0.003, 0.008, 0.004})),
+                  907.53,
+                  907.04,
+                  679.9,
+                  439.38,
+                  new double[] {0.053, -0.09, 0.001, 0, 0.035, -0.005, 0.01, 0.002})),
           new CameraConfig(
               "back_left",
               new Pose3d(

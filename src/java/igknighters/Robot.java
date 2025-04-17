@@ -208,7 +208,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
       Monologue.setupMonologueDisabled(this, "/Robot", true);
     }
 
-    Monologue.capture("Tracer", NetworkTableInstance.getDefault().getTable("Tracer"));
+    // Monologue.capture("Tracer", NetworkTableInstance.getDefault().getTable("Tracer"));
 
     // logs build data to the datalog
     final String meta = "/BuildData/";
