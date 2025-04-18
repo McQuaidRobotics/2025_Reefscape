@@ -11,7 +11,7 @@ import igknighters.constants.ConstValues.Conv;
 import monologue.ProceduralStructGenerator;
 
 public enum SuperStructureState implements StructSerializable {
-  ScoreL4(MAX_HEIGHT - (3.0 * Conv.INCHES_TO_METERS), 29.0 * DEGREES_TO_RADIANS, 1.0),
+  ScoreL4(MAX_HEIGHT - (3.0 * Conv.INCHES_TO_METERS), 31.0 * DEGREES_TO_RADIANS, 1.0),
   ScoreL3(L3.height + 0.25, -L3.pitch),
   ScoreL2(L2.height + 0.25, -L2.pitch),
   ScoreL1(0.74, 29.0 * DEGREES_TO_RADIANS),
@@ -26,6 +26,7 @@ public enum SuperStructureState implements StructSerializable {
   IntakeHpFar(26.2 * INCHES_TO_METERS, -48.0 * DEGREES_TO_RADIANS),
   AntiTilt(MIN_HEIGHT + 0.05, MAX_ANGLE, 1.0);
 
+  
   public final double elevatorMeters;
   public final double wristRads;
   public final double toleranceScalar;

@@ -85,10 +85,10 @@ public class SuperStructureConstants {
     public static final boolean INVERT_ENCODER = true;
     public static final double GEAR_RATIO = (5.0 / 1.0) * (5.0 / 1.0) * (60.0 / 30.0);
 
-    public static final double KP = 90.0;
+    public static final double KP = 145.1;
     public static final double KD = 0.0;
     public static final double KG = 0.0;
-    public static final double KS = 0.2;
+    public static final double KS = 0.65;
     public static final double KV = kKrakenX60Foc.kV * GEAR_RATIO;
     public static final double KA = 0.00;
 

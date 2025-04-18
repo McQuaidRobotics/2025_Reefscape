@@ -114,7 +114,7 @@ public class FieldConstants {
             FAR_MID
                 .face
                 .getTranslation()
-                .plus(new Translation2d(distFromFace, yOffset + (0.66 * Conv.INCHES_TO_METERS)))
+                .plus(new Translation2d(distFromFace, yOffset + (0.0 * Conv.INCHES_TO_METERS)))
                 .rotateAround(CENTER, this.face.getRotation());
         return new Pose2d(t, this.face.getRotation().rotateBy(Rotation2d.kPi));
       }

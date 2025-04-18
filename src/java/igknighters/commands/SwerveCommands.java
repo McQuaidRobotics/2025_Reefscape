@@ -106,7 +106,7 @@ public class SwerveCommands {
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(
             new PositionalController(
-                TranslationController.unprofiled(5.0, 0.0, 0.05, 0.025),
+                TranslationController.unprofiled(4.0, 0.0, 0.03, 0.025),
                 ControllerFactories.basicRotationalController()),
             obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
@@ -120,11 +120,7 @@ public class SwerveCommands {
     return Commands.sequence(
             followRepulsor(
                     roughPlanner, swerve, localizer, target.plus(roughPoseOffset), roughConstraints)
-                .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation()))
-                .unless(
-                    () ->
-                        localizer.pose().getTranslation().getDistance(target.getTranslation())
-                            < 0.375),
+                .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
             followRepulsor(precisePlanner, swerve, localizer, target, preciseConstraints))
         .withName("lineupReef");
   }

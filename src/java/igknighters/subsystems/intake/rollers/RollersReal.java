@@ -27,8 +27,8 @@ public class RollersReal extends Rollers {
   private static final double CORAL_HALF_WIDTH = 2.25 * Conv.INCHES_TO_METERS;
   private static final LerpTable DISTANCE_LERP =
       new LerpTable(
-          new LerpTable.LerpTableEntry(2.25 * Conv.INCHES_TO_METERS, 0.8 * Conv.INCHES_TO_METERS),
-          new LerpTable.LerpTableEntry(5.8 * Conv.INCHES_TO_METERS, 3.725 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(2.4 * Conv.INCHES_TO_METERS, 0.75 * Conv.INCHES_TO_METERS),
+          new LerpTable.LerpTableEntry(5.7 * Conv.INCHES_TO_METERS, 2.375 * Conv.INCHES_TO_METERS),
           new LerpTable.LerpTableEntry(8.45 * Conv.INCHES_TO_METERS, 6.25 * Conv.INCHES_TO_METERS),
           new LerpTable.LerpTableEntry(11.7 * Conv.INCHES_TO_METERS, 9.0 * Conv.INCHES_TO_METERS));
 
@@ -135,6 +135,9 @@ public class RollersReal extends Rollers {
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
     log("radiansPerSecondPerSecond", acceleration.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS);
     log("gamepieceDistInches", gamepieceDistance * Conv.METERS_TO_INCHES);
+    log(
+        "gamepieceDistInchesRaw",
+        (gamepieceDistance - CORAL_HALF_WIDTH + (INTAKE_WIDTH / 2.0)) * Conv.METERS_TO_INCHES);
     log("rpm", velocity.getValueAsDouble() * 60.0);
     log("temp", temperature.getValueAsDouble());
     log("isStalling", isStalling());

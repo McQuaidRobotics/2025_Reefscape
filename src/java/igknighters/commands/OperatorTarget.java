@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import monologue.GlobalField;
 import monologue.Logged;
+import monologue.Monologue;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
@@ -172,10 +173,15 @@ public class OperatorTarget implements StructSerializable {
         .and(isSlowerThan(subsystems.swerve, speed));
   }
 
+  private Command logDistance(Pose2d target) {
+    return Commands.run(
+        () -> Monologue.log("dist", localizer.translation().getDistance(target.getTranslation())));
+  }
+
   private Command gotoTargetCmdScoreComponent(Pose2d target) {
     final MoveOrder preferredMoveOrder =
         superStructureState.equals(SuperStructureState.ScoreL4)
-            ? new MoveOrder.ElevatorFirst(5.5 * Conv.INCHES_TO_METERS)
+            ? new MoveOrder.ElevatorFirst(4.25 * Conv.INCHES_TO_METERS)
             : MoveOrder.SIMULTANEOUS;
     final SuperStructureState stagedState =
         stagedStateMap.getOrDefault(superStructureState, superStructureState);
@@ -222,7 +228,7 @@ public class OperatorTarget implements StructSerializable {
           lineup.until(nearAndSlow(target, 0.1, 0.05)),
           new TeleopSwerveTraditionalCmd(subsystems.swerve, controller));
     } else {
-      return lineup;
+      return lineup.alongWith(logDistance(target));
     }
   }
 
@@ -236,7 +242,7 @@ public class OperatorTarget implements StructSerializable {
               Commands.sequence(
                   LEDCommands.run(subsystems.led, LedUtil.makeBounce(kLed.TargetingColor, 1.0))
                       .until(
-                          nearAndSlow(targetLocation, 0.04, 0.2)
+                          nearAndSlow(targetLocation, 0.04, 0.075)
                               .and(
                                   SuperStructureCommands.isAt(
                                       subsystems.superStructure, superStructureState))),
