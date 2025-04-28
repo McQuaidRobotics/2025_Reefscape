@@ -1,44 +1,39 @@
-import math
+from wayfinder.Plotters import plot_trajectory, Trajectory
 
-def inches_to_mm(inches):
-    return inches * 25.4
+from wayfinder.DynamicTrapezoidalProfile import calculate as calculate_trapezoidal
+from wayfinder.DynamicTrapezoidalProfile import Constraints as DynConstraints, State as DynState
 
-def mm_to_inches(mm):
-    return mm / 25.4
+STARTING = DynState(1.0, 0.0)
+GOAL = DynState(5.0, 0.0)
+CONSTRAINTS = DynConstraints(1.0, 3.0)
 
-def diameter_to_circumference(diameter):
-    return diameter * math.pi
+trajectory = Trajectory([], [], [])
+current = STARTING
+for i in range(100000):
+    time = i * 0.01
+    current = calculate_trapezoidal(0.01, current, GOAL, CONSTRAINTS)
+    trajectory.add_sample(time, current.position, current.velocity)
 
-while True:
-    diameter = input("Enter the diameter of the circle in inches: ")
-    diameter = float(diameter)
-    circumference = diameter_to_circumference(diameter)
-    circumference = inches_to_mm(circumference)
-    tooth_count = circumference / 5
-    print(tooth_count)
-print(Translation2d(MAGNITUDE, ANGLE))
-from wpimath.controller import SimpleMotorFeedforwardRadians
+    if (current.epsilon_equals(GOAL)):
+        break
+
+plot_trajectory(trajectory)
 
 
-# def inches_to_mm(inches):
-#     return inches * 25.4
+from wayfinder.TrapezoidalProfile import TrapezoidProfile, State, Constraints
 
-# def mm_to_inches(mm):
-#     return mm / 25.4
+PROFILE = TrapezoidProfile(Constraints(1.0, 3.0))
+STARTING = State(1.0, 0.0)
+GOAL = State(5.0, 0.0)
 
-# def diameter_to_circumference(diameter):
-#     return diameter * math.pi
+trajectory = Trajectory([], [], [])
+current = STARTING
+for i in range(100000):
+    time = i * 0.01
+    current = PROFILE.calculate(0.01, current, GOAL)
+    trajectory.add_sample(time, current.position, current.velocity)
 
-# while True:
-#     diameter = input("Enter the diameter of the circle in inches: ")
-#     diameter = float(diameter)
-#     circumference = diameter_to_circumference(diameter)
-#     circumference = inches_to_mm(circumference)
-#     tooth_count = circumference / 5
-#     print(tooth_count)
+    if (abs(current.position - GOAL.position) < 0.01 and abs(current.velocity - GOAL.velocity) < 0.01):
+        break
 
-mff = SimpleMotorFeedforwardRadians(0.0, 2.606 / math.tau, 0.095481 / math.tau)
-
-print(mff.kV)
-print(mff.kA)
-print(mff.maxAchievableAcceleration(12.0, 0.0))
+plot_trajectory(trajectory)
