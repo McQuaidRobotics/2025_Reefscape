@@ -17,8 +17,8 @@ public class CameraSimPhoton extends CameraRealPhoton {
     props.setFPS(43.0);
     props.setCalibration(
         1280, 800, config.intrinsics().cameraMatrix(), config.intrinsics().distortionMatrix());
-    props.setAvgLatencyMs(20.0);
-    props.setLatencyStdDevMs(2.0);
+    props.setAvgLatencyMs(35.0);
+    props.setLatencyStdDevMs(6.0);
     final PhotonCameraSim sim = new PhotonCameraSim(camera, props, 0.12, 6.5);
     sim.enableDrawWireframe(true);
     simCtx.aprilTagSim().addCamera(sim, config.cameraTransform());

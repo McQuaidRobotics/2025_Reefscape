@@ -139,7 +139,7 @@ public class ElevatorReal extends Elevator {
 
   @Override
   public void voltageOut(double voltage) {
-    super.noTarget();
+    super.setNoTarget();
     super.controlledLastCycle = true;
     if (isLimitTripped && voltage < 0.0) {
       voltage = 0.0;
@@ -150,7 +150,7 @@ public class ElevatorReal extends Elevator {
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {
-      super.noTarget();
+      super.setNoTarget();
       leader.setControl(neutralOut);
     }
     super.controlledLastCycle = false;

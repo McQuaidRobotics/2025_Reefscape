@@ -83,7 +83,7 @@ public class WristSim extends Wrist {
 
   @Override
   public void voltageOut(double voltage) {
-    super.noTarget();
+    super.setNoTarget();
     super.controlledLastCycle = true;
     shamMCX.controlVoltage(Volts.of(voltage));
   }
@@ -91,7 +91,7 @@ public class WristSim extends Wrist {
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {
-      super.noTarget();
+      super.setNoTarget();
       shamMCX.controlVoltage(Volts.zero());
     }
     super.controlledLastCycle = false;

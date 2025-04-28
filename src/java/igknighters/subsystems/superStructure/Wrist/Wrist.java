@@ -72,7 +72,7 @@ public abstract class Wrist extends Component {
    */
   public abstract void voltageOut(double voltage);
 
-  protected final void noTarget() {
+  protected final void setNoTarget() {
     targetRadians = Double.NaN;
     maxVelocity = Double.NaN;
     maxAcceleration = Double.NaN;

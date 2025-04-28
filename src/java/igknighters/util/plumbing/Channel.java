@@ -98,28 +98,28 @@ public class Channel<T> {
     }
   }
 
-  public interface ThreadSafetyMarker {
+  public sealed interface ThreadSafetyMarker {
     public static final Concurrent CONCURRENT = new Concurrent();
     public static final Sequential SEQUENTIAL = new Sequential();
 
     boolean threadSafe();
   }
 
-  private static class Internal implements ThreadSafetyMarker {
+  private static final class Internal implements ThreadSafetyMarker {
     @Override
     public boolean threadSafe() {
       throw new UnsupportedOperationException("Internal safety marker should not be used");
     }
   }
 
-  public static class Concurrent implements ThreadSafetyMarker {
+  public static final class Concurrent implements ThreadSafetyMarker {
     @Override
     public boolean threadSafe() {
       return true;
     }
   }
 
-  public static class Sequential implements ThreadSafetyMarker {
+  public static final class Sequential implements ThreadSafetyMarker {
     @Override
     public boolean threadSafe() {
       return false;
@@ -268,6 +268,7 @@ public class Channel<T> {
     /**
      * Forks the receiver, creating a new receiver that will receive the same data.
      *
+     * @param <TSM> the type of the safety marker for the new receiver
      * @param bufferSize the size of the buffer for the new receiver
      * @param safetyMarker the safety marker for the new receiver
      * @return the forked receiver

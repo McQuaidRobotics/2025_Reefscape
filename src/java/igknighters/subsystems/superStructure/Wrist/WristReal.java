@@ -137,7 +137,7 @@ public class WristReal extends Wrist {
 
   @Override
   public void voltageOut(double voltage) {
-    super.noTarget();
+    super.setNoTarget();
     super.controlledLastCycle = true;
     wrist.setControl(voltageOut.withOutput(voltage));
   }
@@ -145,7 +145,7 @@ public class WristReal extends Wrist {
   @Override
   public void periodic() {
     if (DriverStation.isDisabled() || !controlledLastCycle) {
-      super.noTarget();
+      super.setNoTarget();
       wrist.setControl(neutralOut);
     }
     super.controlledLastCycle = false;

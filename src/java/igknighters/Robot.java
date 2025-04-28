@@ -91,6 +91,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             new Climber(simCtx));
 
     localizer.reset(new Pose2d(new Translation2d(12.0, 5.0), Rotation2d.kZero));
+    simCtx.resetPose(localizer.pose());
 
     final var operatorTarget = new OperatorTarget(localizer, subsystems, this);
     driverController = new DriverController(0);
@@ -107,6 +108,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             localizer::pose,
             pose -> {
               localizer.reset(pose);
+              simCtx.resetPose(pose);
               subsystems.swerve.setYaw(pose.getRotation());
             },
             new AutoController(subsystems.swerve, localizer),
@@ -162,7 +164,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
   public void autonomousInit() {
     Command autoCmd = autoChooser.selectedCommand();
     String msg = "---- Starting auto command: " + autoCmd.getName() + " ----";
-    if (isDebug()) System.out.println(msg);
+    System.out.println(msg);
     Monologue.log("AutoEvent", msg);
     scheduler.schedule(autoCmd);
   }
@@ -211,26 +213,25 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     // Monologue.capture("Tracer", NetworkTableInstance.getDefault().getTable("Tracer"));
 
     // logs build data to the datalog
-    final String meta = "/BuildData/";
-    Monologue.log(meta + "RuntimeType", getRuntimeType().toString());
-    Monologue.log(meta + "ProjectName", BuildConstants.MAVEN_NAME);
-    Monologue.log(meta + "BuildDate", BuildConstants.BUILD_DATE);
-    Monologue.log(meta + "GitSHA", BuildConstants.GIT_SHA);
-    Monologue.log(meta + "GitDate", BuildConstants.GIT_DATE);
-    Monologue.log(meta + "GitBranch", BuildConstants.GIT_BRANCH);
+    final String buildData = "/BuildData/";
+    Monologue.log(buildData + "RuntimeType", getRuntimeType().toString());
+    Monologue.log(buildData + "ProjectName", BuildConstants.MAVEN_NAME);
+    Monologue.log(buildData + "BuildDate", BuildConstants.BUILD_DATE);
+    Monologue.log(buildData + "GitSHA", BuildConstants.GIT_SHA);
+    Monologue.log(buildData + "GitDate", BuildConstants.GIT_DATE);
+    Monologue.log(buildData + "GitBranch", BuildConstants.GIT_BRANCH);
     switch (BuildConstants.DIRTY) {
       case 0:
-        Monologue.log(meta + "GitDirty", "All changes committed");
+        Monologue.log(buildData + "GitDirty", "All changes committed");
         break;
       case 1:
-        Monologue.log(meta + "GitDirty", "Uncomitted changes");
+        Monologue.log(buildData + "GitDirty", "Uncomitted changes");
         break;
       default:
-        Monologue.log(meta + "GitDirty", "Unknown");
+        Monologue.log(buildData + "GitDirty", "Unknown");
         break;
     }
-    Monologue.log(meta + "Debug", isDebug());
-    Monologue.log(meta + "Demo", isDemo());
+    Monologue.log(buildData + "Demo", isDemo());
 
     BiConsumer<Command, Boolean> logCommandFunction =
         (Command command, Boolean active) -> {
@@ -281,9 +282,5 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
   public static boolean isDemo() {
     return ConstValues.DEMO;
-  }
-
-  public static boolean isDebug() {
-    return ConstValues.DEBUG;
   }
 }

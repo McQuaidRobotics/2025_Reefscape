@@ -15,6 +15,7 @@ import com.ctre.phoenix6.signals.UpdateModeValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.intake.IntakeConstants;
@@ -44,7 +45,8 @@ public class RollersReal extends Rollers {
   private final StatusSignal<ReverseLimitValue> laserTrippedSignal;
   private final BaseStatusSignal current, voltage, velocity, acceleration, temperature, distance;
 
-  private final LinearFilter movingAverage = LinearFilter.movingAverage(5);
+  private final LinearFilter movingAverage = LinearFilter.movingAverage(9);
+  private final MedianFilter peakRemover = new MedianFilter(3);
   private final Debouncer intakeDebouncer = new Debouncer(0.14, DebounceType.kRising);
 
   private TalonFXConfiguration intakeConfiguration() {
@@ -124,11 +126,17 @@ public class RollersReal extends Rollers {
     super.controlledLastCycle = false;
     super.amps = current.getValueAsDouble();
     super.volts = voltage.getValueAsDouble();
+    boolean prevLaserTripped = super.laserTripped;
     super.laserTripped =
         intakeDebouncer.calculate(
             laserTrippedSignal.getValue() == ReverseLimitValue.ClosedToGround);
+    if (super.laserTripped && !prevLaserTripped) {
+      peakRemover.reset();
+      movingAverage.reset();
+    }
     super.gamepieceDistance =
-        (DISTANCE_LERP.lerp(movingAverage.calculate(distance.getValueAsDouble()))
+        (DISTANCE_LERP.lerp(
+                    movingAverage.calculate(peakRemover.calculate(distance.getValueAsDouble())))
                 + CORAL_HALF_WIDTH)
             - (INTAKE_WIDTH / 2.0);
 

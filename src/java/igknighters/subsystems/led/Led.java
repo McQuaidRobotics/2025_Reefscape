@@ -7,21 +7,21 @@ import wpilibExt.Tracer;
 
 public class Led implements ExclusiveSubsystem {
 
-  public final PWMDriver pwm1;
+  public final PWMDriver pwm;
 
   public Led() {
-    pwm1 = new PWMDriver(0);
+    pwm = new PWMDriver(0);
   }
 
   public void animate(AddressableLEDBuffer buffer) {
 
-    pwm1.applyBuffer(buffer);
+    pwm.applyBuffer(buffer);
   }
 
   @Override
   public void periodic() {
     Tracer.startTrace("LedPeriodic");
-    pwm1.periodic();
+    pwm.periodic();
     Tracer.endTrace();
   }
 }

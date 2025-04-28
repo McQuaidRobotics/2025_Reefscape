@@ -22,10 +22,13 @@ import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
 import igknighters.util.plumbing.TunableValues;
+import igknighters.util.plumbing.TunableValues.TunableBoolean;
 import java.util.function.DoubleSupplier;
 import wpilibExt.AllianceSymmetry;
 
 public class DriverController {
+  private final TunableBoolean driveAssist = TunableValues.getBoolean("driverAssist", true);
+
   // Define the bindings for the controller
   @SuppressWarnings("unused")
   public void bind(
@@ -40,8 +43,7 @@ public class DriverController {
     final Trigger shouldAutoAlign =
         new Trigger(
             () -> {
-              return TunableValues.getBoolean("driverAssist", true).value()
-                  || DriverStation.isFMSAttached();
+              return driveAssist.value() || DriverStation.isFMSAttached();
             });
 
     /// FACE BUTTONS
@@ -65,7 +67,8 @@ public class DriverController {
                       }
                     },
                     kSwerve.CONSTRAINTS)
-                .onlyIf(shouldAutoAlign))
+                .onlyIf(shouldAutoAlign)
+                .withName("PointToIntake"))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .onFalse(
             Commands.waitSeconds(0.33)
@@ -87,7 +90,8 @@ public class DriverController {
                     localizer,
                     () -> AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
                     kSwerve.CONSTRAINTS)
-                .onlyIf(shouldAutoAlign))
+                .onlyIf(shouldAutoAlign)
+                .withName("PointToProcessor"))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
@@ -98,7 +102,8 @@ public class DriverController {
                     localizer,
                     () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
                     kSwerve.CONSTRAINTS)
-                .onlyIf(shouldAutoAlign))
+                .onlyIf(shouldAutoAlign)
+                .withName("PointToNet"))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
     // BUMPER
@@ -121,7 +126,6 @@ public class DriverController {
 
     // STICKS
     this.LS.onTrue(Commands.none());
-    // this.LS.onTrue(new WheelRadiusCharacterization(swerve, Direction.COUNTER_CLOCKWISE));
 
     this.RS.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.ScoreL1, led));
 

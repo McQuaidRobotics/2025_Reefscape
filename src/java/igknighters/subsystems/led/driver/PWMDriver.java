@@ -9,8 +9,6 @@ public class PWMDriver implements Logged {
   private final AddressableLED led;
   private final AddressableLEDBuffer previousBuffer;
 
-  // private final AddressableLEDBuffer buffer;
-
   public PWMDriver(int port) {
     led = new AddressableLED(port);
     led.setLength(73);

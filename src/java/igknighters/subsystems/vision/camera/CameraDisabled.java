@@ -5,7 +5,6 @@ import igknighters.subsystems.vision.Vision.VisionUpdate;
 import igknighters.util.logging.BootupLogger;
 import java.util.List;
 
-@SuppressWarnings("unused")
 public class CameraDisabled extends Camera {
   private final Transform3d cameraTransform;
   private final String cameraName;

@@ -22,9 +22,9 @@ public abstract class Camera extends Component {
       double cx,
       double cy,
       double[] distortion) {
-    public CameraIntrinsics(double fx, double fy, double cx, double cy, double[] distortion) {
-      this(1280, 800, fx, fy, cx, cy, distortion);
-    }
+    // public CameraIntrinsics(double fx, double fy, double cx, double cy, double[] distortion) {
+    //   this(1280, 800, fx, fy, cx, cy, distortion);
+    // }
 
     public Matrix<N8, N1> distortionMatrix() {
       return MatBuilder.fill(Nat.N8(), Nat.N1(), distortion);
@@ -51,7 +51,8 @@ public abstract class Camera extends Component {
    * A configuration for a camera. This allows to statically define cameras without instantiating
    * them.
    */
-  public record CameraConfig(String cameraName, Pose3d cameraPose, CameraIntrinsics intrinsics) {
+  public record CameraConfig(
+      String cameraName, double trustScalar, Pose3d cameraPose, CameraIntrinsics intrinsics) {
     public Transform3d cameraTransform() {
       return new Transform3d(Pose3d.kZero, cameraPose);
     }

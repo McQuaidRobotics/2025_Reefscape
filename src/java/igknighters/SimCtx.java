@@ -14,7 +14,6 @@ import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kDriveMotor
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kSteerMotor;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
-import igknighters.util.plumbing.Channel.Receiver;
 import monologue.GlobalField;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.simulation.VisionSystemSim;
@@ -51,8 +50,6 @@ public class SimCtx {
       new TargetModel(
           Units.inchesToMeters(14.0), Units.inchesToMeters(14.0), Units.inchesToMeters(2.0));
 
-  private final Receiver<Pose2d> resetReceiver;
-
   private final ShamMechanismConfig driveMotorCfg =
       new ShamMechanismConfig(new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1))
           .withFriction(Volts.of(kDriveMotor.kS), Volts.of(kDriveMotor.kS * 1.2))
@@ -80,7 +77,6 @@ public class SimCtx {
 
   public SimCtx(Localizer localizer, boolean isSim) {
     isSimulation = isSim;
-    resetReceiver = localizer.poseResetsReceiver();
     if (isSimulation) {
       // arena = new ShamArena(new FieldMap(), ConstValues.PERIODIC_TIME, 5) {};
       arena = new Reefscape.ReefscapeShamArena(Seconds.of(ConstValues.PERIODIC_TIME), 5);
@@ -120,12 +116,15 @@ public class SimCtx {
     return objectDetectionSim;
   }
 
+  public void resetPose(Pose2d pose) {
+    if (isSimulation) {
+      robot().getDriveTrain().setChassisWorldPose(pose, true);
+      GlobalField.setObject("SimRobot", pose);
+    }
+  }
+
   public void update() {
     if (isSimulation) {
-      if (resetReceiver.hasData()) {
-        final var poses = resetReceiver.recvAll();
-        robot().getDriveTrain().setChassisWorldPose(poses[poses.length - 1], true);
-      }
       arena.simulationPeriodic();
       final Pose2d robotPose = simRobot.getDriveTrain().getChassisWorldPose();
       GlobalField.setObject("SimRobot", robotPose);

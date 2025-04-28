@@ -25,20 +25,17 @@ import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
-import monologue.Monologue;
 
 public class SubsystemTriggers {
 
   private static FaceSubLocation fsl;
   private static SuperStructureState sss;
 
-  @SuppressWarnings("unused")
   static int interpolateHeight(double elevatorHeight) {
     double min = SuperStructureState.AlgaeFloor.elevatorMeters - .1;
     double max = SuperStructureState.ScoreL4.elevatorMeters;
     double t = (elevatorHeight - min) / (max - min);
-    Monologue.log("elevatorHeight", elevatorHeight);
-    return Monologue.log("num LEDS", (int) (37.0 * (0.25 + (t * 0.75))));
+    return (int) (37.0 * (0.25 + (t * 0.75)));
   }
 
   @SuppressWarnings("unused")

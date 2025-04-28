@@ -53,26 +53,27 @@ public abstract class Obstacle {
     }
 
     public Translation2d getForceAtPosition(Translation2d position, Translation2d target) {
-      var targetToLoc = loc.minus(target);
-      var targetToLocAngle = targetToLoc.getAngle();
-      var sidewaysCircle = new Translation2d(secondaryDistance, targetToLoc.getAngle()).plus(loc);
-      var dist = loc.getDistance(position);
-      var sidewaysDist = sidewaysCircle.getDistance(position);
+      Translation2d targetToLoc = loc.minus(target);
+      Rotation2d targetToLocAngle = targetToLoc.getAngle();
+      Translation2d sidewaysCircle =
+          new Translation2d(secondaryDistance, targetToLoc.getAngle()).plus(loc);
+      double dist = loc.getDistance(position);
+      double sidewaysDist = sidewaysCircle.getDistance(position);
       if (dist > primaryMaxRange && sidewaysDist > secondaryMaxRange) {
         return Translation2d.kZero;
       }
-      var sidewaysMag =
+      double sidewaysMag =
           distToForceMag(sidewaysCircle.getDistance(position), primaryMaxRange)
               / secondaryStrengthRatio;
-      var outwardsMag = distToForceMag(loc.getDistance(position), secondaryMaxRange);
-      var initial = new Translation2d(outwardsMag, position.minus(loc).getAngle());
+      double outwardsMag = distToForceMag(loc.getDistance(position), secondaryMaxRange);
+      Translation2d initial = new Translation2d(outwardsMag, position.minus(loc).getAngle());
 
       // flip the sidewaysMag based on which side of the goal-sideways circle the robot is on
-      var sidewaysTheta =
+      Rotation2d sidewaysTheta =
           target.minus(position).getAngle().minus(position.minus(sidewaysCircle).getAngle());
 
       double sideways = sidewaysMag * Math.signum(Math.sin(sidewaysTheta.getRadians()));
-      var sidewaysAngle = targetToLocAngle.rotateBy(Rotation2d.kCCW_90deg);
+      Rotation2d sidewaysAngle = targetToLocAngle.rotateBy(Rotation2d.kCCW_90deg);
       return new Translation2d(sideways, sidewaysAngle).plus(initial);
     }
   }

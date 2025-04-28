@@ -188,7 +188,6 @@ public class MeasureMath {
     return NewtonMeters.of(d.in(Meters) * f.in(Newtons));
   }
 
-  // https://openstax.org/books/university-physics-volume-1/pages/10-7-newtons-second-law-for-rotation
   public static AngularAcceleration div(Torque t, MomentOfInertia moi) {
     return RadiansPerSecondPerSecond.of(t.in(NewtonMeters) / moi.in(KilogramSquareMeters));
   }

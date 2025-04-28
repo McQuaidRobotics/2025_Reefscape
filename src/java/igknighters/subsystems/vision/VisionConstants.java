@@ -12,20 +12,19 @@ import java.util.HashMap;
 
 public class VisionConstants {
   public static final class kVision {
-    public static final double ROOT_TRUST = 1.0;
-
-    public static final double MAX_Z_DELTA = 0.2;
-    public static final double MAX_ANGLE_DELTA = 5.0 * Conv.DEGREES_TO_RADIANS;
 
     public static final CameraConfig[] CONFIGS =
         new CameraConfig[] {
           new CameraConfig(
               "front_left",
+              1.0,
               new Pose3d(
                   new Translation3d(0.158, -0.269, 0.187),
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
+                  1280.0,
+                  800.0,
                   899.32,
                   899.04,
                   610.20,
@@ -33,11 +32,14 @@ public class VisionConstants {
                   new double[] {0.054, -0.074, 0, 0, 0.017, -0.003, 0.01, 0.004})),
           new CameraConfig(
               "front_right",
+              1.0,
               new Pose3d(
                   new Translation3d(0.203, 0.292, 0.176),
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
+                  1280.0,
+                  800.0,
                   907.53,
                   907.04,
                   679.9,
@@ -45,6 +47,7 @@ public class VisionConstants {
                   new double[] {0.053, -0.09, 0.001, 0, 0.035, -0.005, 0.01, 0.002})),
           new CameraConfig(
               "back_left",
+              0.65,
               new Pose3d(
                   new Translation3d(
                       -10.75 * Conv.INCHES_TO_METERS,
@@ -53,6 +56,8 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -160.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
+                  1280.0,
+                  800.0,
                   909.81,
                   909.35,
                   652.63,
@@ -60,6 +65,7 @@ public class VisionConstants {
                   new double[] {0.049, -0.072, -0.001, 0, 0.014, -0.003, 0.007, 0.002})),
           new CameraConfig(
               "back_right",
+              0.65,
               new Pose3d(
                   new Translation3d(
                       -10.75 * Conv.INCHES_TO_METERS,
@@ -68,6 +74,8 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 160.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
+                  1280.0,
+                  800.0,
                   915.28,
                   914.69,
                   664.29,
@@ -138,7 +146,5 @@ public class VisionConstants {
             put(22, 1.0); // REEF
           }
         };
-
-    public static final double MIN_TARGET_AREA = 0.25; // 0.25% of the image area
   }
 }

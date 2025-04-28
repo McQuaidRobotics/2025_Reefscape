@@ -77,7 +77,6 @@ public class SwerveVisualizer {
     return builder;
   }
 
-  // OBJ_COUNT: 8
   public void update() {
     for (int i = 0; i < modules.length; i++) {
       moduleVisual[i].update(modules[i].getCurrentState());

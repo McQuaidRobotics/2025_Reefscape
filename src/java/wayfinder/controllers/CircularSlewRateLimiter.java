@@ -4,10 +4,10 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 
 public class CircularSlewRateLimiter {
-  private double m_positiveRateLimit;
-  private double m_negativeRateLimit;
-  private double m_prevVal;
-  private double m_prevTime;
+  private double positiveRateLimit;
+  private double negativeRateLimit;
+  private double prevVal;
+  private double prevTime;
 
   /**
    * Creates a new SlewRateLimiter with the given positive and negative rate limits and initial
@@ -21,10 +21,10 @@ public class CircularSlewRateLimiter {
    */
   public CircularSlewRateLimiter(
       double positiveRateLimit, double negativeRateLimit, double initialValue) {
-    m_positiveRateLimit = positiveRateLimit;
-    m_negativeRateLimit = negativeRateLimit;
-    m_prevVal = initialValue;
-    m_prevTime = Timer.getFPGATimestamp();
+    this.positiveRateLimit = positiveRateLimit;
+    this.negativeRateLimit = negativeRateLimit;
+    this.prevVal = initialValue;
+    this.prevTime = Timer.getFPGATimestamp();
   }
 
   /**
@@ -45,19 +45,19 @@ public class CircularSlewRateLimiter {
    */
   public double calculate(double input) {
     double currentTime = Timer.getFPGATimestamp();
-    double elapsedTime = currentTime - m_prevTime;
-    m_prevVal +=
+    double elapsedTime = currentTime - prevTime;
+    prevVal +=
         MathUtil.clamp(
-            MathUtil.angleModulus(input - m_prevVal),
-            m_negativeRateLimit * elapsedTime,
-            m_positiveRateLimit * elapsedTime);
-    m_prevTime = currentTime;
-    return m_prevVal;
+            MathUtil.angleModulus(input - prevVal),
+            negativeRateLimit * elapsedTime,
+            positiveRateLimit * elapsedTime);
+    prevTime = currentTime;
+    return prevVal;
   }
 
   public void setLimits(double neg, double pos) {
-    m_negativeRateLimit = neg;
-    m_positiveRateLimit = pos;
+    negativeRateLimit = neg;
+    positiveRateLimit = pos;
   }
 
   public void setLimits(double limit) {
@@ -70,7 +70,7 @@ public class CircularSlewRateLimiter {
    * @return The last value.
    */
   public double lastValue() {
-    return m_prevVal;
+    return prevVal;
   }
 
   /**
@@ -79,7 +79,7 @@ public class CircularSlewRateLimiter {
    * @param value The value to reset to.
    */
   public void reset(double value) {
-    m_prevVal = value;
-    m_prevTime = Timer.getFPGATimestamp();
+    prevVal = value;
+    prevTime = Timer.getFPGATimestamp();
   }
 }

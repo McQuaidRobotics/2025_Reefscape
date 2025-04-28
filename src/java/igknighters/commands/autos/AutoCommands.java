@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WrapperCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
-import igknighters.Robot;
 import igknighters.commands.IntakeCommands;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SuperStructureCommands.MoveOrder;
@@ -83,7 +82,7 @@ public class AutoCommands {
 
   protected void logAutoEvent(String name, String event) {
     String msg = "[Auto] Command " + name + " " + event;
-    if (Robot.isDebug()) System.out.println(msg);
+    System.out.println(msg);
     Monologue.log("AutoEvent", msg);
   }
 

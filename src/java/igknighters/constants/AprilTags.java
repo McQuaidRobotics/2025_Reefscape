@@ -1,7 +1,6 @@
 package igknighters.constants;
 
 import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -149,22 +148,7 @@ public class AprilTags {
                     new Quaternion(-0.8660254037844387, -0.0, 0.0, 0.49999999999999994))))
       };
 
-  public static final Pose2d[] TAGS_POSE2D = new Pose2d[TAGS.length];
-  public static final int[] TAG_IDS = new int[TAGS.length];
-
-  static {
-    for (int i = 0; i < TAGS.length; i++) {
-      TAGS_POSE2D[i] =
-          new Pose2d(
-              TAGS[i].pose.getTranslation().toTranslation2d(),
-              TAGS[i].pose.getRotation().toRotation2d());
-    }
-    for (int i = 0; i < TAGS.length; i++) {
-      TAG_IDS[i] = TAGS[i].ID;
-    }
-  }
-
-  public static boolean observalbleTag(int id) {
+  public static boolean observableTag(int id) {
     for (AprilTag tag : TAGS) {
       if (tag.ID == id) {
         if (AllianceSymmetry.isBlue()) {

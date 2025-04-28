@@ -41,7 +41,7 @@ public class Localizer implements Logged {
       new Channel<>(new SwerveDriveSample[0]);
 
   private final Receiver<VisionSample> visionDataReceiver =
-      visionDataChannel.openReceiver(8, ThreadSafetyMarker.CONCURRENT);
+      visionDataChannel.openReceiver(8, ThreadSafetyMarker.SEQUENTIAL);
   private final Receiver<SwerveDriveSample> swerveDataReceiver =
       swerveDataChannel.openReceiver(32, ThreadSafetyMarker.CONCURRENT);
 
@@ -51,9 +51,6 @@ public class Localizer implements Logged {
   private Pose2d latestPose = FieldConstants.POSE2D_CENTER;
 
   private double resetTime = 0.0;
-
-  private final Channel<Pose2d> poseResetsChannel = new Channel<>(new Pose2d[0]);
-  private final Sender<Pose2d> poseResetsSender = poseResetsChannel.sender();
 
   private final SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(kSwerve.MODULE_CHASSIS_LOCATIONS);
@@ -80,14 +77,11 @@ public class Localizer implements Logged {
     return swerveDataReceiver.fork(32, ThreadSafetyMarker.CONCURRENT);
   }
 
-  public Receiver<Pose2d> poseResetsReceiver() {
-    return poseResetsChannel.openReceiver(8, ThreadSafetyMarker.CONCURRENT);
-  }
-
   public void reset(Pose2d pose) {
     resetTime = Timer.getFPGATimestamp() + 0.02;
     poseEstimator.resetPose(pose);
-    poseResetsSender.send(pose);
+    latestPose = pose;
+    GlobalField.setObject("Robot", pose);
   }
 
   public void update() {
@@ -119,20 +113,20 @@ public class Localizer implements Logged {
     log("visionLatency", sumLatency / visionSamples.size());
     Tracer.endTrace();
 
-    Tracer.startTrace("Prune");
+    Tracer.startTrace("prune");
     poseEstimator.prune(0.25);
     Tracer.endTrace();
 
-    latestPose = Tracer.traceFunc("ReadEstPose", poseEstimator::getEstimatedPose);
+    latestPose = Tracer.traceFunc("readEstPose", poseEstimator::getEstimatedPose);
     GlobalField.setObject("Robot", latestPose);
-  }
-
-  public Pose2d pose() {
-    return latestPose;
   }
 
   public Optional<Pose2d> pose(double secondsAgo) {
     return poseEstimator.getEstimatedPoseFromPast(secondsAgo);
+  }
+
+  public Pose2d pose() {
+    return latestPose;
   }
 
   public Rotation2d rotation() {

@@ -12,6 +12,8 @@ import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.util.logging.BootupLogger;
 
 public class OperatorController {
+  private static final boolean PRINTS = false;
+
   // Define the bindings for the controller
   @SuppressWarnings("unused")
   public void bind(
@@ -68,30 +70,32 @@ public class OperatorController {
     this.C3R6.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.ScoreL3, led));
     this.C4R6.onTrue(operatorTarget.updateTargetCmd(SuperStructureState.ScoreL4, led));
 
-    // this.C1R1.onTrue(Commands.print("C1R1"));
-    // this.C1R2.onTrue(Commands.print("C1R2"));
-    // this.C1R3.onTrue(Commands.print("C1R3"));
-    // this.C1R4.onTrue(Commands.print("C1R4"));
-    // this.C1R5.onTrue(Commands.print("C1R5"));
-    // this.C1R6.onTrue(Commands.print("C1R6"));
-    // this.C2R1.onTrue(Commands.print("C2R1"));
-    // this.C2R2.onTrue(Commands.print("C2R2"));
-    // this.C2R3.onTrue(Commands.print("C2R3"));
-    // this.C2R4.onTrue(Commands.print("C2R4"));
-    // this.C2R5.onTrue(Commands.print("C2R5"));
-    // this.C2R6.onTrue(Commands.print("C2R6"));
-    // this.C3R1.onTrue(Commands.print("C3R1"));
-    // this.C3R2.onTrue(Commands.print("C3R2"));
-    // this.C3R3.onTrue(Commands.print("C3R3"));
-    // this.C3R4.onTrue(Commands.print("C3R4"));
-    // this.C3R5.onTrue(Commands.print("C3R5"));
-    // this.C3R6.onTrue(Commands.print("C3R6"));
-    // this.C4R1.onTrue(Commands.print("C4R1"));
-    // this.C4R2.onTrue(Commands.print("C4R2"));
-    // this.C4R3.onTrue(Commands.print("C4R3"));
-    // this.C4R4.onTrue(Commands.print("C4R4"));
-    // this.C4R5.onTrue(Commands.print("C4R5"));
-    // this.C4R6.onTrue(Commands.print("C4R6"));
+    if (PRINTS) {
+      this.C1R1.onTrue(Commands.print("C1R1"));
+      this.C1R2.onTrue(Commands.print("C1R2"));
+      this.C1R3.onTrue(Commands.print("C1R3"));
+      this.C1R4.onTrue(Commands.print("C1R4"));
+      this.C1R5.onTrue(Commands.print("C1R5"));
+      this.C1R6.onTrue(Commands.print("C1R6"));
+      this.C2R1.onTrue(Commands.print("C2R1"));
+      this.C2R2.onTrue(Commands.print("C2R2"));
+      this.C2R3.onTrue(Commands.print("C2R3"));
+      this.C2R4.onTrue(Commands.print("C2R4"));
+      this.C2R5.onTrue(Commands.print("C2R5"));
+      this.C2R6.onTrue(Commands.print("C2R6"));
+      this.C3R1.onTrue(Commands.print("C3R1"));
+      this.C3R2.onTrue(Commands.print("C3R2"));
+      this.C3R3.onTrue(Commands.print("C3R3"));
+      this.C3R4.onTrue(Commands.print("C3R4"));
+      this.C3R5.onTrue(Commands.print("C3R5"));
+      this.C3R6.onTrue(Commands.print("C3R6"));
+      this.C4R1.onTrue(Commands.print("C4R1"));
+      this.C4R2.onTrue(Commands.print("C4R2"));
+      this.C4R3.onTrue(Commands.print("C4R3"));
+      this.C4R4.onTrue(Commands.print("C4R4"));
+      this.C4R5.onTrue(Commands.print("C4R5"));
+      this.C4R6.onTrue(Commands.print("C4R6"));
+    }
   }
 
   // Define the buttons on the controller

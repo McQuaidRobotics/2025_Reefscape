@@ -25,7 +25,7 @@ public class ElevatorDisabled extends Elevator {
 
   @Override
   public void voltageOut(double voltage) {
-    super.noTarget();
+    super.setNoTarget();
     super.controlledLastCycle = true;
     super.volts = voltage;
   }

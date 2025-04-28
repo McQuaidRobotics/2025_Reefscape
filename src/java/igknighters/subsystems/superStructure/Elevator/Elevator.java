@@ -81,10 +81,16 @@ public abstract class Elevator extends Component {
     return isHomed;
   }
 
+  /**
+   * Checks if the elevator is homed.
+   *
+   * @return True if the elevator is homed, false otherwise.
+   */
   public boolean isHomed() {
     return isHomed;
   }
 
+  /** Resets the homed state of the elevator. */
   public void resetHomed() {
     isHomed = false;
   }
@@ -96,7 +102,7 @@ public abstract class Elevator extends Component {
    */
   public abstract void voltageOut(double voltage);
 
-  protected final void noTarget() {
+  protected final void setNoTarget() {
     targetMeters = Double.NaN;
     maxVelocity = Double.NaN;
     maxAcceleration = Double.NaN;

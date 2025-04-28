@@ -67,10 +67,8 @@ public class Vision implements SharedSubsystem {
     try {
       if (Robot.isSimulation()) {
         return new CameraSimPhoton(config, simCtx);
-        // return new CameraDisabled(config.cameraName(), config.cameraTransform());
       } else {
         return new CameraRealPhoton(config);
-        // return new CameraDisabled(config.cameraName(), config.cameraTransform());
       }
     } catch (Exception e) {
       // if the camera fails to initialize, return a disabled camera to not crash the code
@@ -92,7 +90,7 @@ public class Vision implements SharedSubsystem {
   }
 
   private Optional<VisionSample> gaugeTrust(final VisionUpdate update) {
-    double trust = kVision.ROOT_TRUST * update.trustScalar();
+    double trust = update.trustScalar();
 
     // Completely arbitrary values for the velocity thresholds.
     // When the robot is moving fast there can be paralaxing and motion blur

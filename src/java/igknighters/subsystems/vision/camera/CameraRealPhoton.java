@@ -33,6 +33,7 @@ public class CameraRealPhoton extends Camera {
       Optional.of(new ConstrainedSolvepnpParams(true, 0.0));
 
   protected final PhotonCamera camera;
+  protected final CameraConfig config;
   protected final Transform3d robotToCamera;
   private final PhotonPoseEstimator poseEstimator;
   private final double trustScalar;
@@ -46,9 +47,11 @@ public class CameraRealPhoton extends Camera {
 
   public CameraRealPhoton(CameraConfig config) {
     this.camera = new PhotonCamera(config.cameraName());
+    this.config = config;
     this.cameraMatrix = Optional.of(config.intrinsics().cameraMatrix());
     this.distortionMatrix = Optional.of(config.intrinsics().distortionMatrix());
     this.robotToCamera = config.cameraTransform();
+    this.trustScalar = config.trustScalar();
 
     poseEstimator =
         new PhotonPoseEstimator(
@@ -56,18 +59,12 @@ public class CameraRealPhoton extends Camera {
     poseEstimator.setTagModel(TargetModel.kAprilTag36h11);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
-    if (config.cameraName().contains("back")) {
-      trustScalar = 0.65;
-    } else {
-      trustScalar = 1.0;
-    }
-
     BootupLogger.bootupLog("    " + config.cameraName() + " camera initialized (real)");
   }
 
   private double normalizedDistanceFromCenter(PhotonTrackedTarget target) {
-    final double HEIGHT = 800;
-    final double WIDTH = 1280;
+    final double HEIGHT = config.intrinsics().height();
+    final double WIDTH = config.intrinsics().width();
     double sumX = 0.0;
     double sumY = 0.0;
     for (var corner : target.minAreaRectCorners) {
@@ -164,7 +161,7 @@ public class CameraRealPhoton extends Camera {
   private PhotonPipelineResult pruneTags(PhotonPipelineResult result) {
     ArrayList<PhotonTrackedTarget> newTargets = new ArrayList<>();
     for (var target : result.targets) {
-      if (AprilTags.observalbleTag(target.fiducialId)) {
+      if (AprilTags.observableTag(target.fiducialId)) {
         newTargets.add(target);
       }
     }

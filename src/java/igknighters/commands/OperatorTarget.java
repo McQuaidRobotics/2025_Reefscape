@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import monologue.GlobalField;
 import monologue.Logged;
-import monologue.Monologue;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
@@ -173,11 +172,6 @@ public class OperatorTarget implements StructSerializable {
         .and(isSlowerThan(subsystems.swerve, speed));
   }
 
-  private Command logDistance(Pose2d target) {
-    return Commands.run(
-        () -> Monologue.log("dist", localizer.translation().getDistance(target.getTranslation())));
-  }
-
   private Command gotoTargetCmdScoreComponent(Pose2d target) {
     final MoveOrder preferredMoveOrder =
         superStructureState.equals(SuperStructureState.ScoreL4)
@@ -228,7 +222,7 @@ public class OperatorTarget implements StructSerializable {
           lineup.until(nearAndSlow(target, 0.1, 0.05)),
           new TeleopSwerveTraditionalCmd(subsystems.swerve, controller));
     } else {
-      return lineup.alongWith(logDistance(target));
+      return lineup;
     }
   }
 
