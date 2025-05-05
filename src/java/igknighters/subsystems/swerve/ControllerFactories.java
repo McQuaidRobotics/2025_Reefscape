@@ -6,8 +6,8 @@ import igknighters.constants.ConstValues.Conv;
 import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.TranslationController;
 import wayfinder.controllers.Types.Constraints;
-import wayfinder.controllers.Types.Controller;
-import wayfinder.controllers.Types.ControllerSequence;
+import wayfinder.controllers.Framework.Controller;
+import wayfinder.controllers.Framework.ControllerSequence;
 import wpilibExt.Velocity2d;
 
 public class ControllerFactories {
@@ -15,7 +15,7 @@ public class ControllerFactories {
   public static Controller<Rotation2d, Double, Rotation2d, Constraints>
       basicRotationalController() {
     return new ControllerSequence<>(
-        RotationalController.profiled(5.0, 0, false),
+        RotationalController.profiled(5.0, 0),
         RotationalController.unprofiled(8.0, 0.1, 1.0 * Conv.DEGREES_TO_RADIANS));
   }
 
@@ -28,7 +28,7 @@ public class ControllerFactories {
   public static Controller<Translation2d, Velocity2d, Translation2d, Constraints>
       longRangeTranslationController() {
     return new ControllerSequence<>(
-        TranslationController.profiled(1.0, 0, 0, false),
+        TranslationController.profiled(1.0, 0, 0),
         TranslationController.unprofiled(4.0, 0.0, 0.05, 0.01));
   }
 

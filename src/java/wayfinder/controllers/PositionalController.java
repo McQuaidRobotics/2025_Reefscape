@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
-import wayfinder.controllers.Types.Controller;
+import wayfinder.controllers.Framework.Controller;
 import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Velocity2d;
 

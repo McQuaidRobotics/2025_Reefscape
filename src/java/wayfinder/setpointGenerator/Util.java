@@ -73,8 +73,9 @@ class Util {
     // -h_0 = (h_1 - h_0) * s
     // -h_0 / (h_1 - h_0) = s
     // h_0 / (h_0 - h_1) = s
-    // Guaranteed to not divide by zero, since if h_0 was equal to h_1, theta_0
-    // would be equal to theta_1, which is caught by the difference check.
+    if (Math.abs(h_0 - h_1) < kEpsilon) {
+      return 1.0; // Avoid division by zero
+    }
     return h_0 / (h_0 - h_1);
   }
 
@@ -124,9 +125,9 @@ class Util {
     double root = Math.sqrt(b * b - 4 * a * c);
 
     // Check if either of the solutions are valid
-    // Won't divide by zero because it is only possible for a to be zero if the
-    // target velocity is exactly the same or the reverse of the current
-    // velocity, which would be caught by the difference check.
+    if (Math.abs(a) < kEpsilon) {
+      return 1.0; // Avoid division by zero
+    }
     double s_1 = (-b + root) / (2 * a);
     if (isValidS(s_1)) {
       return s_1;
@@ -385,15 +386,4 @@ class Util {
 
     return ChassisSpeeds.fromFieldRelativeSpeeds(output, heading);
   }
-
-  // private static void mutateToRobotRelative(ChassisSpeeds speeds, Rotation2d robotAngle) {
-  //   double newVX =
-  //       speeds.vxMetersPerSecond * robotAngle.getCos()
-  //           - speeds.vyMetersPerSecond * robotAngle.getSin();
-  //   double newVY =
-  //       speeds.vxMetersPerSecond * robotAngle.getSin()
-  //           + speeds.vyMetersPerSecond * robotAngle.getCos();
-  //   speeds.vxMetersPerSecond = newVX;
-  //   speeds.vyMetersPerSecond = newVY;
-  // }
 }

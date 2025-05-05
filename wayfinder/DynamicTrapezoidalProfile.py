@@ -13,6 +13,11 @@ class State:
         """Check if two states are approximately equal."""
         return abs(self.position - other.position) < epsilon and abs(self.velocity - other.velocity) < epsilon
 
+    @staticmethod
+    def zero() -> 'State':
+        """Return a state with zero position and velocity."""
+        return State(0.0, 0.0)
+
 @dataclass
 class Constraints:
     """Constraints for the trapezoidal profile."""

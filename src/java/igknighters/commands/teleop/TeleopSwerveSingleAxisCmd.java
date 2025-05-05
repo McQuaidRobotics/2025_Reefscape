@@ -12,7 +12,7 @@ import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import java.util.function.Supplier;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
-import wayfinder.controllers.Types.Controller;
+import wayfinder.controllers.Framework.Controller;
 import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Velocity2d;

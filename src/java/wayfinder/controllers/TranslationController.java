@@ -3,9 +3,8 @@ package wayfinder.controllers;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import monologue.Monologue;
 import wayfinder.controllers.Types.Constraints;
-import wayfinder.controllers.Types.Controller;
+import wayfinder.controllers.Framework.Controller;
 import wayfinder.controllers.Types.State;
 import wpilibExt.Velocity2d;
 
@@ -49,24 +48,30 @@ public abstract class TranslationController
 
   private static final class Profiled extends TranslationController {
     private final boolean replanning;
+    private final double deadband;
 
     private double prevError, totalError;
     private State prevSetpoint = State.kZero;
 
-    public Profiled(double kP, double kI, double kD, boolean replanning) {
+    Profiled(double kP, double kI, double kD, boolean replanning, double deadband) {
       super(kP, kI, kD);
       this.replanning = replanning;
+      this.deadband = deadband;
     }
 
     @Override
     public boolean isDone(Translation2d measurement, Translation2d target) {
-      return MathUtil.isNear(prevSetpoint.position(), 0.0, 0.001)
-          && MathUtil.isNear(prevSetpoint.velocity(), 0.0, 0.01);
+      if (replanning) {
+        return measurement.getDistance(target) < deadband;
+      } else {
+        return prevSetpoint.isNear(State.kZero, 0.001, 0.01);
+      }
     }
 
     @Override
     public void reset(Translation2d measurement, Velocity2d measurementVelo, Translation2d target) {
       prevError = 0;
+      totalError = 0;
       final Rotation2d direction = target.minus(measurement).getAngle();
       final double distance = measurement.getDistance(target);
       prevSetpoint = new State(-distance, measurementVelo.speedInDirection(direction));
@@ -80,29 +85,24 @@ public abstract class TranslationController
         Translation2d target,
         Constraints constraints) {
 
-      Monologue.log("TranslationController", "Profiled");
-
       if (isDone(measurement, target)) {
         return Velocity2d.kZero;
       }
 
       final double distance = measurement.getDistance(target);
       final Rotation2d direction = target.minus(measurement).getAngle();
-      final double velo = measurementVelo.speedInDirection(direction);
 
       State setpoint =
           DynamicTrapezoidProfile.calculate(
               period,
-              replanning ? -distance : prevSetpoint.position(),
-              replanning ? velo : prevSetpoint.velocity(),
+              prevSetpoint.position(),
+              prevSetpoint.velocity(),
               0.0,
               0.0,
               constraints.maxVelocity(),
               constraints.maxAcceleration());
 
       double positionError = distance + prevSetpoint.position();
-
-      Monologue.log("ProfiledError", positionError);
 
       double errorDerivative = (positionError - prevError) / period;
       if (kI > 0) {
@@ -112,12 +112,17 @@ public abstract class TranslationController
                 -constraints.maxAcceleration() * period / kI,
                 constraints.maxAcceleration() * period / kI);
       }
-      prevError = positionError;
-      prevSetpoint = setpoint;
+      if (replanning && prevSetpoint.isNear(setpoint, 0.01, 0.01)) {
+        prevSetpoint = new State(-distance, measurementVelo.speedInDirection(direction));
+        prevError = 0;
+        totalError = 0;
+      } else {
+        prevError = positionError;
+        prevSetpoint = setpoint;
+      }
 
       double dirVelo =
           (kP * positionError) + (kI * totalError) + (kD * errorDerivative) + setpoint.velocity();
-      dirVelo = MathUtil.clamp(dirVelo, -constraints.maxVelocity(), constraints.maxVelocity());
 
       return new Velocity2d(dirVelo * direction.getCos(), dirVelo * direction.getSin());
     }
@@ -150,8 +155,6 @@ public abstract class TranslationController
         Translation2d target,
         Constraints constraints) {
 
-      Monologue.log("TranslationController", "UnProfiled");
-
       if (isDone(measurement, target)) {
         return Velocity2d.kZero;
       }
@@ -160,7 +163,6 @@ public abstract class TranslationController
       final Rotation2d direction = target.minus(measurement).getAngle();
 
       double positionError = distance;
-      Monologue.log("UnProfiledError", positionError);
       double errorDerivative = (positionError - prevError) / period;
       if (kI > 0) {
         totalError += positionError * period;
@@ -173,12 +175,87 @@ public abstract class TranslationController
     }
   }
 
+  /**
+   * Returns a profiled translation controller with the given gains.
+   * 
+   * This controller will finish once the profile is done, not when the target is reached.
+   * That means the PID gains for this profiled controller are based upon the moving setpoint,
+   * not the target position. Measuring error of a practically achievable setpoint allows the
+   * system to stay stable with greater gains.
+   * 
+   * @param kP the proportional gain
+   * @param kI the integral gain
+   * @param kD the derivative gain
+   * @return a profiled translation controller
+   */
   public static TranslationController profiled(
-      double kP, double kI, double kD, boolean replanning) {
-    return new Profiled(kP, kI, kD, replanning);
+      double kP, double kI, double kD) {
+    return new Profiled(kP, kI, kD, false, 0.0);
   }
 
+  /**
+   * Returns a replanning profiled translation controller with the given gains.
+   * 
+   * A replanning profiled controller is a mix of a
+   * {@link #profiled(double, double, double)} controller and
+   * {@link #unprofiled(double, double, double, double)} controller.
+   * The replanning profiled controller will finish once the target is reached, not when the profile is done.
+   * If the profile finishes before the target is reached, the controller will plan a new profile to the target.
+   * This allows the controller to be tolerant of latent systems and error while still largely respecting the
+   * constraints of the profile.
+   * 
+   * @param kP the proportional gain
+   * @param kI the integral gain
+   * @param kD the derivative gain
+   * @param deadband the deadband for determining if the target is reached
+   * @return a replanning profiled translation controller
+   */
+  public static TranslationController replanningProfiled(
+      double kP, double kI, double kD, double deadband) {
+    return new Profiled(kP, kI, kD, true, deadband);
+  }
+
+  /**
+   * Returns a translation controller that does not use motion profiling.
+   * This controller will finish once the target is reached.
+   * 
+   * @param kP the proportional gain
+   * @param kI the integral gain
+   * @param kD the derivative gain
+   * @param deadband the deadband for determining if the target is reached
+   * @return a translation controller that does not use motion profiling
+   */
   public static TranslationController unprofiled(double kP, double kI, double kD, double deadband) {
     return new UnProfiled(kP, kI, kD, deadband);
+  }
+
+  /**
+   * Wraps a generic controller in a TranslationController to comply with the type system.
+   *
+   * @param controller the controller to wrap
+   * @return a wrapped controller
+   */
+  public static TranslationController wrap(Controller<Translation2d, Velocity2d, Translation2d, Constraints> controller) {
+    return new TranslationController(0.0, 0.0, 0.0) {
+      @Override
+      public Velocity2d calculate(
+          double period,
+          Translation2d measurement,
+          Velocity2d measurementVelo,
+          Translation2d target,
+          Constraints constraints) {
+        return controller.calculate(period, measurement, measurementVelo, target, constraints);
+      }
+
+      @Override
+      public void reset(Translation2d measurement, Velocity2d measurementVelo, Translation2d target) {
+        controller.reset(measurement, measurementVelo, target);
+      }
+
+      @Override
+      public boolean isDone(Translation2d measurement, Translation2d target) {
+        return controller.isDone(measurement, target);
+      }
+    };
   }
 }

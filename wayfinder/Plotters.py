@@ -9,6 +9,12 @@ class Trajectory2d:
     position: list[Translation2d]
     velocity: list[Translation2d]
 
+    def add_sample(self, time: float, position: Translation2d, velocity: Translation2d) -> None:
+        """Add a sample to the trajectory."""
+        self.time.append(time)
+        self.position.append(position)
+        self.velocity.append(velocity)
+
 def plot_trajectory2d(trajectory: Trajectory2d) -> None:
     """Plot the trajectory of the theoretical chassis."""
     fig, ax = plt.subplots(2, 1, figsize=(10, 8))
