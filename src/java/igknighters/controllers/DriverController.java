@@ -1,10 +1,14 @@
 package igknighters.controllers;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
@@ -23,11 +27,14 @@ import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
 import igknighters.util.plumbing.TunableValues;
 import igknighters.util.plumbing.TunableValues.TunableBoolean;
-import java.util.function.DoubleSupplier;
 import wpilibExt.AllianceSymmetry;
 
 public class DriverController {
   private final TunableBoolean driveAssist = TunableValues.getBoolean("driverAssist", true);
+  private final EventLoop eventLoop = new EventLoop();
+  private final Subsystem rumbleResource;
+  private double maxObservedMagnitude = 1.0;
+  private double rightStickX, rightStickY, leftStickX, leftStickY;
 
   // Define the bindings for the controller
   @SuppressWarnings("unused")
@@ -166,8 +173,6 @@ public class DriverController {
         .onFalse(IntakeCommands.holdAlgae(intake));
   }
 
-  // Define the buttons on the controller
-
   private final CommandXboxController controller;
 
   /** Button: 1 */
@@ -222,141 +227,146 @@ public class DriverController {
   public DriverController(int port) {
     DriverStation.silenceJoystickConnectionWarning(true);
     controller = new CommandXboxController(port);
+    rumbleResource =
+        new Subsystem() {
+          {
+            this.setDefaultCommand(
+                this.run(() -> controller.getHID().setRumble(RumbleType.kBothRumble, 0.0))
+                    .ignoringDisable(true)
+                    .withName("RumbleOff"));
+          }
+        };
     BootupLogger.bootupLog("Controller " + port + " initialized");
-    A = controller.a();
-    B = controller.b();
-    X = controller.x();
-    Y = controller.y();
-    LB = controller.leftBumper();
-    RB = controller.rightBumper();
-    Back = controller.back();
-    Start = controller.start();
-    LS = controller.leftStick();
-    RS = controller.rightStick();
-    LT = controller.leftTrigger(0.25);
-    RT = controller.rightTrigger(0.25);
-    DPR = controller.povRight();
-    DPD = controller.povDown();
-    DPL = controller.povLeft();
-    DPU = controller.povUp();
+    A = controller.a(eventLoop);
+    B = controller.b(eventLoop);
+    X = controller.x(eventLoop);
+    Y = controller.y(eventLoop);
+    LB = controller.leftBumper(eventLoop);
+    RB = controller.rightBumper(eventLoop);
+    Back = controller.back(eventLoop);
+    Start = controller.start(eventLoop);
+    LS = controller.leftStick(eventLoop);
+    RS = controller.rightStick(eventLoop);
+    LT = controller.leftTrigger(0.25, eventLoop);
+    RT = controller.rightTrigger(0.25, eventLoop);
+    DPR = controller.pov(1, 90, eventLoop);
+    DPD = controller.pov(1, 180, eventLoop);
+    DPL = controller.pov(1, 270, eventLoop);
+    DPU = controller.pov(1, 0, eventLoop);
   }
 
-  private DoubleSupplier deadbandSupplier(DoubleSupplier supplier, double deadband) {
-    return () -> {
-      double val = supplier.getAsDouble();
-      if (Math.abs(val) > deadband) {
-        if (val > 0.0) {
-          val = (val - deadband) / (1.0 - deadband);
-        } else {
-          val = (val + deadband) / (1.0 - deadband);
-        }
-      } else {
-        val = 0.0;
-      }
-      return val;
-    };
+  public void update() {
+    updateJoystickValues(true);
+    updateJoystickValues(false);
+    eventLoop.poll();
+  }
+
+  private void setStickValues(double x, double y, boolean isLeft) {
+    if (isLeft) {
+      leftStickX = x;
+      leftStickY = y;
+    } else {
+      rightStickX = x;
+      rightStickY = y;
+    }
+  }
+
+  private void updateJoystickValues(boolean isLeft) {
+    double x, y, overflow;
+    if (isLeft) {
+      x = controller.getLeftX();
+      y = -controller.getLeftY();
+      maxObservedMagnitude = Math.max(maxObservedMagnitude, Math.hypot(x, y));
+      overflow = maxObservedMagnitude - 1.0;
+    } else {
+      x = controller.getRightX();
+      y = -controller.getRightY();
+      maxObservedMagnitude = Math.max(maxObservedMagnitude, Math.hypot(x, y));
+      overflow = maxObservedMagnitude - 1.0;
+    }
+    if (MathUtil.isNear(0.0, x, 0.01) || MathUtil.isNear(0.0, y, 0.01)) {
+      setStickValues(x, y, isLeft);
+      return;
+    }
+    double absX = Math.abs(x);
+    double absY = Math.abs(y);
+    double diffPercent = 1.0 - (Math.abs(absX - absY) / Math.max(absX, absY));
+    overflow *= diffPercent;
+    double rawMagnitude = Math.hypot(x, y);
+    double magnitude = rawMagnitude / (1.0 + overflow);
+    // magnitude = MathUtil.clamp(magnitude, 0, 1.0);
+    if (!Double.isFinite(magnitude)) {
+      setStickValues(0.0, 0.0, isLeft);
+      return;
+    }
+    double angle = Math.atan2(y, x);
+    setStickValues(magnitude * Math.cos(angle), magnitude * Math.sin(angle), isLeft);
   }
 
   /**
    * Right on the stick is positive (axis 4)
    *
-   * @return A supplier for the value of the right stick x axis
+   * @return the value of the right stick x axis
    */
-  public DoubleSupplier rightStickX() {
-    return () -> -controller.getRightX();
-  }
-
-  /**
-   * Right on the stick is positive (axis 4)
-   *
-   * @param deadband the deadband to apply to the stick
-   * @return A supplier for the value of the right stick x axis
-   */
-  public DoubleSupplier rightStickX(double deadband) {
-    return deadbandSupplier(rightStickX(), deadband);
+  public double rightStickX() {
+    return rightStickX;
   }
 
   /**
    * Up on the stick is positive (axis 5)
    *
-   * @return A supplier for the value of the right stick y axis
+   * @return the value of the right stick y axis
    */
-  public DoubleSupplier rightStickY() {
-    return controller::getRightY;
-  }
-
-  /**
-   * Up on the stick is positive (axis 5)
-   *
-   * @param deadband the deadband to apply to the stick
-   * @return A supplier for the value of the right stick y axis
-   */
-  public DoubleSupplier rightStickY(double deadband) {
-    return deadbandSupplier(rightStickY(), deadband);
+  public double rightStickY() {
+    return rightStickY;
   }
 
   /**
    * Right on the stick is positive (axis 0)
    *
-   * @return A supplier for the value of the left stick x axis
+   * @return the value of the left stick x axis
    */
-  public DoubleSupplier leftStickX() {
-    return controller::getLeftX;
-  }
-
-  /**
-   * Right on the stick is positive (axis 0)
-   *
-   * @param deadband the deadband to apply to the stick
-   * @return A supplier for the value of the left stick x axis
-   */
-  public DoubleSupplier leftStickX(double deadband) {
-    return deadbandSupplier(leftStickX(), deadband);
+  public double leftStickX() {
+    return leftStickX;
   }
 
   /**
    * Up on the stick is positive (axis 1)
    *
-   * @return A supplier for the value of the left stick y axis
+   * @return the value of the left stick y axis
    */
-  public DoubleSupplier leftStickY() {
-    return () -> -controller.getLeftY();
+  public double leftStickY() {
+    return leftStickY;
+  }
+
+  public double rightTrigger() {
+    return controller.getRightTriggerAxis();
+  }
+
+  public double leftTrigger() {
+    return controller.getLeftTriggerAxis();
   }
 
   /**
-   * Up on the stick is positive (axis 1)
+   * Will rumble the controller
    *
-   * @param deadband the deadband to apply to the stick
-   * @return A supplier for the value of the left stick y axis
+   * @param type The type of rumble to use
+   * @param magnitude The magnitude to rumble at
+   * @return The command to rumble the controller
    */
-  public DoubleSupplier leftStickY(double deadband) {
-    return deadbandSupplier(leftStickY(), deadband);
+  public Command rumble(RumbleType type, double magnitude) {
+    return rumbleResource
+        .run(() -> controller.getHID().setRumble(type, magnitude))
+        .withName("Rumble");
   }
 
   /**
-   * will print warning if this trigger is also bound to a command
-   *
-   * @param suppressWarning if true will not print warning even if bound to a command
-   */
-  public DoubleSupplier rightTrigger(boolean suppressWarning) {
-    return controller::getRightTriggerAxis;
-  }
-
-  /**
-   * will print warning if this trigger is also bound to a command
-   *
-   * @param suppressWarning if true will not print warning even if bound to a command
-   */
-  public DoubleSupplier leftTrigger(boolean suppressWarning) {
-    return controller::getLeftTriggerAxis;
-  }
-
-  /**
-   * Will rumble both sides of the controller with a magnitude
+   * Will rumble both sides of the controller
    *
    * @param magnitude The magnitude to rumble at
+   * @return The command to rumble the controller
    */
-  public void rumble(double magnitude) {
-    controller.getHID().setRumble(RumbleType.kBothRumble, magnitude);
+  public Command rumble(double magnitude) {
+    return rumble(RumbleType.kBothRumble, magnitude);
   }
 }

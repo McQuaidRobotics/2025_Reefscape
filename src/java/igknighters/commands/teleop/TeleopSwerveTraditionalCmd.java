@@ -21,7 +21,7 @@ public class TeleopSwerveTraditionalCmd extends TeleopSwerveBaseCmd {
         Speeds.fromFieldRelative(
             vt.getX() * kSwerve.MAX_DRIVE_VELOCITY,
             vt.getY() * kSwerve.MAX_DRIVE_VELOCITY,
-            rotationStick().getX() * kSwerve.MAX_ANGULAR_VELOCITY);
+            rotationStick().getX() * kSwerve.MAX_ANGULAR_VELOCITY * -1.0);
 
     swerve.drivePreProfiled(fieldSpeeds);
   }

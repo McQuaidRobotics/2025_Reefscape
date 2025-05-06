@@ -30,10 +30,10 @@ public abstract class TeleopSwerveBaseCmd extends Command {
     this.swerve = swerve;
     addRequirements(swerve);
 
-    this.rawTranslationXSup = controller.leftStickX();
-    this.rawTranslationYSup = controller.leftStickY();
-    this.rawRotationXSup = controller.rightStickX();
-    this.rawRotationYSup = controller.rightStickY();
+    this.rawTranslationXSup = controller::leftStickX;
+    this.rawTranslationYSup = controller::leftStickY;
+    this.rawRotationXSup = controller::rightStickX;
+    this.rawRotationYSup = controller::rightStickY;
 
     if (Robot.isDemo()) {
       translationMod = TunableValues.getDouble("DemoSwerveTranslationModifier", 0.8);
@@ -44,20 +44,11 @@ public abstract class TeleopSwerveBaseCmd extends Command {
     }
   }
 
-  private double solveJoystickDiagonalDelta(double x, double y) {
-    double absX = Math.abs(x);
-    double absY = Math.abs(y);
-    double diffPercent = 1.0 - (Math.abs(absX - absY) / Math.max(absX, absY));
-    double out = Math.max(Math.hypot(x, y) - (0.12 * diffPercent), 0.0);
-    if (!Double.isFinite(out)) return 0.0;
-    return out;
-  }
-
   protected Translation2d translationStick() {
     double rawX = rawTranslationXSup.getAsDouble();
     double rawY = rawTranslationYSup.getAsDouble();
     double angle = Math.atan2(rawY, rawX);
-    double rawMagnitude = solveJoystickDiagonalDelta(rawX, rawY);
+    double rawMagnitude = Math.hypot(rawX, rawY);
     rawMagnitude = MathUtil.clamp(rawMagnitude, -1, 1);
     double magnitude = kSwerve.TELEOP_TRANSLATION_AXIS_CURVE.lerpKeepSign(rawMagnitude);
     if (Robot.isDemo()) magnitude *= translationMod.value();
@@ -98,16 +89,19 @@ public abstract class TeleopSwerveBaseCmd extends Command {
       double translationX,
       double rawTranslationY,
       double translationY,
+      double rawTranslationMagnitude,
+      double translationMagnitude,
       double rawRotationX,
       double rotationX,
       double rawRotationY,
       double rotationY)
       implements StructSerializable {
+
     public static final Struct<TeleopSwerveCommandSummary> struct =
         ProceduralStructGenerator.genRecord(TeleopSwerveCommandSummary.class);
 
     public static final TeleopSwerveCommandSummary kZero =
-        new TeleopSwerveCommandSummary(0, 0, 0, 0, 0, 0, 0, 0);
+        new TeleopSwerveCommandSummary(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 
   protected TeleopSwerveCommandSummary summarize() {
@@ -118,6 +112,8 @@ public abstract class TeleopSwerveBaseCmd extends Command {
         translation.getX(),
         rawTranslationYSup.getAsDouble(),
         translation.getY(),
+        Math.hypot(rawTranslationXSup.getAsDouble(), rawTranslationYSup.getAsDouble()),
+        translation.getNorm(),
         rawRotationXSup.getAsDouble(),
         rotation.getX(),
         rawRotationYSup.getAsDouble(),

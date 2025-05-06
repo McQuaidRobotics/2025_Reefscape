@@ -149,6 +149,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     Tracer.traceFunc("SimCtx", simCtx::update);
     Tracer.traceFunc("CANSignalRefresh", CANSignalManager::refreshSignals);
     Tracer.traceFunc("Localizer", localizer::update);
+    Tracer.traceFunc("Joysticks", driverController::update);
     Tracer.traceFunc("CommandScheduler", scheduler::run);
     Tracer.traceFunc("Monologue", Monologue::updateAll);
     Tracer.traceFunc("Choosers", testManager::update);

@@ -190,10 +190,6 @@ public class SubsystemTriggers {
                 .ignoringDisable(true)
                 .withName("LedTargetingFlash"));
 
-    new Trigger(() -> vision.timeSinceLastSample() < 0.1)
-        .whileTrue(
-            Commands.startEnd(
-                    () -> driverController.rumble(0.03), () -> driverController.rumble(0.0))
-                .withName("RumbleForTag"));
+    new Trigger(() -> vision.timeSinceLastSample() < 0.1).whileTrue(driverController.rumble(0.03));
   }
 }
