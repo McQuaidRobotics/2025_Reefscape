@@ -2,8 +2,8 @@ package wayfinder.controllers;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import wayfinder.controllers.Types.Constraints;
 import wayfinder.controllers.Framework.Controller;
+import wayfinder.controllers.Types.Constraints;
 import wayfinder.controllers.Types.State;
 
 public abstract class RotationalController
@@ -66,7 +66,7 @@ public abstract class RotationalController
         return withinTolerance(measurement, target, deadband);
       } else {
         return MathUtil.isNear(prevSetpoint.position(), target.getRadians(), 0.001)
-          && MathUtil.isNear(prevSetpoint.velocity(), 0.0, 0.01);
+            && MathUtil.isNear(prevSetpoint.velocity(), 0.0, 0.01);
       }
     }
 
@@ -167,12 +167,12 @@ public abstract class RotationalController
 
   /**
    * Returns a profiled rotation controller with the given gains.
-   * 
-   * This controller will finish once the profile is done, not when the target is reached.
-   * That means the PID gains for this profiled controller are based upon the moving setpoint,
-   * not the target position. Measuring error of a practically achievable setpoint allows the
-   * system to stay stable with greater gains.
-   * 
+   *
+   * <p>This controller will finish once the profile is done, not when the target is reached. That
+   * means the PID gains for this profiled controller are based upon the moving setpoint, not the
+   * target position. Measuring error of a practically achievable setpoint allows the system to stay
+   * stable with greater gains.
+   *
    * @param kP the proportional gain
    * @param kD the derivative gain
    * @return a profiled rotation controller
@@ -183,15 +183,14 @@ public abstract class RotationalController
 
   /**
    * Returns a replanning profiled rotation controller with the given gains.
-   * 
-   * A replanning profiled controller is a mix of a
-   * {@link #profiled(double, double)} controller and
-   * {@link #unprofiled(double, double, double)} controller.
-   * The replanning profiled controller will finish once the target is reached, not when the profile is done.
-   * If the profile finishes before the target is reached, the controller will plan a new profile to the target.
-   * This allows the controller to be tolerant of latent systems and error while still largely respecting the
+   *
+   * <p>A replanning profiled controller is a mix of a {@link #profiled(double, double)} controller
+   * and {@link #unprofiled(double, double, double)} controller. The replanning profiled controller
+   * will finish once the target is reached, not when the profile is done. If the profile finishes
+   * before the target is reached, the controller will plan a new profile to the target. This allows
+   * the controller to be tolerant of latent systems and error while still largely respecting the
    * constraints of the profile.
-   * 
+   *
    * @param kP the proportional gain
    * @param kI the integral gain
    * @param kD the derivative gain
@@ -203,9 +202,9 @@ public abstract class RotationalController
   }
 
   /**
-   * Returns a rotation controller that does not use motion profiling.
-   * This controller will finish once the target is reached.
-   * 
+   * Returns a rotation controller that does not use motion profiling. This controller will finish
+   * once the target is reached.
+   *
    * @param kP the proportional gain
    * @param kI the integral gain
    * @param kD the derivative gain
