@@ -116,7 +116,7 @@ public class Pathing {
     public final Obstacle[] obstacles;
 
     private static Rectangle2d faceHitBox(Pose2d face) {
-      final Transform2d transform = new Transform2d(new Translation2d(0.5, 0.0), Rotation2d.kZero);
+      final Transform2d transform = new Transform2d(new Translation2d(0.3, 0.0), Rotation2d.kZero);
       return new Rectangle2d(face.plus(transform), 1.5, 1.0);
     }
 
