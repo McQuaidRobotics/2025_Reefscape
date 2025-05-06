@@ -82,7 +82,7 @@ public class Framework {
     private final Controller<MEASUREMENT, RATE, TARGET, LIMITS>[] controllers;
     private int currentController = 0;
 
-    @SuppressWarnings("unchecked")
+    @SafeVarargs
     public ControllerSequence(Controller<MEASUREMENT, RATE, TARGET, LIMITS>... controllers) {
       this.controllers = controllers;
     }
