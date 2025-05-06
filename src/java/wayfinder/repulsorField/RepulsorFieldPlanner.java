@@ -36,11 +36,8 @@ public class RepulsorFieldPlanner
     double yDisplacement = goal.getY() - curLocation.getY();
     double norm = Math.hypot(xDisplacement, yDisplacement);
     if (norm != 0) {
-      double cos = xDisplacement / norm;
-      double sin = yDisplacement / norm;
-      double mag = (1 + 1.0 / (1e-6 + norm));
-      xForceGoal = mag * cos * 2.0;
-      yForceGoal = mag * sin * 2.0;
+      xForceGoal = xDisplacement / norm;
+      yForceGoal = yDisplacement / norm;
     }
 
     // push away from obstacles
