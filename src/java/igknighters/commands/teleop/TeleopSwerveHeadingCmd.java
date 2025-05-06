@@ -9,9 +9,9 @@ import igknighters.subsystems.swerve.ControllerFactories;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import java.util.function.Supplier;
+import wayfinder.controllers.Framework.Controller;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
-import wayfinder.controllers.Types.Controller;
 import wpilibExt.Speeds;
 
 public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {

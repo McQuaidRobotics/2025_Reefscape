@@ -16,7 +16,9 @@ import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.plumbing.TunableValues;
 import monologue.GlobalField;
+import wayfinder.controllers.Framework.ControllerSequence;
 import wayfinder.controllers.PositionalController;
+import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.TranslationController;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
@@ -106,17 +108,19 @@ public class SwerveCommands {
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(
             new PositionalController(
-                TranslationController.unprofiled(4.0, 0.0, 0.03, 0.025),
+                new ControllerSequence<>(
+                    TranslationController.profiled(2.25, 0.6, 0.0),
+                    TranslationController.unprofiled(4.0, 0.0, 0.0, 0.025)),
                 ControllerFactories.basicRotationalController()),
             obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
         new RepulsorFieldPlanner(
             new PositionalController(
-                TranslationController.unprofiled(3.0, 0.0, 0.0, 0.0),
-                ControllerFactories.lowToleranceRotationalController()),
+                TranslationController.unprofiled(2.5, 0.0, 0.0, 0.0),
+                RotationalController.unprofiled(4.5, 0.3, 0.0)),
             PathObstacles.Other.obstacles);
 
-    final Transform2d roughPoseOffset = new Transform2d(-0.3, 0, Rotation2d.kZero);
+    final Transform2d roughPoseOffset = new Transform2d(-0.25, 0, Rotation2d.kZero);
     return Commands.sequence(
             followRepulsor(
                     roughPlanner, swerve, localizer, target.plus(roughPoseOffset), roughConstraints)
@@ -135,7 +139,10 @@ public class SwerveCommands {
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.8));
     final PositionalController roughController =
         new PositionalController(
-            ControllerFactories.shortRangeTranslationController(),
+            new ControllerSequence<>(
+              TranslationController.profiled(2.25, 0.6, 0.0),
+              TranslationController.unprofiled(4.0, 0.0, 0.0, 0.025)
+            ),
             ControllerFactories.basicRotationalController());
     return Commands.sequence(
             swerve.runOnce(

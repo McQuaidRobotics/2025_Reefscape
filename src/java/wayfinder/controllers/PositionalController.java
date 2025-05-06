@@ -3,14 +3,15 @@ package wayfinder.controllers;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import wayfinder.controllers.Framework.Controller;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
-import wayfinder.controllers.Types.Controller;
+import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Velocity2d;
 
 public class PositionalController
-    implements Controller<Pose2d, FieldSpeeds, Pose2d, ChassisConstraints> {
+    implements Controller<Pose2d, Speeds, Pose2d, ChassisConstraints> {
   private final Controller<Translation2d, Velocity2d, Translation2d, Constraints>
       translationController;
   private final Controller<Rotation2d, Double, Rotation2d, Constraints> rotationalController;
@@ -32,21 +33,22 @@ public class PositionalController
   public FieldSpeeds calculate(
       double period,
       Pose2d measurement,
-      FieldSpeeds measurementRate,
+      Speeds measurementRate,
       Pose2d target,
       ChassisConstraints constraints) {
+    FieldSpeeds filedMeasurementRate = measurementRate.asFieldRelative(measurement.getRotation());
     var translation =
         translationController.calculate(
             period,
             measurement.getTranslation(),
-            measurementRate.toVelocity2d(),
+            filedMeasurementRate.toVelocity2d(),
             target.getTranslation(),
             constraints.translation());
     var rotation =
         rotationalController.calculate(
             period,
             measurement.getRotation(),
-            measurementRate.omega(),
+            filedMeasurementRate.omega(),
             target.getRotation(),
             constraints.rotation());
     return new FieldSpeeds(translation.getVX(), translation.getVY(), rotation);
@@ -59,10 +61,11 @@ public class PositionalController
   }
 
   @Override
-  public void reset(Pose2d measurement, FieldSpeeds measurementRate, Pose2d target) {
+  public void reset(Pose2d measurement, Speeds measurementRate, Pose2d target) {
+    FieldSpeeds filedMeasurementRate = measurementRate.asFieldRelative(measurement.getRotation());
     translationController.reset(
-        measurement.getTranslation(), measurementRate.toVelocity2d(), target.getTranslation());
+        measurement.getTranslation(), filedMeasurementRate.toVelocity2d(), target.getTranslation());
     rotationalController.reset(
-        measurement.getRotation(), measurementRate.omega(), target.getRotation());
+        measurement.getRotation(), filedMeasurementRate.omega(), target.getRotation());
   }
 }

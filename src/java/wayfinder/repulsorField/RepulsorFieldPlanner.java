@@ -7,13 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 import monologue.GlobalField;
 import wayfinder.controllers.CircularSlewRateLimiter;
+import wayfinder.controllers.Framework.Controller;
 import wayfinder.controllers.PositionalController;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wpilibExt.MutTranslation2d;
 import wpilibExt.Speeds;
 import wpilibExt.Speeds.FieldSpeeds;
 
-public class RepulsorFieldPlanner {
+public class RepulsorFieldPlanner
+    implements Controller<Pose2d, Speeds, Pose2d, ChassisConstraints> {
   private final PositionalController controller;
   private final CircularSlewRateLimiter rotationRateLimiter =
       new CircularSlewRateLimiter(Math.PI * 5.0);
@@ -34,11 +36,8 @@ public class RepulsorFieldPlanner {
     double yDisplacement = goal.getY() - curLocation.getY();
     double norm = Math.hypot(xDisplacement, yDisplacement);
     if (norm != 0) {
-      double cos = xDisplacement / norm;
-      double sin = yDisplacement / norm;
-      double mag = (1 + 1.0 / (1e-6 + norm));
-      xForceGoal = mag * cos * 2.0;
-      yForceGoal = mag * sin * 2.0;
+      xForceGoal = xDisplacement / norm;
+      yForceGoal = yDisplacement / norm;
     }
 
     // push away from obstacles
@@ -62,6 +61,7 @@ public class RepulsorFieldPlanner {
     return out;
   }
 
+  @Override
   public FieldSpeeds calculate(
       double period,
       Pose2d measurement,
@@ -85,17 +85,19 @@ public class RepulsorFieldPlanner {
     }
     GlobalField.setObject("intermediatePose", intermediatePose);
     return controller.calculate(
-        period,
-        measurement,
-        measurementVelo.asFieldRelative(measurement.getRotation()),
-        intermediatePose,
-        constraints);
+        period, measurement, measurementVelo, intermediatePose, constraints);
   }
 
-  public void reset(Pose2d measurement, FieldSpeeds measurementVelo, Pose2d target) {
+  @Override
+  public void reset(Pose2d measurement, Speeds measurementVelo, Pose2d target) {
     controller.reset(measurement, measurementVelo, target);
     rotationRateLimiter.reset(
         target.getTranslation().minus(measurement.getTranslation()).getAngle().getRadians());
+  }
+
+  @Override
+  public boolean isDone(Pose2d measurement, Pose2d target) {
+    return controller.isDone(measurement, target);
   }
 
   public Pose2d[] getArrows(Translation2d goal, double xCount, double yCount) {
