@@ -11,7 +11,6 @@ import igknighters.constants.ConstValues;
 import igknighters.constants.Pathing.PathObstacles;
 import igknighters.subsystems.SharedState;
 import igknighters.subsystems.superStructure.SuperStructureState;
-import igknighters.subsystems.swerve.ControllerFactories;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.plumbing.TunableValues;
@@ -111,7 +110,7 @@ public class SwerveCommands {
                 new ControllerSequence<>(
                     TranslationController.profiled(2.25, 0.6, 0.0),
                     TranslationController.unprofiled(4.0, 0.0, 0.0, 0.025)),
-                ControllerFactories.basicRotationalController()),
+                RotationalController.unprofiled(4.5, 0.3, 0.0)),
             obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
         new RepulsorFieldPlanner(
@@ -143,7 +142,7 @@ public class SwerveCommands {
               TranslationController.profiled(2.25, 0.6, 0.0),
               TranslationController.unprofiled(4.0, 0.0, 0.0, 0.025)
             ),
-            ControllerFactories.basicRotationalController());
+            RotationalController.unprofiled(4.5, 0.3, 0.0));
     return Commands.sequence(
             swerve.runOnce(
                 () -> roughController.reset(localizer.pose(), swerve.getFieldSpeeds(), target)),

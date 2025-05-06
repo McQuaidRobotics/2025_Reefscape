@@ -4,12 +4,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import igknighters.Localizer;
 import igknighters.constants.ConstValues;
+import igknighters.constants.ConstValues.Conv;
 import igknighters.controllers.DriverController;
-import igknighters.subsystems.swerve.ControllerFactories;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import java.util.function.Supplier;
 import wayfinder.controllers.Framework.Controller;
+import wayfinder.controllers.RotationalController;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
 import wpilibExt.Speeds;
@@ -33,7 +34,7 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
     addRequirements(swerve);
     this.localizer = localizer;
     this.headingSupplier = heading;
-    this.rotController = ControllerFactories.basicRotationalController();
+    this.rotController = RotationalController.unprofiled(5.5, 0.5, 1.0 * Conv.DEGREES_TO_RADIANS);
     this.constraints = constraints;
   }
 
