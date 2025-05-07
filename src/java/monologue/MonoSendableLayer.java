@@ -29,7 +29,7 @@ import monologue.MonoEntryLayer.MonologueDoubleEntry;
 import monologue.MonoEntryLayer.MonologueEntry;
 import monologue.MonoEntryLayer.MonologueLongEntry;
 
-public class MonoSendableLayer {
+class MonoSendableLayer {
   private static final ArrayList<SendableContainer> sendables = new ArrayList<>();
 
   static void updateAll() {
@@ -38,8 +38,13 @@ public class MonoSendableLayer {
     }
   }
 
+  static void postConstantsAll() {
+    for (SendableContainer sendable : sendables) {
+      sendable.postConstants();
+    }
+  }
+
   static void addSendableContainer(SendableContainer container) {
-    container.postConstants();
     sendables.add(container);
   }
 
@@ -47,11 +52,9 @@ public class MonoSendableLayer {
     final ArrayList<Pair<Boolean, Runnable>> queue = new ArrayList<>();
     final ArrayList<Runnable> updates = new ArrayList<>();
     final ArrayList<Runnable> constants = new ArrayList<>();
-    final LogSink sink;
     boolean useQueue = false;
 
-    SendableContainer(LogSink sink) {
-      this.sink = sink;
+    SendableContainer() {
     }
 
     private void emptyQueue() {
@@ -106,7 +109,7 @@ public class MonoSendableLayer {
 
     Builder(String path, LogSink sink) {
       this.path = path;
-      this.sendable = new SendableContainer(sink);
+      this.sendable = new SendableContainer();
       this.sink = sink;
     }
 
@@ -509,17 +512,13 @@ public class MonoSendableLayer {
       }
     }
 
-    public static void addField2d(String path, Field2d field, LogSink sink) {
-      SendableContainer sendable = new SendableContainer(sink);
+    static void addField2d(MonologueBackend logger, Field2d field) {
+      SendableContainer sendable = new SendableContainer();
       List<FieldObject2d> objects = (List<FieldObject2d>) field2dObject.get(field);
 
-      sendable.addUpdatable(
-          new Runnable() {
-            public void run() {
+      sendable.addUpdatable(() -> {
               for (FieldObject2d object : objects) {
                 String name = (String) field2dObjectName.get(object);
-                MonologueEntry<double[]> entry =
-                    MonologueEntry.create(path + "/" + name, double[].class, sink);
                 List<Pose2d> poses = (List<Pose2d>) field2dObjectPoses.get(object);
                 double[] arr = new double[3 * poses.size()];
                 int ndx = 0;
@@ -530,128 +529,75 @@ public class MonoSendableLayer {
                   arr[ndx + 2] = pose.getRotation().getDegrees();
                   ndx += 3;
                 }
-                entry.log(arr);
+                logger.log(name, arr);
               }
-            }
-          });
+            });
 
-      sendable.addConstant(
-          new Runnable() {
-            MonologueEntry<String> entry =
-                MonologueEntry.create(path + "/.type", String.class, sink);
-
-            public void run() {
-              entry.log("Field2d");
-            }
-          });
+      sendable.addConstant(() -> {
+        logger.log(".type", "Field2d");
+        logger.log(".controllable", true);
+      });
 
       addSendableContainer(sendable);
     }
 
-    public static void addMechanism2dLigament(
-        String path, MechanismLigament2d ligament, SendableContainer sendable, LogSink sink) {
-      double angle = (double) mechanism2dLigamentAngle.get(ligament);
-      String color = (String) mechanism2dLigamentColor.get(ligament);
-      double length = (double) mechanism2dLigamentLength.get(ligament);
-      double weight = (double) mechanism2dLigamentWeight.get(ligament);
+    private static void addMechanism2dLigament(
+        MonologueBackend logger, MechanismLigament2d ligament, SendableContainer sendable) {
 
-      sendable.addUpdatable(
-          new Runnable() {
-            MonologueDoubleEntry angleEntry = MonologueEntry.createDouble(path + "/angle", sink);
-            MonologueEntry<String> colorEntry =
-                MonologueEntry.create(path + "/color", String.class, sink);
-            MonologueDoubleEntry lengthEntry = MonologueEntry.createDouble(path + "/length", sink);
-            MonologueDoubleEntry weightEntry = MonologueEntry.createDouble(path + "/weight", sink);
+      sendable.addUpdatable(() -> {
+        logger.log("angle", (double) mechanism2dLigamentAngle.get(ligament));
+        logger.log("color", (String) mechanism2dLigamentColor.get(ligament));
+        logger.log("length", (double) mechanism2dLigamentLength.get(ligament));
+        logger.log("weight", (double) mechanism2dLigamentWeight.get(ligament));
+      });
 
-            public void run() {
-              angleEntry.logDouble(angle);
-              colorEntry.log(color);
-              lengthEntry.logDouble(length);
-              weightEntry.logDouble(weight);
-            }
-          });
+      sendable.addConstant(() -> {
+        logger.log(".type", "line");
+      });
+    }
 
-      sendable.addConstant(
-          new Runnable() {
-            MonologueEntry<String> typeEntry =
-                MonologueEntry.create(path + "/.type", String.class, sink);
-
-            public void run() {
-              typeEntry.log("line");
-            }
+    private static void addMechanism2dRoot(MonologueBackend logger, MechanismRoot2d root, SendableContainer sendable) {
+      sendable.addUpdatable(() -> {
+            logger.log("x", (double) mechanism2dRootX.get(root));
+            logger.log("y", (double) mechanism2dRootY.get(root));
           });
     }
 
-    public static void addMechanism2dRoot(
-        String path, MechanismRoot2d root, SendableContainer sendable, LogSink sink) {
-      double x = (double) mechanism2dRootX.get(root);
-      double y = (double) mechanism2dRootY.get(root);
+    private static void addMechanism2dObject(
+        MonologueBackend logger, MechanismObject2d object, SendableContainer sendable) {
 
-      sendable.addUpdatable(
-          new Runnable() {
-            MonologueDoubleEntry xEntry = MonologueEntry.createDouble(path + "/x", sink);
-            MonologueDoubleEntry yEntry = MonologueEntry.createDouble(path + "/y", sink);
-
-            public void run() {
-              xEntry.logDouble(x);
-              yEntry.logDouble(y);
-            }
-          });
-    }
-
-    public static void addMechanism2dObject(
-        String path, MechanismObject2d object, SendableContainer sendable, LogSink sink) {
-      Map<String, MechanismObject2d> objects =
-          (Map<String, MechanismObject2d>) mechanism2dObjects.get(object);
+      Map<String, MechanismObject2d> objects = (Map<String, MechanismObject2d>) mechanism2dObjects.get(object);
 
       if (object instanceof MechanismLigament2d) {
-        addMechanism2dLigament(path, (MechanismLigament2d) object, sendable, sink);
+        addMechanism2dLigament(logger, (MechanismLigament2d) object, sendable);
       } else if (object instanceof MechanismRoot2d) {
-        addMechanism2dRoot(path, (MechanismRoot2d) object, sendable, sink);
+        addMechanism2dRoot(logger, (MechanismRoot2d) object, sendable);
       }
 
       for (Map.Entry<String, MechanismObject2d> entry : objects.entrySet()) {
-        addMechanism2dObject(path + "/" + entry.getKey(), entry.getValue(), sendable, sink);
+        addMechanism2dObject(logger.getNested(entry.getKey()), entry.getValue(), sendable);
       }
     }
 
-    public static void addMechanism2d(String path, Mechanism2d mech, LogSink sink) {
-      SendableContainer sendable = new SendableContainer(sink);
-      Map<String, MechanismRoot2d> roots =
-          (Map<String, MechanismRoot2d>) mechanism2dRoots.get(mech);
+    public static void addMechanism2d(MonologueBackend logger, String name, Mechanism2d mech) {
+      final MonologueBackend tableLogger = logger.getNested(name);
+      final SendableContainer sendable = new SendableContainer();
+      final var roots = (Map<String, MechanismRoot2d>) mechanism2dRoots.get(mech);
 
-      sendable.addUpdatable(
-          new Runnable() {
-            MonologueEntry<double[]> dimsEntry =
-                MonologueEntry.create(path + "/dims", double[].class, sink);
-            MonologueEntry<String> colorEntry =
-                MonologueEntry.create(path + "/backgroundColor", String.class, sink);
-
-            public void run() {
-              dimsEntry.log((double[]) mechanism2dDims.get(mech));
-              colorEntry.log((String) mechanism2dColor.get(mech));
-            }
-          });
+      sendable.addUpdatable(() -> {
+        tableLogger.log("dims", (double[]) mechanism2dDims.get(mech));
+        tableLogger.log("backgroundColor", (String) mechanism2dColor.get(mech));
+      });
 
       for (Map.Entry<String, MechanismRoot2d> entry : roots.entrySet()) {
-        addMechanism2dObject(path + "/" + entry.getKey(), entry.getValue(), sendable, sink);
+        addMechanism2dObject(tableLogger.getNested(entry.getKey()), entry.getValue(), sendable);
       }
 
-      sendable.addConstant(
-          new Runnable() {
-            MonologueEntry<String> typeEntry =
-                MonologueEntry.create(path + "/.type", String.class, sink);
-            MonologueEntry<Boolean> controllableEntry =
-                MonologueEntry.create(path + "/.controllable", Boolean.class, sink);
-            MonologueEntry<String> nameEntry =
-                MonologueEntry.create(path + "/.name", String.class, sink);
-
-            public void run() {
-              typeEntry.log("Mechanism2d");
-              controllableEntry.log(true);
-              nameEntry.log(path);
-            }
-          });
+      sendable.addConstant(() -> {
+        tableLogger.log(".type", "Mechanism2d");
+        tableLogger.log(".controllable", true);
+        tableLogger.log(".name", name);
+      });
 
       addSendableContainer(sendable);
     }

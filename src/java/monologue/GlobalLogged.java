@@ -1,5 +1,6 @@
 package monologue;
 
+import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.struct.Struct;
@@ -549,17 +550,15 @@ class GlobalLogged {
    * <p>This method is used to log a Sendable that is a Field2d. Field2d is an {@code NTSendable}
    * which require specialized code to log to Datalog.
    *
-   * @param entryName The name of the entry to log, this is an absolute path.
+   * @param path The name of the entry to log, this is an absolute path.
    * @param value The value to log.
    */
-  public static void publishSendable(String entryName, Field2d value, LogSink sink) {
+  public static void publishSendable(String path, Field2d value, LogSink sink) {
     if (!Monologue.hasBeenSetup() || Monologue.isMonologueDisabled()) {
-      String entryNameFinal = entryName;
-      Monologue.prematureLog(() -> GlobalLogged.publishSendable(entryNameFinal, value, sink));
+      Monologue.prematureLog(() -> GlobalLogged.publishSendable(path, value, sink));
       return;
     }
-    entryName = NetworkTable.normalizeKey(entryName, true);
-    NtSendableCompat.addField2d(entryName, value, sink);
+    NtSendableCompat.addField2d(backend(path, sink), value);
   }
 
   /**
@@ -568,16 +567,30 @@ class GlobalLogged {
    * <p>This method is used to log a Sendable that is a Mechanism2d. Mechanism2d is an {@code
    * NTSendable} which require specialized code to log to Datalog.
    *
-   * @param entryName The name of the entry to log, this is an absolute path.
+   * @param path The name of the entry to log, this is an absolute path.
    * @param value The value to log.
    */
-  public static void publishSendable(String entryName, Mechanism2d value, LogSink sink) {
+  public static void publishSendable(String path, Mechanism2d value, LogSink sink) {
     if (!Monologue.hasBeenSetup() || Monologue.isMonologueDisabled()) {
-      String entryNameFinal = entryName;
+      String entryNameFinal = path;
       Monologue.prematureLog(() -> GlobalLogged.publishSendable(entryNameFinal, value, sink));
       return;
     }
-    entryName = NetworkTable.normalizeKey(entryName, true);
-    NtSendableCompat.addMechanism2d(entryName, value, sink);
+    path = NetworkTable.normalizeKey(path, true);
+    String table = path.substring(0, path.lastIndexOf("/"));
+    String name = path.substring(path.lastIndexOf("/") + 1);
+    NtSendableCompat.addMechanism2d(backend(table, sink), name, value);
+  }
+
+  /**
+   * Creates an object that implements {@link EpilogueBackend}
+   * that will use monologue machinery to log data to the given path.
+   *
+   * @param path The path to log to. This is an absolute path.
+   * @param sink The sink to log to.
+   * @return The backend object that will log to the given path.
+   */
+  public static MonologueBackend backend(String path, LogSink sink) {
+    return new MonologueBackend(new MonologueBackend.Location.Path(path), sink);
   }
 }

@@ -269,6 +269,7 @@ public class Monologue extends GlobalLogged {
     wpilog.flush();
 
     trees.add(node);
+    MonoSendableLayer.postConstantsAll();
   }
 
   /**

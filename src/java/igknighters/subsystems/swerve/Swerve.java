@@ -1,13 +1,11 @@
 package igknighters.subsystems.swerve;
 
-import edu.wpi.first.epilogue.logging.NTEpilogueBackend;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.Localizer;
 import igknighters.Robot;
@@ -30,6 +28,8 @@ import igknighters.subsystems.swerve.odometryThread.RealSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SwerveOdometryThread;
 import igknighters.util.plumbing.TunableValues;
+import monologue.LogSink;
+
 import java.util.Optional;
 import sham.ShamSwerve;
 import wayfinder.controllers.Types.ChassisConstraints;
@@ -69,8 +69,7 @@ public class Swerve implements ExclusiveSubsystem {
 
   private final SwerveSetpointGenerator setpointGeneratorBeta =
       new SwerveSetpointGenerator(
-          new NTEpilogueBackend(NetworkTableInstance.getDefault())
-              .getNested("/Robot/Swerve/setpointGenerator"),
+          this.backend("", LogSink.OP),
           kSwerve.MODULE_CHASSIS_LOCATIONS,
           new DCMotorExt(
               DCMotor.getKrakenX60Foc(1).withReduction(ModuleConstants.kDriveMotor.GEAR_RATIO), 1),

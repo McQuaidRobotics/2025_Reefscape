@@ -1,13 +1,16 @@
 package monologue;
 
+import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.WeakHashMap;
 import monologue.LoggingTree.LoggingNode;
 
@@ -22,7 +25,6 @@ import monologue.LoggingTree.LoggingNode;
  * @see Annotations.Log.Once
  */
 public interface Logged {
-
   static final WeakHashMap<Object, ArrayList<LoggingNode>> registry = new WeakHashMap<>();
   static final HashMap<Class<?>, LoggingNode> singletons = new HashMap<>();
 
@@ -579,7 +581,29 @@ public interface Logged {
    * @param entryName The name of the entry to log, this is an absolute path.
    * @param value The value to log.
    */
-  public static void publishSendable(String entryName, Sendable value, LogSink sink) {
+  public default void publishSendable(String key, Sendable value, LogSink sink) {
+    if (!Monologue.hasBeenSetup()) {
+      Monologue.prematureLog(() -> publishSendable(key, value, sink));
+      return;
+    }
+    List<LoggingNode> nodes = getNodes(this);
+    if (nodes.isEmpty()) {
+      RuntimeLog.warn(
+          "No nodes found for" + this.getClass().getSimpleName() + " when publishing sendable");
+      return;
+    }
+    for (LoggingNode node : nodes) {
+      Monologue.publishSendable(node.getPath() + "/" + key, value, sink);
+    }
+  }
+
+  /**
+   * Logs a Sendable using the Monologue machinery.
+   *
+   * @param entryName The name of the entry to log, this is an absolute path.
+   * @param value The value to log.
+   */
+  public default void publishSendable(String entryName, Field2d value, LogSink sink) {
     if (!Monologue.hasBeenSetup()) {
       Monologue.prematureLog(() -> publishSendable(entryName, value, sink));
       return;
@@ -593,7 +617,7 @@ public interface Logged {
    * @param entryName The name of the entry to log, this is an absolute path.
    * @param value The value to log.
    */
-  public static void publishSendable(String entryName, Field2d value, LogSink sink) {
+  public default void publishSendable(String entryName, Mechanism2d value, LogSink sink) {
     if (!Monologue.hasBeenSetup()) {
       Monologue.prematureLog(() -> publishSendable(entryName, value, sink));
       return;
@@ -601,17 +625,8 @@ public interface Logged {
     Monologue.publishSendable(entryName, value, sink);
   }
 
-  /**
-   * Logs a Sendable using the Monologue machinery.
-   *
-   * @param entryName The name of the entry to log, this is an absolute path.
-   * @param value The value to log.
-   */
-  public static void publishSendable(String entryName, Mechanism2d value, LogSink sink) {
-    if (!Monologue.hasBeenSetup()) {
-      Monologue.prematureLog(() -> publishSendable(entryName, value, sink));
-      return;
-    }
-    Monologue.publishSendable(entryName, value, sink);
+  public default EpilogueBackend backend(String suffix, LogSink sink) {
+    Optional<String> prefix = suffix.isEmpty() ? Optional.empty() : Optional.ofNullable(suffix);
+    return new MonologueBackend(new MonologueBackend.Location.Object(this, prefix), sink);
   }
 }
