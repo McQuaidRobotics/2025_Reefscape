@@ -3,8 +3,6 @@ package sham;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-// import static edu.wpi.first.units.Units.RadiansPerSecond;
-// import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
@@ -43,6 +41,7 @@ public class ShamGyro {
   private final AngularVelocity averageDriftingMotionless;
 
   private Twist2d lastTwist = new Twist2d();
+  private Angle lastAngle = Radians.of(0.0);
 
   public ShamGyro(ShamEnvTiming timing, ShamGyroConfig gyroConfig, EpilogueBackend logger) {
     this.logger = logger.getNested("Gyro");
@@ -61,6 +60,10 @@ public class ShamGyro {
     this.updateConsumer = updateConsumer;
   }
 
+  public void resetYaw(Angle angle) {
+    lastAngle = angle;
+  }
+
   /**
    *
    *
@@ -72,7 +75,7 @@ public class ShamGyro {
    * @param actualAngularVelocityRadPerSec the actual angular velocity in radians per second,
    *     usually obtained from {@link ShamDriveTrain#getAngularVelocity()}
    */
-  public void updateSimulationSubTick(Angle angleThisTick, Twist2d twistThisTick) {
+  public void updateSimulationSubTick(Twist2d twistThisTick) {
     AngularVelocity actualAngularVelocity = Radians.of(twistThisTick.dtheta).div(timing.dt());
 
     AngularVelocity omegaV =
@@ -80,21 +83,25 @@ public class ShamGyro {
             .plus(averageDriftingMotionless)
             .plus(
                 actualAngularVelocity.times(ShamCommonMath.generateRandomNormal(0.0, veloStdDev)));
+    logger.log("driftPerSec", omegaV.minus(actualAngularVelocity));
+    lastAngle = lastAngle.plus(omegaV.times(timing.dt()));
 
     LinearVelocity lastXV = Meters.of(lastTwist.dx).div(timing.dt());
     LinearVelocity lastYV = Meters.of(lastTwist.dy).div(timing.dt());
     LinearVelocity xV = Meters.of(twistThisTick.dx).div(timing.dt());
     LinearVelocity yV = Meters.of(twistThisTick.dy).div(timing.dt());
-
-    LinearAcceleration xA = xV.minus(lastXV).div(timing.dt());
-    LinearAcceleration yA = yV.minus(lastYV).div(timing.dt());
+    XY<LinearAcceleration> accel =
+        new XY<>(xV.minus(lastXV).div(timing.dt()), yV.minus(lastYV).div(timing.dt()));
 
     logger.log("omegaV", omegaV);
-    logger.log("xA", xA);
-    logger.log("yA", yA);
+    logger.log("xA", accel.x());
+    logger.log("yA", accel.y());
+    logger.log("accel", accel.magnitude());
 
     if (updateConsumer != null) {
-      updateConsumer.accept(Pair.of(angleThisTick, omegaV), new XY<>(xA, yA));
+      updateConsumer.accept(Pair.of(lastAngle, omegaV), accel);
     }
+
+    lastTwist = twistThisTick;
   }
 }

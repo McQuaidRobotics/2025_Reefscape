@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static wpilibExt.MeasureMath.div;
 import static wpilibExt.MeasureMath.times;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -100,8 +101,7 @@ public class ShamSwerve extends ShamDriveTrain {
   protected void simTick() {
     simulateModulePropulsion();
     simulateModuleFriction();
-    gyroSimulation.updateSimulationSubTick(
-        this.getChassisWorldPose().getRotation().getMeasure(), this.getTickTwist());
+    gyroSimulation.updateSimulationSubTick(this.getTickTwist());
     super.simTick();
   }
 
@@ -263,5 +263,11 @@ public class ShamSwerve extends ShamDriveTrain {
 
   public ShamEnvTiming timing() {
     return timing;
+  }
+
+  @Override
+  public void setChassisWorldPose(Pose2d robotPose, boolean resetVelocity) {
+    super.setChassisWorldPose(robotPose, resetVelocity);
+    gyroSimulation.resetYaw(robotPose.getRotation().getMeasure());
   }
 }

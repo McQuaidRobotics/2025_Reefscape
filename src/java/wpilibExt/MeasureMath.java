@@ -153,19 +153,41 @@ public class MeasureMath {
       return cls.cast(a.minus(b));
     }
 
+    public Unit unit() {
+      return x.unit();
+    }
+
     @SuppressWarnings("unchecked")
     public M magnitude() {
-      return (M) x.unit().ofBaseUnits(Math.hypot(x.baseUnitMagnitude(), y.baseUnitMagnitude()));
+      return (M) unit().ofBaseUnits(Math.hypot(x.baseUnitMagnitude(), y.baseUnitMagnitude()));
+    }
+
+    public boolean isZero() {
+      return magnitude().baseUnitMagnitude() < 1e-6;
+    }
+
+    public Rotation2d angle() {
+      return new Rotation2d(x.baseUnitMagnitude(), y.baseUnitMagnitude());
     }
 
     @SuppressWarnings("unchecked")
     public XY<M> normalize() {
       M mag = magnitude();
-      return new XY<>((M) x.div(mag), (M) y.div(mag));
+      if (mag.baseUnitMagnitude() < 1e-6) {
+        return (XY<M>) zero(unit());
+      }
+      return new XY<>(
+          (M) unit().ofBaseUnits(x.div(mag).baseUnitMagnitude()),
+          (M) unit().ofBaseUnits(y.div(mag).baseUnitMagnitude()));
     }
 
     @SuppressWarnings("unchecked")
     public XY<M> times(M scalar) {
+      return new XY<>((M) x.times(scalar), (M) y.times(scalar));
+    }
+
+    @SuppressWarnings("unchecked")
+    public XY<M> times(double scalar) {
       return new XY<>((M) x.times(scalar), (M) y.times(scalar));
     }
 
