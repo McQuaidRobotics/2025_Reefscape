@@ -1,10 +1,10 @@
 package monologue;
 
-import java.util.Optional;
-
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.util.struct.Struct;
+import java.lang.ref.WeakReference;
+import java.util.Optional;
 
 public class MonologueBackend implements EpilogueBackend {
   sealed interface Location {
@@ -13,7 +13,8 @@ public class MonologueBackend implements EpilogueBackend {
         this.path = NetworkTable.normalizeKey(path, true);
       }
     }
-    record Object(Logged object, Optional<String> prefix) implements Location {
+
+    record Object(WeakReference<Logged> weakObject, Optional<String> prefix) implements Location {
       public Optional<String> extendedPrefix(String path) {
         if (path == null || path.isEmpty()) {
           return prefix;
@@ -31,6 +32,10 @@ public class MonologueBackend implements EpilogueBackend {
           return key;
         }
       }
+
+      public Logged object() {
+        return weakObject.get();
+      }
     }
   }
 
@@ -42,6 +47,21 @@ public class MonologueBackend implements EpilogueBackend {
     this.sink = sink;
   }
 
+  MonologueBackend(String path, LogSink sink) {
+    this.location = new Location.Path(path);
+    this.sink = sink;
+  }
+
+  MonologueBackend(Logged object, String subTable, LogSink sink) {
+    this.location = new Location.Object(new WeakReference<>(object), Optional.ofNullable(subTable));
+    this.sink = sink;
+  }
+
+  MonologueBackend(Logged object, LogSink sink) {
+    this.location = new Location.Object(new WeakReference<>(object), Optional.empty());
+    this.sink = sink;
+  }
+
   public LogSink getSink() {
     return sink;
   }
@@ -50,7 +70,8 @@ public class MonologueBackend implements EpilogueBackend {
     if (location instanceof Location.Path) {
       return true;
     } else if (location instanceof Location.Object objectLoc) {
-      return !Logged.getNodes(objectLoc.object()).isEmpty();
+      return !objectLoc.weakObject().refersTo(null)
+          && !Logged.getNodes(objectLoc.object()).isEmpty();
     } else {
       throw new IllegalStateException("Unknown location type: " + location.getClass());
     }
@@ -60,9 +81,10 @@ public class MonologueBackend implements EpilogueBackend {
   public MonologueBackend getNested(String path) {
     path = NetworkTable.normalizeKey(path, false);
     if (location instanceof Location.Path pathLoc) {
-      return new MonologueBackend(new Location.Path(pathLoc.path() + "/" + path), sink);
+      return new MonologueBackend(pathLoc.path() + "/" + path, sink);
     } else if (location instanceof Location.Object objectLoc) {
-      return new MonologueBackend(new Location.Object(objectLoc.object(), objectLoc.extendedPrefix(path)), sink);
+      return new MonologueBackend(
+          new Location.Object(objectLoc.weakObject(), objectLoc.extendedPrefix(path)), sink);
     } else {
       throw new IllegalStateException("Unknown location type: " + location.getClass());
     }
@@ -70,6 +92,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, boolean value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -83,6 +106,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, double value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -96,6 +120,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, String value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -109,6 +134,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public <S> void log(String identifier, S value, Struct<S> struct) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, struct, value, sink);
@@ -122,6 +148,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, float value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -135,6 +162,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, long value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -148,6 +176,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, int value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -161,6 +190,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, boolean[] value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -174,6 +204,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, double[] value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -187,6 +218,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, String[] value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -200,6 +232,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, float[] value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -213,6 +246,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, long[] value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -226,6 +260,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, int[] value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);
@@ -239,6 +274,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public <S> void log(String identifier, S[] value, Struct<S> struct) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, struct, value, sink);
@@ -252,6 +288,7 @@ public class MonologueBackend implements EpilogueBackend {
 
   @Override
   public void log(String identifier, byte[] value) {
+    if (!stillValid()) return;
     identifier = NetworkTable.normalizeKey(identifier, false);
     if (location instanceof Location.Path pathLoc) {
       Monologue.log(pathLoc.path() + "/" + identifier, value, sink);

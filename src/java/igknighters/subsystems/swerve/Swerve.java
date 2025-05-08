@@ -28,9 +28,8 @@ import igknighters.subsystems.swerve.odometryThread.RealSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SwerveOdometryThread;
 import igknighters.util.plumbing.TunableValues;
-import monologue.LogSink;
-
 import java.util.Optional;
+import monologue.LogSink;
 import sham.ShamSwerve;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;

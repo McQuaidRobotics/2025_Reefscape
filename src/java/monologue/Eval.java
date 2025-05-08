@@ -18,9 +18,9 @@ import monologue.Annotations.MaybeLoggedType;
 import monologue.Annotations.OptionalLogged;
 import monologue.Annotations.SingletonLogged;
 import monologue.LoggingTree.*;
-import monologue.Primatives.BooleanVarHandle;
-import monologue.Primatives.DoubleVarHandle;
-import monologue.Primatives.LongVarHandle;
+import monologue.Primitives.BooleanVarHandle;
+import monologue.Primitives.DoubleVarHandle;
+import monologue.Primitives.LongVarHandle;
 
 public class Eval {
   /**
@@ -223,10 +223,10 @@ public class Eval {
       // handle singletons
       if (isNestedLogged && isStatic) {
         Optional<String> singletonKey = singletonKey(field.getType());
-        if (singletonKey.isPresent() && !Logged.singletonAlreadyAdded(field.getType())) {
+        if (singletonKey.isPresent() && !Logged.isSingletonRegistered(field.getType())) {
           try {
             Monologue.logTree((Logged) field.get(null), singletonKey.get());
-            Logged.addSingleton(
+            Logged.registerSingleton(
                 field.getType(), new SingletonNode(singletonKey.get(), field.getType(), handle));
           } catch (IllegalAccessException e) {
             RuntimeLog.warn("Issue with singleton " + field.getType().getSimpleName());

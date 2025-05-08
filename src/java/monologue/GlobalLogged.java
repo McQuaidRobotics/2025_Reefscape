@@ -583,8 +583,8 @@ class GlobalLogged {
   }
 
   /**
-   * Creates an object that implements {@link EpilogueBackend}
-   * that will use monologue machinery to log data to the given path.
+   * Creates an object that implements {@link EpilogueBackend} that will use monologue machinery to
+   * log data to the given path.
    *
    * @param path The path to log to. This is an absolute path.
    * @param sink The sink to log to.

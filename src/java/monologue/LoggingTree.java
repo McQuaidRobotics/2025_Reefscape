@@ -12,9 +12,9 @@ import monologue.MonoEntryLayer.MonologueBooleanEntry;
 import monologue.MonoEntryLayer.MonologueDoubleEntry;
 import monologue.MonoEntryLayer.MonologueEntry;
 import monologue.MonoEntryLayer.MonologueLongEntry;
-import monologue.Primatives.BooleanGetter;
-import monologue.Primatives.DoubleGetter;
-import monologue.Primatives.LongGetter;
+import monologue.Primitives.BooleanGetter;
+import monologue.Primitives.DoubleGetter;
+import monologue.Primitives.LongGetter;
 
 public class LoggingTree {
   private static class MonologueTriedToLogNull extends NullPointerException {

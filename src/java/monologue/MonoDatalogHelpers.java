@@ -16,6 +16,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
+// This should not exist, i was having issues with datalogger mid cop and was trying anything i
+// could.
 public class MonoDatalogHelpers {
   private static final ZoneId utc = ZoneId.of("UTC");
   private static final DateTimeFormatter m_timeFormatter =

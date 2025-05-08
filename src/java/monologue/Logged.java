@@ -6,11 +6,10 @@ import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.WeakHashMap;
 import monologue.LoggingTree.LoggingNode;
 
@@ -25,27 +24,43 @@ import monologue.LoggingTree.LoggingNode;
  * @see Annotations.Log.Once
  */
 public interface Logged {
+  static final WeakReference<Object> NULL_REF = new WeakReference<>(null);
+
   static final WeakHashMap<Object, ArrayList<LoggingNode>> registry = new WeakHashMap<>();
+  static final WeakHashMap<LoggingNode, WeakReference<Object>> reverseRegistry =
+      new WeakHashMap<>();
   static final HashMap<Class<?>, LoggingNode> singletons = new HashMap<>();
 
   static void addNode(Object logged, LoggingNode node) {
+    WeakReference<Object> previousObject = reverseRegistry.getOrDefault(node, NULL_REF);
+    if (!previousObject.refersTo(null)) {
+      getNodes(previousObject.get()).remove(node);
+      reverseRegistry.remove(node);
+    }
+    reverseRegistry.put(node, new WeakReference<>(logged));
     var lst = getNodes(logged);
     if (!lst.contains(node)) {
       lst.add(node);
     }
   }
 
-  static void addSingleton(Class<?> logged, LoggingNode node) {
+  static List<LoggingNode> getNodes(Object logged) {
+    if (logged == null) {
+      return List.of();
+    }
+    if (isSingletonRegistered(logged.getClass())) {
+      return List.of(singletons.get(logged.getClass()));
+    }
+    registry.putIfAbsent(logged, new ArrayList<>());
+    return registry.get(logged);
+  }
+
+  static void registerSingleton(Class<?> logged, LoggingNode node) {
     singletons.put(logged, node);
   }
 
-  static boolean singletonAlreadyAdded(Class<?> logged) {
+  static boolean isSingletonRegistered(Class<?> logged) {
     return singletons.containsKey(logged);
-  }
-
-  static List<LoggingNode> getNodes(Object logged) {
-    registry.putIfAbsent(logged, new ArrayList<>());
-    return registry.get(logged);
   }
 
   /**
@@ -626,7 +641,6 @@ public interface Logged {
   }
 
   public default EpilogueBackend backend(String suffix, LogSink sink) {
-    Optional<String> prefix = suffix.isEmpty() ? Optional.empty() : Optional.ofNullable(suffix);
-    return new MonologueBackend(new MonologueBackend.Location.Object(this, prefix), sink);
+    return new MonologueBackend(this, suffix, sink);
   }
 }

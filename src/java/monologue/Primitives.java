@@ -2,7 +2,7 @@ package monologue;
 
 import java.lang.invoke.VarHandle;
 
-class Primatives {
+class Primitives {
 
   @FunctionalInterface
   public interface DoubleGetter {
@@ -19,7 +19,7 @@ class Primatives {
     boolean get(Object o);
   }
 
-  public static final class DoubleVarHandle {
+  public static final class DoubleVarHandle implements DoubleGetter {
     private final VarHandle handle;
 
     public DoubleVarHandle(VarHandle handle) {
@@ -31,7 +31,7 @@ class Primatives {
     }
   }
 
-  public static final class LongVarHandle {
+  public static final class LongVarHandle implements LongGetter {
     private final VarHandle handle;
 
     public LongVarHandle(VarHandle handle) {
@@ -43,7 +43,7 @@ class Primatives {
     }
   }
 
-  public static final class BooleanVarHandle {
+  public static final class BooleanVarHandle implements BooleanGetter {
     private final VarHandle handle;
 
     public BooleanVarHandle(VarHandle handle) {

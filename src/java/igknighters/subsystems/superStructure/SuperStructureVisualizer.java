@@ -6,10 +6,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.superStructure.SuperStructureConstants.kElevator.Stage;
+import monologue.LogSink;
+import monologue.Monologue;
 
 public class SuperStructureVisualizer {
   private final Mechanism2d mechanism;
@@ -126,8 +127,8 @@ public class SuperStructureVisualizer {
     stage1.setLineWeight(elevatorWidth);
     stage2.setLineWeight(elevatorWidth);
 
-    // Monologue.publishSendable("/Visualizers/SuperStructure", mechanism, LogSink.OP);
-    SmartDashboard.putData("SuperStructure", mechanism);
+    Monologue.publishSendable("/Visualizers/SuperStructure", mechanism, LogSink.OP);
+    // SmartDashboard.putData("SuperStructure", mechanism);
   }
 
   /**

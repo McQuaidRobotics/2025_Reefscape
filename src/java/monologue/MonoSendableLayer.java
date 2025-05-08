@@ -45,6 +45,7 @@ class MonoSendableLayer {
   }
 
   static void addSendableContainer(SendableContainer container) {
+    container.postConstants();
     sendables.add(container);
   }
 
@@ -54,8 +55,7 @@ class MonoSendableLayer {
     final ArrayList<Runnable> constants = new ArrayList<>();
     boolean useQueue = false;
 
-    SendableContainer() {
-    }
+    SendableContainer() {}
 
     private void emptyQueue() {
       if (queue.isEmpty()) {
@@ -516,27 +516,29 @@ class MonoSendableLayer {
       SendableContainer sendable = new SendableContainer();
       List<FieldObject2d> objects = (List<FieldObject2d>) field2dObject.get(field);
 
-      sendable.addUpdatable(() -> {
-              for (FieldObject2d object : objects) {
-                String name = (String) field2dObjectName.get(object);
-                List<Pose2d> poses = (List<Pose2d>) field2dObjectPoses.get(object);
-                double[] arr = new double[3 * poses.size()];
-                int ndx = 0;
-                for (Pose2d pose : poses) {
-                  var translation = pose.getTranslation();
-                  arr[ndx + 0] = translation.getX();
-                  arr[ndx + 1] = translation.getY();
-                  arr[ndx + 2] = pose.getRotation().getDegrees();
-                  ndx += 3;
-                }
-                logger.log(name, arr);
+      sendable.addUpdatable(
+          () -> {
+            for (FieldObject2d object : objects) {
+              String name = (String) field2dObjectName.get(object);
+              List<Pose2d> poses = (List<Pose2d>) field2dObjectPoses.get(object);
+              double[] arr = new double[3 * poses.size()];
+              int ndx = 0;
+              for (Pose2d pose : poses) {
+                var translation = pose.getTranslation();
+                arr[ndx + 0] = translation.getX();
+                arr[ndx + 1] = translation.getY();
+                arr[ndx + 2] = pose.getRotation().getDegrees();
+                ndx += 3;
               }
-            });
+              logger.log(name, arr);
+            }
+          });
 
-      sendable.addConstant(() -> {
-        logger.log(".type", "Field2d");
-        logger.log(".controllable", true);
-      });
+      sendable.addConstant(
+          () -> {
+            logger.log(".type", "Field2d");
+            logger.log(".controllable", true);
+          });
 
       addSendableContainer(sendable);
     }
@@ -544,20 +546,24 @@ class MonoSendableLayer {
     private static void addMechanism2dLigament(
         MonologueBackend logger, MechanismLigament2d ligament, SendableContainer sendable) {
 
-      sendable.addUpdatable(() -> {
-        logger.log("angle", (double) mechanism2dLigamentAngle.get(ligament));
-        logger.log("color", (String) mechanism2dLigamentColor.get(ligament));
-        logger.log("length", (double) mechanism2dLigamentLength.get(ligament));
-        logger.log("weight", (double) mechanism2dLigamentWeight.get(ligament));
-      });
+      sendable.addUpdatable(
+          () -> {
+            logger.log("angle", (double) mechanism2dLigamentAngle.get(ligament));
+            logger.log("color", (String) mechanism2dLigamentColor.get(ligament));
+            logger.log("length", (double) mechanism2dLigamentLength.get(ligament));
+            logger.log("weight", (double) mechanism2dLigamentWeight.get(ligament));
+          });
 
-      sendable.addConstant(() -> {
-        logger.log(".type", "line");
-      });
+      sendable.addConstant(
+          () -> {
+            logger.log(".type", "line");
+          });
     }
 
-    private static void addMechanism2dRoot(MonologueBackend logger, MechanismRoot2d root, SendableContainer sendable) {
-      sendable.addUpdatable(() -> {
+    private static void addMechanism2dRoot(
+        MonologueBackend logger, MechanismRoot2d root, SendableContainer sendable) {
+      sendable.addUpdatable(
+          () -> {
             logger.log("x", (double) mechanism2dRootX.get(root));
             logger.log("y", (double) mechanism2dRootY.get(root));
           });
@@ -566,7 +572,8 @@ class MonoSendableLayer {
     private static void addMechanism2dObject(
         MonologueBackend logger, MechanismObject2d object, SendableContainer sendable) {
 
-      Map<String, MechanismObject2d> objects = (Map<String, MechanismObject2d>) mechanism2dObjects.get(object);
+      Map<String, MechanismObject2d> objects =
+          (Map<String, MechanismObject2d>) mechanism2dObjects.get(object);
 
       if (object instanceof MechanismLigament2d) {
         addMechanism2dLigament(logger, (MechanismLigament2d) object, sendable);
@@ -584,20 +591,22 @@ class MonoSendableLayer {
       final SendableContainer sendable = new SendableContainer();
       final var roots = (Map<String, MechanismRoot2d>) mechanism2dRoots.get(mech);
 
-      sendable.addUpdatable(() -> {
-        tableLogger.log("dims", (double[]) mechanism2dDims.get(mech));
-        tableLogger.log("backgroundColor", (String) mechanism2dColor.get(mech));
-      });
+      sendable.addUpdatable(
+          () -> {
+            tableLogger.log("dims", (double[]) mechanism2dDims.get(mech));
+            tableLogger.log("backgroundColor", (String) mechanism2dColor.get(mech));
+          });
 
       for (Map.Entry<String, MechanismRoot2d> entry : roots.entrySet()) {
         addMechanism2dObject(tableLogger.getNested(entry.getKey()), entry.getValue(), sendable);
       }
 
-      sendable.addConstant(() -> {
-        tableLogger.log(".type", "Mechanism2d");
-        tableLogger.log(".controllable", true);
-        tableLogger.log(".name", name);
-      });
+      sendable.addConstant(
+          () -> {
+            tableLogger.log(".type", "Mechanism2d");
+            tableLogger.log(".controllable", true);
+            tableLogger.log(".name", name);
+          });
 
       addSendableContainer(sendable);
     }
