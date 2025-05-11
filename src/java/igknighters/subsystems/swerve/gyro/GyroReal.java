@@ -15,7 +15,7 @@ import monologue.Annotations.IgnoreLogged;
 public class GyroReal extends Gyro {
 
   private final Pigeon2 gyro;
-  private final BaseStatusSignal rollSignal, pitchSignal;
+  private final BaseStatusSignal rollSignal, pitchSignal, yawRate;
 
   @IgnoreLogged private final RealSwerveOdometryThread odoThread;
 
@@ -27,16 +27,13 @@ public class GyroReal extends Gyro {
     cfg.MountPose.MountPoseRoll = 180.0;
     CANRetrier.retryStatusCode(() -> gyro.getConfigurator().apply(cfg), 5);
 
-    rollSignal = gyro.getRoll();
-    pitchSignal = gyro.getPitch();
+    rollSignal = gyro.getRoll(false);
+    pitchSignal = gyro.getPitch(false);
+    yawRate = gyro.getAngularVelocityZWorld();
 
-    CANSignalManager.registerSignals(kSwerve.CANBUS, rollSignal, pitchSignal);
+    CANSignalManager.registerSignals(kSwerve.CANBUS, rollSignal, pitchSignal, yawRate);
 
-    odoThread.addGyroStatusSignals(
-        gyro.getYaw(),
-        gyro.getAngularVelocityZWorld(),
-        gyro.getAccelerationX(),
-        gyro.getAccelerationY());
+    odoThread.addGyroStatusSignals(gyro.getYaw(), gyro.getAccelerationX(), gyro.getAccelerationY());
 
     gyro.optimizeBusUtilization(0.0, 1.0);
 
@@ -68,6 +65,6 @@ public class GyroReal extends Gyro {
     super.pitchRads = Units.degreesToRadians(pitchSignal.getValueAsDouble());
     super.rollRads = Units.degreesToRadians(rollSignal.getValueAsDouble());
     super.yawRads = odoThread.getGyroYaw();
-    super.yawVelRadsPerSec = odoThread.getGyroYawRate();
+    super.yawVelRadsPerSec = yawRate.getValueAsDouble();
   }
 }

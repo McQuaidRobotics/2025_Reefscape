@@ -65,15 +65,15 @@ public class Framework {
       this.controller = controller;
     }
 
+    public void reset(TARGET target) {
+      controller.reset(assessor.getMeasurement(), assessor.getRate(), target);
+    }
+
     public void control(double period, TARGET target, LIMITS constraints) {
       final RATE rate =
           controller.calculate(
               period, assessor.getMeasurement(), assessor.getRate(), target, constraints);
       acceptor.control(rate, constraints);
-    }
-
-    public Runnable asRunnable(double period, TARGET target, LIMITS constraints) {
-      return () -> control(period, target, constraints);
     }
   }
 

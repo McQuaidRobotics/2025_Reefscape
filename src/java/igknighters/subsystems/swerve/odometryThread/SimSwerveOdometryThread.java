@@ -2,10 +2,12 @@ package igknighters.subsystems.swerve.odometryThread;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
+import igknighters.subsystems.swerve.odometryThread.SwerveDriveSample.SwerveModuleSuperState;
 import igknighters.util.plumbing.Channel.Sender;
 import java.util.function.Supplier;
 
@@ -14,6 +16,9 @@ public class SimSwerveOdometryThread extends SwerveOdometryThread {
 
   @SuppressWarnings("unchecked")
   private final Supplier<SwerveModulePosition>[] positionSuppliers = new Supplier[MODULE_COUNT];
+
+  @SuppressWarnings("unchecked")
+  private final Supplier<SwerveModuleState>[] stateSuppliers = new Supplier[MODULE_COUNT];
 
   private Supplier<Rotation2d> rotationSupplier = Rotation2d::new;
   private Supplier<double[]> accelerationSupplier = () -> new double[] {0.0, 0.0};
@@ -24,8 +29,10 @@ public class SimSwerveOdometryThread extends SwerveOdometryThread {
     notifier.setName("SwerveOdometry");
   }
 
-  public void addModulePositionSupplier(int moduleId, Supplier<SwerveModulePosition> sup) {
-    positionSuppliers[moduleId] = sup;
+  public void addModuleSupplier(
+      int moduleId, Supplier<SwerveModulePosition> posSup, Supplier<SwerveModuleState> stateSup) {
+    positionSuppliers[moduleId] = posSup;
+    stateSuppliers[moduleId] = stateSup;
   }
 
   public void addRotationSupplier(Supplier<Rotation2d> sup) {
@@ -36,10 +43,12 @@ public class SimSwerveOdometryThread extends SwerveOdometryThread {
     accelerationSupplier = sup;
   }
 
-  private SwerveModulePosition[] getModulePositions() {
-    SwerveModulePosition[] positions = new SwerveModulePosition[MODULE_COUNT];
+  private SwerveModuleSuperState[] getModulePositions() {
+    SwerveModuleSuperState[] positions = new SwerveModuleSuperState[MODULE_COUNT];
     for (int i = 0; i < MODULE_COUNT; i++) {
-      positions[i] = positionSuppliers[i].get();
+      SwerveModulePosition position = positionSuppliers[i].get();
+      SwerveModuleState state = stateSuppliers[i].get();
+      positions[i] = new SwerveModuleSuperState(position, state.speedMetersPerSecond);
     }
     return positions;
   }

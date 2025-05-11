@@ -64,14 +64,14 @@ public class SwerveModuleReal extends SwerveModule {
     CANRetrier.retryStatusCode(
         () -> steerEncoder.getConfigurator().apply(cancoderConfig(rotationOffset), 1.0), 5);
 
-    driveVoltSignal = driveMotor.getMotorVoltage();
-    driveAmpSignal = driveMotor.getTorqueCurrent();
+    driveVoltSignal = driveMotor.getMotorVoltage(false);
+    driveAmpSignal = driveMotor.getTorqueCurrent(false);
 
-    steerVoltSignal = steerMotor.getMotorVoltage();
-    steerAmpSignal = steerMotor.getTorqueCurrent();
+    steerVoltSignal = steerMotor.getMotorVoltage(false);
+    steerAmpSignal = steerMotor.getTorqueCurrent(false);
 
-    steerAbsoluteSignal = steerEncoder.getAbsolutePosition();
-    steerAbsoluteVeloSignal = steerEncoder.getVelocity();
+    steerAbsoluteSignal = steerEncoder.getAbsolutePosition(false);
+    steerAbsoluteVeloSignal = steerEncoder.getVelocity(false);
 
     CANSignalManager.registerSignals(
         kSwerve.CANBUS,
@@ -84,10 +84,11 @@ public class SwerveModuleReal extends SwerveModule {
 
     odoThread.addModuleStatusSignals(
         moduleId,
-        driveMotor.getPosition(),
-        driveMotor.getVelocity(),
-        steerMotor.getPosition(),
-        steerMotor.getVelocity());
+        driveMotor.getPosition(false),
+        driveMotor.getVelocity(false),
+        steerMotor.getPosition(false));
+
+    steerMotor.getVelocity(false).setUpdateFrequency(100);
 
     driveMotor.optimizeBusUtilization(0.0, 1.0);
     steerMotor.optimizeBusUtilization(0.0, 1.0);

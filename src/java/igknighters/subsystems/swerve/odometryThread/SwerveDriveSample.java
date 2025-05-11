@@ -7,19 +7,37 @@ import edu.wpi.first.util.struct.StructSerializable;
 import java.nio.ByteBuffer;
 
 public record SwerveDriveSample(
-    SwerveModulePosition[] modulePositions,
+    SwerveModuleSuperState[] modulePositions,
     Rotation2d gyroYaw,
     double acceleration,
     double timestamp)
     implements StructSerializable, Cloneable {
 
+  public static class SwerveModuleSuperState extends SwerveModulePosition {
+    public double speedMetersPerSecond;
+
+    public SwerveModuleSuperState(
+        double distanceMeters, double velocityMetersPerSecond, Rotation2d angle) {
+      super(distanceMeters, angle);
+      this.speedMetersPerSecond = velocityMetersPerSecond;
+    }
+
+    public SwerveModuleSuperState(SwerveModulePosition position, double velocityMetersPerSecond) {
+      super(position.distanceMeters, position.angle);
+      this.speedMetersPerSecond = velocityMetersPerSecond;
+    }
+  }
+
   public SwerveDriveSample clone() {
-    final SwerveModulePosition[] newModulePositions =
-        new SwerveModulePosition[this.modulePositions.length];
+    final SwerveModuleSuperState[] newModulePositions =
+        new SwerveModuleSuperState[this.modulePositions.length];
     for (int i = 0; i < modulePositions.length; i++) {
-      final SwerveModulePosition oldModulePosition = this.modulePositions[i];
+      final SwerveModuleSuperState oldModulePosition = this.modulePositions[i];
       newModulePositions[i] =
-          new SwerveModulePosition(oldModulePosition.distanceMeters, oldModulePosition.angle);
+          new SwerveModuleSuperState(
+              oldModulePosition.distanceMeters,
+              oldModulePosition.speedMetersPerSecond,
+              oldModulePosition.angle);
     }
     return new SwerveDriveSample(
         newModulePositions,
@@ -91,14 +109,7 @@ public record SwerveDriveSample(
 
     @Override
     public SwerveDriveSample unpack(ByteBuffer bb) {
-      final Rotation2d gyroYaw = Rotation2d.struct.unpack(bb);
-      final double gforce = bb.getDouble();
-      final double timestamp = bb.getDouble();
-      final SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
-      for (int i = 0; i < 4; i++) {
-        modulePositions[i] = SwerveModulePosition.struct.unpack(bb);
-      }
-      return new SwerveDriveSample(modulePositions, gyroYaw, gforce, timestamp);
+      throw new UnsupportedOperationException("Not implemented");
     }
   }
 }

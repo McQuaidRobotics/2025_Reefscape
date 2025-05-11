@@ -1,7 +1,5 @@
 package igknighters.commands;
 
-import static igknighters.commands.SwerveCommands.isSlowerThan;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -169,7 +167,7 @@ public class OperatorTarget implements StructSerializable {
   private Trigger nearAndSlow(Pose2d targetLocation, double dist, double speed) {
     return localizer
         .near(targetLocation.getTranslation(), dist)
-        .and(isSlowerThan(subsystems.swerve, speed));
+        .and(localizer.slowerThan(speed));
   }
 
   private Command gotoTargetCmdScoreComponent(Pose2d target) {

@@ -4,28 +4,33 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
-import igknighters.constants.ConstValues;
 import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
+import igknighters.subsystems.swerve.odometryThread.SwerveDriveSample.SwerveModuleSuperState;
 import igknighters.util.plumbing.Channel.Sender;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RealSwerveOdometryThread extends SwerveOdometryThread {
+  private static final int SIGNALS_PER_MODULE = 3;
+
   private final Thread thread;
-  private final BaseStatusSignal[] signals = new BaseStatusSignal[(MODULE_COUNT * 4) + 4];
+  private final BaseStatusSignal[] signals =
+      new BaseStatusSignal[(MODULE_COUNT * SIGNALS_PER_MODULE) + 4];
 
   protected final MedianFilter peakRemover = new MedianFilter(3);
   protected final LinearFilter lowPass = LinearFilter.movingAverage(50);
 
-  /** An array that holds [module1Pos, module1Velo, module2Pos, ...] */
-  protected final AtomicLong[] moduleStates = new AtomicLong[MODULE_COUNT * 2];
+  /**
+   * An array that holds [module1Pos, module1Velo, module2Pos, ...] Doesn't include steer motor
+   * values, the module just uses the cancoder to get past concurrency issues.
+   */
+  protected final AtomicLong[] moduleStates = new AtomicLong[MODULE_COUNT * SIGNALS_PER_MODULE];
 
-  protected final AtomicLong[] gyroStates = new AtomicLong[2];
+  protected final AtomicLong gyroYaw = new AtomicLong();
 
   protected boolean enableLatencyCompensation = false;
 
@@ -39,68 +44,44 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
     for (int i = 0; i < MODULE_COUNT * 2; i++) {
       moduleStates[i] = new AtomicLong();
     }
-    gyroStates[0] = new AtomicLong();
-    gyroStates[1] = new AtomicLong();
-  }
-
-  private double latencyCompensatedValue(BaseStatusSignal signal, BaseStatusSignal signalSlope) {
-    if (!enableLatencyCompensation) {
-      return signal.getValueAsDouble();
-    }
-    final double maxLatencySeconds = ConstValues.PERIODIC_TIME * 5;
-    final double nonCompensatedSignal = signal.getValueAsDouble();
-    final double changeInSignal = signalSlope.getValueAsDouble();
-    double latency = signal.getTimestamp().getLatency();
-    if (maxLatencySeconds > 0.0 && latency > maxLatencySeconds) {
-      latency = maxLatencySeconds;
-    }
-    return nonCompensatedSignal + (changeInSignal * latency);
   }
 
   public void addModuleStatusSignals(
       int moduleId,
       BaseStatusSignal drivePosition,
       BaseStatusSignal driveVelocity,
-      BaseStatusSignal anglePosition,
-      BaseStatusSignal angleVelocity) {
-    BaseStatusSignal.setUpdateFrequencyForAll(
-        hz, drivePosition, driveVelocity, anglePosition, angleVelocity);
+      BaseStatusSignal anglePosition) {
+    BaseStatusSignal.setUpdateFrequencyForAll(hz, drivePosition, driveVelocity, anglePosition);
     int offset = 4 * moduleId;
     signals[offset + 0] = drivePosition;
     signals[offset + 1] = driveVelocity;
     signals[offset + 2] = anglePosition;
-    signals[offset + 3] = angleVelocity;
   }
 
   public void addGyroStatusSignals(
-      BaseStatusSignal yaw,
-      BaseStatusSignal yawRate,
-      BaseStatusSignal xAccel,
-      BaseStatusSignal yAccel) {
-    BaseStatusSignal.setUpdateFrequencyForAll(hz, yaw, yawRate, xAccel, yAccel);
-    signals[MODULE_COUNT * 4] = yaw;
-    signals[(MODULE_COUNT * 4) + 1] = yawRate;
-    signals[(MODULE_COUNT * 4) + 2] = xAccel;
-    signals[(MODULE_COUNT * 4) + 3] = yAccel;
+      BaseStatusSignal yaw, BaseStatusSignal xAccel, BaseStatusSignal yAccel) {
+    BaseStatusSignal.setUpdateFrequencyForAll(hz, yaw, xAccel, yAccel);
+    int moduleSignalCount = MODULE_COUNT * SIGNALS_PER_MODULE;
+    signals[moduleSignalCount + 0] = yaw;
+    signals[moduleSignalCount + 1] = xAccel;
+    signals[moduleSignalCount + 2] = yAccel;
   }
 
-  private SwerveModulePosition[] getModulePositions() {
-    SwerveModulePosition[] positions = new SwerveModulePosition[MODULE_COUNT];
+  private SwerveModuleSuperState[] getModulePositions() {
+    SwerveModuleSuperState[] positions = new SwerveModuleSuperState[MODULE_COUNT];
     for (int i = 0; i < MODULE_COUNT; i++) {
-      int offset = 4 * i;
+      int offset = i * SIGNALS_PER_MODULE;
       positions[i] =
-          new SwerveModulePosition(
-              latencyCompensatedValue(signals[offset + 0], signals[offset + 1])
-                  * kWheel.CIRCUMFERENCE,
-              Rotation2d.fromRotations(
-                  latencyCompensatedValue(signals[offset + 2], signals[offset + 3])));
+          new SwerveModuleSuperState(
+              signals[offset + 0].getValueAsDouble() * kWheel.CIRCUMFERENCE,
+              signals[offset + 1].getValueAsDouble() * kWheel.CIRCUMFERENCE,
+              Rotation2d.fromRotations(signals[offset + 2].getValueAsDouble()));
     }
     return positions;
   }
 
   private Rotation2d getGyroRotation() {
-    return Rotation2d.fromDegrees(
-        latencyCompensatedValue(signals[MODULE_COUNT * 4], signals[(MODULE_COUNT * 4) + 1]));
+    return Rotation2d.fromDegrees(signals[MODULE_COUNT * SIGNALS_PER_MODULE].getValueAsDouble());
   }
 
   private double getDataLatency() {
@@ -143,12 +124,10 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
               Double.doubleToLongBits(signals[veloOffset].getValueAsDouble()));
         }
 
-        gyroStates[0].set(
+        int moduleSignalCount = MODULE_COUNT * SIGNALS_PER_MODULE;
+        gyroYaw.set(
             Double.doubleToLongBits(
-                Units.degreesToRadians(signals[signals.length - 4].getValueAsDouble())));
-        gyroStates[1].set(
-            Double.doubleToLongBits(
-                Units.degreesToRadians(signals[signals.length - 3].getValueAsDouble())));
+                Units.degreesToRadians(signals[moduleSignalCount].getValueAsDouble())));
 
         swerveDataSender.send(
             new SwerveDriveSample(
@@ -178,10 +157,6 @@ public class RealSwerveOdometryThread extends SwerveOdometryThread {
   }
 
   public double getGyroYaw() {
-    return getAtomicDouble(gyroStates, 0);
-  }
-
-  public double getGyroYawRate() {
-    return getAtomicDouble(gyroStates, 1);
+    return Double.longBitsToDouble(gyroYaw.get());
   }
 }

@@ -46,7 +46,7 @@ public class SwerveModuleSimSham extends SwerveModule {
     driveMotor = new ShamMCX("DriveMotor[" + moduleId + "]");
     steerMotor = new ShamMCX("SteerMotor[" + moduleId + "]");
 
-    odoThread.addModulePositionSupplier(moduleId, this::getCurrentPosition);
+    odoThread.addModuleSupplier(moduleId, this::getCurrentPosition, this::getCurrentState);
 
     driveLoop =
         ClosedLoop.forVoltageAngularVelocity(

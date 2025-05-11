@@ -18,11 +18,9 @@ import igknighters.subsystems.swerve.SwerveConstants.ModuleConstants.kWheel;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.subsystems.swerve.gyro.Gyro;
 import igknighters.subsystems.swerve.gyro.GyroReal;
-import igknighters.subsystems.swerve.gyro.GyroSim;
 import igknighters.subsystems.swerve.gyro.GyroSimSham;
 import igknighters.subsystems.swerve.module.SwerveModule;
 import igknighters.subsystems.swerve.module.SwerveModuleReal;
-import igknighters.subsystems.swerve.module.SwerveModuleSim;
 import igknighters.subsystems.swerve.module.SwerveModuleSimSham;
 import igknighters.subsystems.swerve.odometryThread.RealSwerveOdometryThread;
 import igknighters.subsystems.swerve.odometryThread.SimSwerveOdometryThread;
@@ -31,6 +29,7 @@ import igknighters.util.plumbing.TunableValues;
 import java.util.Optional;
 import monologue.LogSink;
 import sham.ShamSwerve;
+import wayfinder.controllers.Framework.Acceptor;
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
 import wayfinder.setpointGenerator.AdvancedSwerveModuleState;
@@ -56,7 +55,7 @@ import wpilibExt.Tracer;
  *
  * <p>The coordinate system used in this code is the field coordinate system.
  */
-public class Swerve implements ExclusiveSubsystem {
+public class Swerve implements ExclusiveSubsystem, Acceptor<FieldSpeeds, ChassisConstraints> {
   private final SharedState sharedState;
   private final Localizer localizer;
 
@@ -97,30 +96,18 @@ public class Swerve implements ExclusiveSubsystem {
   public Swerve(SharedState shared, Localizer localizer, SimCtx simCtx) {
     sharedState = shared;
     this.localizer = localizer;
-    final boolean useSham = true;
     if (Robot.isSimulation()) {
       sim = Optional.of((ShamSwerve) simCtx.robot().getDriveTrain());
       final SimSwerveOdometryThread ot =
           new SimSwerveOdometryThread(250, localizer.swerveDataSender());
-      if (useSham) {
-        swerveMods =
-            new SwerveModule[] {
-              new SwerveModuleSimSham(0, ot, sim.get()),
-              new SwerveModuleSimSham(1, ot, sim.get()),
-              new SwerveModuleSimSham(2, ot, sim.get()),
-              new SwerveModuleSimSham(3, ot, sim.get()),
-            };
-        gyro = new GyroSimSham(sim.get().getGyro(), ot);
-      } else {
-        swerveMods =
-            new SwerveModule[] {
-              new SwerveModuleSim(0, ot),
-              new SwerveModuleSim(1, ot),
-              new SwerveModuleSim(2, ot),
-              new SwerveModuleSim(3, ot),
-            };
-        gyro = new GyroSim(this::getRobotSpeeds, ot);
-      }
+      swerveMods =
+          new SwerveModule[] {
+            new SwerveModuleSimSham(0, ot, sim.get()),
+            new SwerveModuleSimSham(1, ot, sim.get()),
+            new SwerveModuleSimSham(2, ot, sim.get()),
+            new SwerveModuleSimSham(3, ot, sim.get()),
+          };
+      gyro = new GyroSimSham(sim.get().getGyro(), ot);
       odometryThread = ot;
     } else {
       sim = Optional.empty();
@@ -188,6 +175,11 @@ public class Swerve implements ExclusiveSubsystem {
 
   public void drive(Speeds speeds) {
     drive(speeds, defaultConstraints);
+  }
+
+  @Override
+  public void control(FieldSpeeds rate, ChassisConstraints constraints) {
+    drive(rate, constraints);
   }
 
   public void drivePreProfiled(Speeds speeds) {

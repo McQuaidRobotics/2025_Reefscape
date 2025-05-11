@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.constants.ConstValues;
 import igknighters.constants.Pathing.PathObstacles;
@@ -27,11 +26,6 @@ import wpilibExt.Speeds;
 import wpilibExt.Speeds.RobotSpeeds;
 
 public class SwerveCommands {
-
-  public static Trigger isSlowerThan(Swerve swerve, double speed) {
-    return new Trigger(() -> swerve.getFieldSpeeds().magnitude() < speed);
-  }
-
   public static Command commandStopDrives(final Swerve swerve) {
     return swerve.runOnce(() -> swerve.drive(RobotSpeeds.kZero)).withName("commandStopDrives");
   }

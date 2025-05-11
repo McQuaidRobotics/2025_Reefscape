@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.constants.FieldConstants;
@@ -19,11 +20,14 @@ import java.util.Optional;
 import monologue.Annotations.Log;
 import monologue.GlobalField;
 import monologue.Logged;
+import wayfinder.controllers.Framework.Assessor;
 import wayfinder.poseEst.TwistyPoseEst;
 import wayfinder.poseEst.TwistyPoseEst.VisionScalars;
+import wpilibExt.Speeds;
+import wpilibExt.Speeds.FieldSpeeds;
 import wpilibExt.Tracer;
 
-public class Localizer implements Logged {
+public class Localizer implements Logged, Assessor<Pose2d, FieldSpeeds> {
   private static final VisionScalars VISION_SCALARS = new VisionScalars(0.9, 0.05, 1.0);
 
   public static boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
@@ -47,8 +51,18 @@ public class Localizer implements Logged {
 
   private final TwistyPoseEst poseEstimator;
 
+  private final SwerveModuleState[] moduleStates = {
+    new SwerveModuleState(0.0, Rotation2d.kZero),
+    new SwerveModuleState(0.0, Rotation2d.kZero),
+    new SwerveModuleState(0.0, Rotation2d.kZero),
+    new SwerveModuleState(0.0, Rotation2d.kZero)
+  };
+
   @Log(key = "pose")
   private Pose2d latestPose = FieldConstants.POSE2D_CENTER;
+
+  @Log(key = "speed")
+  private FieldSpeeds latestSpeed = FieldSpeeds.kZero;
 
   private double resetTime = 0.0;
 
@@ -94,6 +108,17 @@ public class Localizer implements Logged {
       poseEstimator.addDriveSample(
           kinematics, sample.modulePositions(), sample.gyroYaw(), sample.timestamp(), 1.0);
     }
+    if (swerveSamples.length > 0) {
+      var lastSample = swerveSamples[swerveSamples.length - 1];
+      for (int i = 0; i < moduleStates.length; i++) {
+        var sampleState = lastSample.modulePositions()[i];
+        moduleStates[i].angle = sampleState.angle;
+        moduleStates[i].speedMetersPerSecond = sampleState.speedMetersPerSecond;
+      }
+      latestSpeed =
+          Speeds.fromRobotRelative(kinematics.toChassisSpeeds(moduleStates))
+              .asFieldRelative(lastSample.gyroYaw());
+    }
     Tracer.endTrace();
     Tracer.startTrace("VisionSamples");
     final List<VisionSample> unsortedVisionSamples =
@@ -137,6 +162,10 @@ public class Localizer implements Logged {
     return latestPose.getTranslation();
   }
 
+  public FieldSpeeds speed() {
+    return latestSpeed;
+  }
+
   public Trigger near(Rotation2d target, double toleranceRadians) {
     return new Trigger(() -> withinTolerance(rotation(), target, toleranceRadians));
   }
@@ -148,5 +177,23 @@ public class Localizer implements Logged {
   public Trigger near(Pose2d target, double toleranceMeters, double toleranceRadians) {
     return near(target.getTranslation(), toleranceMeters)
         .and(near(target.getRotation(), toleranceRadians));
+  }
+
+  public Trigger slowerThan(double speed) {
+    return new Trigger(() -> speed().magnitude() < speed);
+  }
+
+  public Trigger fasterThan(double speed) {
+    return new Trigger(() -> speed().magnitude() > speed);
+  }
+
+  @Override
+  public Pose2d getMeasurement() {
+    return latestPose;
+  }
+
+  @Override
+  public FieldSpeeds getRate() {
+    return latestSpeed;
   }
 }
