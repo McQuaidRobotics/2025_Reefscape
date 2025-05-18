@@ -165,9 +165,7 @@ public class OperatorTarget implements StructSerializable {
   }
 
   private Trigger nearAndSlow(Pose2d targetLocation, double dist, double speed) {
-    return localizer
-        .near(targetLocation.getTranslation(), dist)
-        .and(localizer.slowerThan(speed));
+    return localizer.near(targetLocation.getTranslation(), dist).and(localizer.slowerThan(speed));
   }
 
   private Command gotoTargetCmdScoreComponent(Pose2d target) {
