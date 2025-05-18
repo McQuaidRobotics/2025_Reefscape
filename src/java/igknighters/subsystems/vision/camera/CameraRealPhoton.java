@@ -34,7 +34,7 @@ public class CameraRealPhoton extends Camera {
 
   protected final PhotonCamera camera;
   protected final CameraConfig config;
-  protected final Transform3d robotToCamera;
+  protected final Transform3d robotToCamera, cameraToRobot;
   private final PhotonPoseEstimator poseEstimator;
   private final double trustScalar;
 
@@ -51,11 +51,10 @@ public class CameraRealPhoton extends Camera {
     this.cameraMatrix = Optional.of(config.intrinsics().cameraMatrix());
     this.distortionMatrix = Optional.of(config.intrinsics().distortionMatrix());
     this.robotToCamera = config.cameraTransform();
+    this.cameraToRobot = robotToCamera.inverse();
     this.trustScalar = config.trustScalar();
 
-    poseEstimator =
-        new PhotonPoseEstimator(
-            FieldConstants.APRIL_TAG_FIELD, PoseStrategy.MULTI_TAG_PNP_ON_RIO, this.robotToCamera);
+    poseEstimator = new PhotonPoseEstimator(FieldConstants.APRIL_TAG_FIELD, PoseStrategy.MULTI_TAG_PNP_ON_RIO, this.robotToCamera);
     poseEstimator.setTagModel(TargetModel.kAprilTag36h11);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
@@ -76,6 +75,13 @@ public class CameraRealPhoton extends Camera {
     return Math.hypot(avgX, avgY) / Math.hypot(WIDTH / 2.0, HEIGHT / 2.0);
   }
 
+  private double dimensionProportionDifference(PhotonTrackedTarget target) {
+    final var corners = target.getDetectedCorners();
+    double height = Math.abs(corners.get(0).y - corners.get(3).y);
+    double width = Math.abs(corners.get(1).x - corners.get(0).x);
+    return Math.min(height, width) / Math.max(height, width);
+  }
+
   private Optional<VisionUpdate> update(EstimatedRobotPose estRoboPose) {
     for (PhotonTrackedTarget target : estRoboPose.targetsUsed) {
       seenTags.add(target.fiducialId);
@@ -87,15 +93,6 @@ public class CameraRealPhoton extends Camera {
 
     Pose2d pose = estRoboPose.estimatedPose.toPose2d();
 
-    double avgDistance =
-        estRoboPose.targetsUsed.stream()
-            .map(PhotonTrackedTarget::getBestCameraToTarget)
-            .map(Transform3d::getTranslation)
-            .map(t3 -> Math.hypot(t3.getX(), t3.getY()))
-            .mapToDouble(Double::doubleValue)
-            .average()
-            .orElseGet(() -> 100.0);
-
     double sumArea =
         estRoboPose.targetsUsed.stream()
             .map(PhotonTrackedTarget::getArea)
@@ -105,6 +102,13 @@ public class CameraRealPhoton extends Camera {
     double avgNormalizedPixelsFromCenter =
         estRoboPose.targetsUsed.stream()
             .map(this::normalizedDistanceFromCenter)
+            .mapToDouble(Double::doubleValue)
+            .average()
+            .orElseGet(() -> 0.0);
+
+    double avgDimensionProportion =
+        estRoboPose.targetsUsed.stream()
+            .map(this::dimensionProportionDifference)
             .mapToDouble(Double::doubleValue)
             .average()
             .orElseGet(() -> 0.0);
@@ -122,9 +126,9 @@ public class CameraRealPhoton extends Camera {
       trust *= kVision.TAG_RANKINGS.getOrDefault(tagId, 0.0);
     }
 
-    trust *= kVision.DISTANCE_TRUST_COEFFICIENT.lerp(avgDistance);
     trust *= kVision.AREA_TRUST_COEFFICIENT.lerp(sumArea);
     trust *= kVision.PIXEL_OFFSET_TRUST_COEFFICIENT.lerp(avgNormalizedPixelsFromCenter);
+    trust *= kVision.HEIGHT_WIDTH_PROPORTION_COEFFICIENT.lerp(avgDimensionProportion);
 
     if (DriverStation.isDisabled()) {
       trust = 1.0;

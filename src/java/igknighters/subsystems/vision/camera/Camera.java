@@ -3,6 +3,7 @@ package igknighters.subsystems.vision.camera;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
@@ -44,6 +45,33 @@ public abstract class Camera extends Component {
 
     public double diagonalFOV() {
       return 2.0 * Math.atan2(Math.hypot(width, height) / 2.0, fx);
+    }
+  }
+
+  protected static class WeightedPoseAverager {
+    private double totalWeight, totalX, totalY;
+    private double highestWeight, strongestTheta;
+
+    public WeightedPoseAverager() {}
+
+    public void addPose(double weight, Pose2d pose) {
+      totalWeight += weight;
+      totalX += weight * pose.getX();
+      totalY += weight * pose.getY();
+      if (weight > highestWeight) {
+        highestWeight = weight;
+        strongestTheta = pose.getRotation().getRadians();
+      }
+    }
+
+    public double getX() {
+      return totalX / totalWeight;
+    }
+    public double getY() {
+      return totalY / totalWeight;
+    }
+    public double getTheta() {
+      return strongestTheta;
     }
   }
 

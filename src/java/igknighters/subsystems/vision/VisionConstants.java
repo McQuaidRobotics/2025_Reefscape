@@ -83,21 +83,18 @@ public class VisionConstants {
                   new double[] {0.045, -0.066, 0.001, 0, 0.011, -0.002, 0.005, 0.001})),
         };
 
-    public static final LerpTable DISTANCE_TRUST_COEFFICIENT =
+    public static final LerpTable HEIGHT_WIDTH_PROPORTION_COEFFICIENT =
         new LerpTable(
-            new LerpTable.LerpTableEntry(0.0, 1.0),
-            new LerpTable.LerpTableEntry(0.65, 1.0),
-            new LerpTable.LerpTableEntry(1.5, 0.7),
-            new LerpTable.LerpTableEntry(2.5, 0.4),
-            new LerpTable.LerpTableEntry(5.0, 0.25),
-            new LerpTable.LerpTableEntry(8.0, 0.0));
+            new LerpTable.LerpTableEntry(0.2, 0.0),
+            new LerpTable.LerpTableEntry(0.7, 1.0),
+            new LerpTable.LerpTableEntry(1.0, 1.0));
 
     public static final LerpTable AREA_TRUST_COEFFICIENT =
         new LerpTable(
             new LerpTable.LerpTableEntry(0.0, 0.0),
-            new LerpTable.LerpTableEntry(0.2, 0.45),
-            new LerpTable.LerpTableEntry(1.0, 0.55),
-            new LerpTable.LerpTableEntry(4.0, 0.75),
+            new LerpTable.LerpTableEntry(0.2, 0.35),
+            new LerpTable.LerpTableEntry(1.0, 0.45),
+            new LerpTable.LerpTableEntry(4.0, 0.70),
             new LerpTable.LerpTableEntry(7.5, 1.0));
 
     public static final LerpTable PIXEL_OFFSET_TRUST_COEFFICIENT =
