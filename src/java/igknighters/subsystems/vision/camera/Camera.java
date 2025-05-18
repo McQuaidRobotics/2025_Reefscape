@@ -67,9 +67,11 @@ public abstract class Camera extends Component {
     public double getX() {
       return totalX / totalWeight;
     }
+
     public double getY() {
       return totalY / totalWeight;
     }
+
     public double getTheta() {
       return strongestTheta;
     }
