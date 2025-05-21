@@ -1,5 +1,6 @@
 package wayfinder.setpointGenerator;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -13,6 +14,7 @@ import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.FixedSizeArray;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wayfinder.controllers.Types.ChassisConstraints;
+import wpilibExt.Speeds.FieldSpeeds;
 
 class Util {
   private static final double kEpsilon = 1E-5;
@@ -325,4 +327,73 @@ class Util {
 
     public static final Struct<LocalVars> struct = structVars;
   }
+
+  static ChassisSpeeds constrainSpeeds(
+      FieldSpeeds prevSpeeds,
+      FieldSpeeds desiredSpeeds,
+      Rotation2d heading,
+      ChassisConstraints constraints,
+      final double dt) {
+    final ChassisSpeeds output = new ChassisSpeeds();
+
+    final double aX = (desiredSpeeds.vx() - prevSpeeds.vx()) / dt;
+    final double aY = (desiredSpeeds.vy() - prevSpeeds.vy()) / dt;
+    final double alpha = (desiredSpeeds.omega() - prevSpeeds.omega()) / dt;
+
+    // constrain omega by max acceleration
+    output.omegaRadiansPerSecond =
+        prevSpeeds.omega()
+            + MathUtil.clamp(
+                    alpha,
+                    -constraints.rotation().maxAcceleration(),
+                    constraints.rotation().maxAcceleration())
+                * dt;
+    // constrain omega by max velocity
+    output.omegaRadiansPerSecond =
+        MathUtil.clamp(
+            output.omegaRadiansPerSecond,
+            -constraints.rotation().maxVelocity(),
+            constraints.rotation().maxVelocity());
+    output.omegaRadiansPerSecond = desiredSpeeds.omega();
+
+    if (epsilonEquals(aX, 0.0) && epsilonEquals(aY, 0.0)) {
+      output.vxMetersPerSecond = desiredSpeeds.vx();
+      output.vyMetersPerSecond = desiredSpeeds.vy();
+      return ChassisSpeeds.fromFieldRelativeSpeeds(output, heading);
+    }
+
+    // constrain translation by max acceleration
+    final double aMag = Math.hypot(aX, aY);
+    final double aDir = Math.atan2(aY, aX);
+    final double aMax = constraints.translation().maxAcceleration();
+    if (aMag > aMax) {
+      final double stepX = Math.cos(aDir) * aMax * dt;
+      final double stepY = Math.sin(aDir) * aMax * dt;
+      output.vxMetersPerSecond = prevSpeeds.vx() + stepX;
+      output.vyMetersPerSecond = prevSpeeds.vy() + stepY;
+    } else {
+      output.vxMetersPerSecond = desiredSpeeds.vx();
+      output.vyMetersPerSecond = desiredSpeeds.vy();
+    }
+    // constrain translation by max velocity
+    final double vMag = Math.hypot(output.vxMetersPerSecond, output.vyMetersPerSecond);
+    if (vMag > constraints.translation().maxVelocity()) {
+      double vDir = Math.atan2(output.vyMetersPerSecond, output.vxMetersPerSecond);
+      output.vxMetersPerSecond = Math.cos(vDir) * constraints.translation().maxVelocity();
+      output.vyMetersPerSecond = Math.sin(vDir) * constraints.translation().maxVelocity();
+    }
+
+    return ChassisSpeeds.fromFieldRelativeSpeeds(output, heading);
+  }
+
+  // private static void mutateToRobotRelative(ChassisSpeeds speeds, Rotation2d robotAngle) {
+  //   double newVX =
+  //       speeds.vxMetersPerSecond * robotAngle.getCos()
+  //           - speeds.vyMetersPerSecond * robotAngle.getSin();
+  //   double newVY =
+  //       speeds.vxMetersPerSecond * robotAngle.getSin()
+  //           + speeds.vyMetersPerSecond * robotAngle.getCos();
+  //   speeds.vxMetersPerSecond = newVX;
+  //   speeds.vyMetersPerSecond = newVY;
+  // }
 }

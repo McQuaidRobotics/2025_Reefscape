@@ -1,6 +1,5 @@
 package igknighters.subsystems.vision.camera;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import igknighters.subsystems.vision.Vision.VisionUpdate;
 import igknighters.util.logging.BootupLogger;
@@ -37,12 +36,6 @@ public class CameraDisabled extends Camera {
   public List<Integer> getSeenTags() {
     return List.of();
   }
-
-  @Override
-  public void updateHeading(double timestamp, Rotation2d heading) {}
-
-  @Override
-  public void clearHeading() {}
 
   @Override
   public void periodic() {}

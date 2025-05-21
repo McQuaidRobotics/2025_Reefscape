@@ -1,7 +1,10 @@
 package igknighters.commands;
 
+import static igknighters.commands.SwerveCommands.isSlowerThan;
+
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.util.Color;
@@ -12,12 +15,14 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.commands.SuperStructureCommands.MoveOrder;
+import igknighters.commands.teleop.TeleopSwerveTraditionalCmd;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.constants.ConstValues.kLed;
 import igknighters.constants.ConstValues.kRobotIntrinsics;
 import igknighters.constants.FieldConstants.FaceSubLocation;
 import igknighters.constants.FieldConstants.Reef;
 import igknighters.constants.Pathing.PathObstacles;
+import igknighters.controllers.DriverController;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.led.Led;
 import igknighters.subsystems.led.LedUtil;
@@ -27,6 +32,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import monologue.GlobalField;
 import monologue.Logged;
+import monologue.Monologue;
 import monologue.ProceduralStructGenerator;
 import monologue.ProceduralStructGenerator.IgnoreStructField;
 import wpilibExt.AllianceSymmetry;
@@ -41,16 +47,32 @@ public class OperatorTarget implements StructSerializable {
         }
       };
 
+  private static final EnumMap<Reef.Side, SuperStructureState> algaeHeightMap =
+      new EnumMap<>(Reef.Side.class) {
+        {
+          put(Reef.Side.CLOSE_MID, SuperStructureState.AlgaeL3);
+          put(Reef.Side.FAR_RIGHT, SuperStructureState.AlgaeL3);
+          put(Reef.Side.FAR_LEFT, SuperStructureState.AlgaeL3);
+          put(Reef.Side.FAR_MID, SuperStructureState.AlgaeL2);
+          put(Reef.Side.CLOSE_LEFT, SuperStructureState.AlgaeL2);
+          put(Reef.Side.CLOSE_RIGHT, SuperStructureState.AlgaeL2);
+        }
+      };
+
+  private static final Transform2d ALGAE_BACKOFF = new Transform2d(-0.3, 0, Rotation2d.kZero);
+
   private boolean wasUpdated = false;
   private boolean hasTarget = false;
   private FaceSubLocation faceSubLocation = FaceSubLocation.CENTER;
   private Reef.Side side = Reef.Side.CLOSE_MID;
   private SuperStructureState superStructureState = SuperStructureState.Stow;
 
-  @IgnoreStructField private final Logged loggingNode;
+  @IgnoreStructField private final Localizer localizer;
   @IgnoreStructField private final Subsystems subsystems;
+  @IgnoreStructField private final Logged loggingNode;
 
-  public OperatorTarget(Subsystems subsystems, Logged logger) {
+  public OperatorTarget(Localizer localizer, Subsystems subsystems, Logged logger) {
+    this.localizer = localizer;
     this.loggingNode = logger;
     this.subsystems = subsystems;
     logThis();
@@ -86,7 +108,15 @@ public class OperatorTarget implements StructSerializable {
     return new Trigger(() -> state == faceSubLocation);
   }
 
-  public Pose2d targetLocation() {
+  public Trigger wantsAlgae() {
+    return new Trigger(
+        () ->
+            superStructureState.equals(SuperStructureState.AlgaeFloor)
+                || superStructureState.equals(SuperStructureState.AlgaeL2)
+                || superStructureState.equals(SuperStructureState.AlgaeL3));
+  }
+
+  private Pose2d targetLocation() {
     Pose2d ret;
     if (!wantsAlgae().getAsBoolean()) {
       double backoffDist = (kRobotIntrinsics.CHASSIS_WIDTH / 2.0);
@@ -137,50 +167,82 @@ public class OperatorTarget implements StructSerializable {
         Commands.defer(cmdSupplier, Set.of(requirements)).until(isUpdated()));
   }
 
-  private Trigger isNearPose(Localizer localizer, Translation2d translation, double dist) {
-    return new Trigger(() -> localizer.translation().getDistance(translation) < dist);
+  private Trigger nearAndSlow(Pose2d targetLocation, double dist, double speed) {
+    return localizer
+        .near(targetLocation.getTranslation(), dist)
+        .and(isSlowerThan(subsystems.swerve, speed));
   }
 
-  private Trigger isSlowerThan(double speed) {
-    return new Trigger(() -> subsystems.swerve.getFieldSpeeds().magnitude() < speed);
+  private Command logDistance(Pose2d target) {
+    return Commands.run(
+        () -> Monologue.log("dist", localizer.translation().getDistance(target.getTranslation())));
   }
 
-  public Trigger wantsAlgae() {
-    return new Trigger(
-        () ->
-            superStructureState.equals(SuperStructureState.AlgaeFloor)
-                || superStructureState.equals(SuperStructureState.AlgaeL2)
-                || superStructureState.equals(SuperStructureState.AlgaeL3));
+  private Command gotoTargetCmdScoreComponent(Pose2d target) {
+    final MoveOrder preferredMoveOrder =
+        superStructureState.equals(SuperStructureState.ScoreL4)
+            ? new MoveOrder.ElevatorFirst(4.25 * Conv.INCHES_TO_METERS)
+            : MoveOrder.SIMULTANEOUS;
+    final SuperStructureState stagedState =
+        stagedStateMap.getOrDefault(superStructureState, superStructureState);
+    Command coral =
+        Commands.sequence(
+            SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
+                .until(localizer.near(target.getTranslation(), 1.45))
+                .unless(targeting(SuperStructureState.ScoreL1)),
+            SuperStructureCommands.holdAt(
+                    subsystems.superStructure, superStructureState.minHeight(stagedState))
+                .until(nearAndSlow(target, 0.04, 0.4)),
+            SuperStructureCommands.holdAt(
+                subsystems.superStructure, superStructureState, preferredMoveOrder));
+    Command algae =
+        Commands.parallel(
+            Commands.runOnce(
+                () -> {
+                  this.superStructureState = algaeHeightMap.getOrDefault(side, superStructureState);
+                }),
+            SuperStructureCommands.holdAt(
+                subsystems.superStructure, algaeHeightMap.getOrDefault(side, superStructureState)));
+    return Commands.either(algae, coral, wantsAlgae());
   }
 
-  public Command gotoTargetCmd(Localizer localizer) {
+  private Command gotoTargetCmdLineupComponent(Pose2d target, DriverController controller) {
+    final Command lineup =
+        SwerveCommands.lineupReef(
+            subsystems.swerve, localizer, target, PathObstacles.fromReefSide(side));
+
+    // if scoring on l1 or intaking algae allow the driver to
+    // drive away without moving the superstructure.
+    // this is needed due to descoring L1 and hitting algae on reef.
+    if (superStructureState.equals(SuperStructureState.ScoreL1)
+        || superStructureState.equals(SuperStructureState.AlgaeL2)
+        || superStructureState.equals(SuperStructureState.AlgaeL3)) {
+      final Command lineupBackedUp =
+          SwerveCommands.lineupReef(
+              subsystems.swerve,
+              localizer,
+              target.plus(ALGAE_BACKOFF),
+              PathObstacles.fromReefSide(side));
+      return Commands.sequence(
+          lineupBackedUp.until(superStructureAtSetpoint()),
+          lineup.until(nearAndSlow(target, 0.1, 0.05)),
+          new TeleopSwerveTraditionalCmd(subsystems.swerve, controller));
+    } else {
+      return lineup.alongWith(logDistance(target));
+    }
+  }
+
+  public Command gotoTargetCmd(DriverController controller) {
     final Supplier<Command> coral =
         () -> {
-          final SuperStructureState stagedState =
-              stagedStateMap.getOrDefault(superStructureState, superStructureState);
-          final MoveOrder preferredMoveOrder =
-              superStructureState.equals(SuperStructureState.ScoreL4)
-                  ? MoveOrder.ELEVATOR_FIRST
-                  : MoveOrder.SIMULTANEOUS;
           final var targetLocation = targetLocation();
           return Commands.parallel(
-              SwerveCommands.lineupReef(
-                  subsystems.swerve, localizer, targetLocation, PathObstacles.fromReefSide(side)),
-              Commands.sequence(
-                  SuperStructureCommands.holdAt(subsystems.superStructure, SuperStructureState.Stow)
-                      .until(isNearPose(localizer, targetLocation.getTranslation(), 2.0)),
-                  SuperStructureCommands.holdAt(
-                          subsystems.superStructure, superStructureState.minHeight(stagedState))
-                      .until(
-                          isNearPose(localizer, targetLocation.getTranslation(), 0.04)
-                              .and(isSlowerThan(0.4))),
-                  SuperStructureCommands.holdAt(
-                      subsystems.superStructure, superStructureState, preferredMoveOrder)),
+              gotoTargetCmdScoreComponent(targetLocation),
+              gotoTargetCmdLineupComponent(targetLocation, controller),
               Commands.sequence(
                   LEDCommands.run(subsystems.led, LedUtil.makeBounce(kLed.TargetingColor, 1.0))
                       .until(
-                          isNearPose(localizer, targetLocation.getTranslation(), 0.04)
-                              .and(isSlowerThan(0.2))
+                          nearAndSlow(targetLocation, 0.04, 0.075)
                               .and(
                                   SuperStructureCommands.isAt(
                                       subsystems.superStructure, superStructureState))),
@@ -197,6 +259,7 @@ public class OperatorTarget implements StructSerializable {
         };
     return makeRefreshableCmd(coral, subsystems.swerve, subsystems.superStructure)
         .unless(hasTarget().negate())
+        .unless(() -> superStructureState.equals(SuperStructureState.AlgaeFloor))
         .withName("TeleopAlignFull");
   }
 

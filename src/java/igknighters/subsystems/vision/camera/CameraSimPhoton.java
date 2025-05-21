@@ -1,8 +1,6 @@
 package igknighters.subsystems.vision.camera;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import igknighters.SimCtx;
-import java.util.function.Function;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 
@@ -10,9 +8,8 @@ import org.photonvision.simulation.SimCameraProperties;
 public class CameraSimPhoton extends CameraRealPhoton {
   private final SimCtx simCtx;
 
-  public CameraSimPhoton(
-      CameraConfig config, SimCtx simCtx, Function<Double, Rotation2d> gyroYawSupplier) {
-    super(config, gyroYawSupplier);
+  public CameraSimPhoton(CameraConfig config, SimCtx simCtx) {
+    super(config);
     this.simCtx = simCtx;
 
     final SimCameraProperties props = new SimCameraProperties();

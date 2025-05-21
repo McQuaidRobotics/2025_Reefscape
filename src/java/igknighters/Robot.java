@@ -20,7 +20,10 @@ import igknighters.commands.SubsystemTriggers;
 import igknighters.commands.autos.AutoController;
 import igknighters.commands.autos.AutoRoutines;
 import igknighters.commands.teleop.TeleopSwerveTraditionalCmd;
+import igknighters.commands.tests.SubsystemTests;
 import igknighters.commands.tests.TestManager;
+import igknighters.commands.tests.WheelRadiusCharacterization;
+import igknighters.commands.tests.WheelRadiusCharacterization.Direction;
 import igknighters.constants.ConstValues;
 import igknighters.controllers.DriverController;
 import igknighters.controllers.OperatorController;
@@ -89,7 +92,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
 
     localizer.reset(new Pose2d(new Translation2d(12.0, 5.0), Rotation2d.kZero));
 
-    final var operatorTarget = new OperatorTarget(subsystems, this);
+    final var operatorTarget = new OperatorTarget(localizer, subsystems, this);
     driverController = new DriverController(0);
     driverController.bind(localizer, subsystems, operatorTarget);
     operatorController = new OperatorController(1);
@@ -104,7 +107,6 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             localizer::pose,
             pose -> {
               localizer.reset(pose);
-              subsystems.vision.resetHeading();
               subsystems.swerve.setYaw(pose.getRotation());
             },
             new AutoController(subsystems.swerve, localizer),
@@ -123,12 +125,18 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
             });
 
     final var routines = new AutoRoutines(subsystems, localizer, autoFactory);
-    AutoRoutines.addCmd(autoChooser, "test", routines::test);
-    AutoRoutines.addCmd(autoChooser, "testPush", routines::testWithPush);
+    AutoRoutines.addCmd(autoChooser, "threePieceL4", routines::threePieceL4);
+    AutoRoutines.addCmd(autoChooser, "threePieceL4WithPush", routines::threePieceL4WithPush);
+    AutoRoutines.addCmd(autoChooser, "CenterL4", routines::centralL4);
     autoChooser.addCmd("straight", routines.trajTest("Straight"));
     setupAutoChooser();
 
     testManager = new TestManager();
+    testManager.addTestRoutine(
+        "WheelCharacterization",
+        new WheelRadiusCharacterization(subsystems.swerve, Direction.COUNTER_CLOCKWISE));
+    testManager.addTestRoutine("SuperStructure", SubsystemTests.test(subsystems.superStructure));
+    testManager.addTestRoutine("Climber", SubsystemTests.test(subsystems.climber));
 
     System.gc();
   }
@@ -141,11 +149,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
     Tracer.traceFunc("Localizer", localizer::update);
     Tracer.traceFunc("CommandScheduler", scheduler::run);
     Tracer.traceFunc("Monologue", Monologue::updateAll);
-    Tracer.traceFunc(
-        "Choosers",
-        () -> {
-          testManager.update();
-        });
+    Tracer.traceFunc("Choosers", testManager::update);
   }
 
   @Override
@@ -204,9 +208,7 @@ public class Robot extends UnitTestableRobot<Robot> implements Logged {
       Monologue.setupMonologueDisabled(this, "/Robot", true);
     }
 
-    Monologue.capture(
-        "SmartDashboard", NetworkTableInstance.getDefault().getTable("SmartDashboard"));
-    Monologue.capture("Tracer", NetworkTableInstance.getDefault().getTable("Tracer"));
+    // Monologue.capture("Tracer", NetworkTableInstance.getDefault().getTable("Tracer"));
 
     // logs build data to the datalog
     final String meta = "/BuildData/";

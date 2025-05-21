@@ -3,9 +3,9 @@ package igknighters.commands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import igknighters.Localizer;
 import igknighters.constants.ConstValues;
 import igknighters.constants.Pathing.PathObstacles;
@@ -14,7 +14,6 @@ import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.ControllerFactories;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
-import igknighters.subsystems.vision.Vision;
 import igknighters.util.plumbing.TunableValues;
 import monologue.GlobalField;
 import wayfinder.controllers.PositionalController;
@@ -27,39 +26,28 @@ import wpilibExt.Speeds;
 import wpilibExt.Speeds.RobotSpeeds;
 
 public class SwerveCommands {
-  /**
-   * Gets the angle between two points
-   *
-   * @param currentTrans The current translation
-   * @param pose The pose to get the angle to
-   * @param angleOffet An offset to add to the angle
-   * @return The angle between the two points
-   */
-  public static Rotation2d rotationRelativeToPose(Translation2d currentTrans, Translation2d pose) {
-    double angleBetween =
-        Math.atan2(pose.getY() - currentTrans.getY(), pose.getX() - currentTrans.getX());
-    return Rotation2d.fromRadians(angleBetween);
+
+  public static Trigger isSlowerThan(Swerve swerve, double speed) {
+    return new Trigger(() -> swerve.getFieldSpeeds().magnitude() < speed);
   }
 
   public static Command commandStopDrives(final Swerve swerve) {
     return swerve.runOnce(() -> swerve.drive(RobotSpeeds.kZero)).withName("commandStopDrives");
   }
 
-  public static Command orientGyro(
-      Swerve swerve, Vision vision, Localizer localizer, Rotation2d orientation) {
+  public static Command orientGyro(Swerve swerve, Localizer localizer, Rotation2d orientation) {
     return swerve.runOnce(
         () -> {
-          vision.resetHeading();
           swerve.setYaw(orientation);
           var pose = new Pose2d(localizer.pose().getTranslation(), orientation);
           localizer.reset(pose);
         });
   }
 
-  public static Command orientGyro(Swerve swerve, Vision vision, Localizer localizer) {
+  public static Command orientGyro(Swerve swerve, Localizer localizer) {
     return Commands.either(
-        orientGyro(swerve, vision, localizer, Rotation2d.kZero),
-        orientGyro(swerve, vision, localizer, Rotation2d.kPi),
+        orientGyro(swerve, localizer, Rotation2d.kZero),
+        orientGyro(swerve, localizer, Rotation2d.kPi),
         AllianceSymmetry::isBlue);
   }
 
@@ -104,43 +92,35 @@ public class SwerveCommands {
       Swerve swerve, Localizer localizer, Pose2d target, PathObstacles obstacles) {
     final ChassisConstraints preciseConstraints =
         new ChassisConstraints(
-            new Constraints(
-                kSwerve.MAX_DRIVE_VELOCITY * 0.45,
-                SharedState.maximumAcceleration(SuperStructureState.Stow.elevatorMeters)),
+            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.3, kSwerve.MAX_DRIVE_ACCELERATION),
             new Constraints(
                 kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.65));
     final ChassisConstraints roughConstraints =
         new ChassisConstraints(
-            new Constraints(kSwerve.MAX_DRIVE_VELOCITY * 0.70, kSwerve.MAX_DRIVE_ACCELERATION),
             new Constraints(
-                kSwerve.MAX_ANGULAR_VELOCITY * 0.5, kSwerve.MAX_ANGULAR_VELOCITY * 0.65));
+                kSwerve.MAX_DRIVE_VELOCITY * 0.8,
+                SharedState.maximumAcceleration(SuperStructureState.Stow.elevatorMeters)),
+            new Constraints(
+                kSwerve.MAX_ANGULAR_VELOCITY * 1.25, kSwerve.MAX_ANGULAR_VELOCITY * 1.0));
 
     final RepulsorFieldPlanner precisePlanner =
         new RepulsorFieldPlanner(
             new PositionalController(
-                // new ControllerSequence<>(
-                //     TranslationController.profiled(2.0, 0, 0, false),
-                //     TranslationController.unprofiled(4.0, 0.0, 0.05, 0.025)
-                // ),
-                TranslationController.unprofiled(4.0, 0.0, 0.05, 0.025),
+                TranslationController.unprofiled(4.0, 0.0, 0.03, 0.025),
                 ControllerFactories.basicRotationalController()),
             obstacles.obstacles);
     final RepulsorFieldPlanner roughPlanner =
         new RepulsorFieldPlanner(
             new PositionalController(
                 TranslationController.unprofiled(3.0, 0.0, 0.0, 0.0),
-                ControllerFactories.basicRotationalController()),
+                ControllerFactories.lowToleranceRotationalController()),
             PathObstacles.Other.obstacles);
 
-    final Transform2d roughPoseOffset = new Transform2d(-0.4, 0, Rotation2d.kZero);
+    final Transform2d roughPoseOffset = new Transform2d(-0.3, 0, Rotation2d.kZero);
     return Commands.sequence(
             followRepulsor(
                     roughPlanner, swerve, localizer, target.plus(roughPoseOffset), roughConstraints)
-                .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation()))
-                .unless(
-                    () ->
-                        localizer.pose().getTranslation().getDistance(target.getTranslation())
-                            < 0.375),
+                .until(() -> obstacles.insideHitBox(localizer.pose().getTranslation())),
             followRepulsor(precisePlanner, swerve, localizer, target, preciseConstraints))
         .withName("lineupReef");
   }

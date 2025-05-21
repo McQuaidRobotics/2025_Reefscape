@@ -80,8 +80,8 @@ public class Pathing {
   };
 
   private static final Obstacle[] REEF_LARGE = {
-    new Obstacle.TeardropObstacle(new Translation2d(4.49, 4), 1.4, 2.5, 1.5, 0.7, 1.2),
-    new Obstacle.TeardropObstacle(new Translation2d(13.08, 4), 1.4, 2.5, 1.5, 0.7, 1.2),
+    new Obstacle.TeardropObstacle(new Translation2d(4.49, 4), 1.4, 2.5, 1.0, 0.7, 1.2),
+    new Obstacle.TeardropObstacle(new Translation2d(13.08, 4), 1.4, 2.5, 1.0, 0.7, 1.2),
   };
 
   private static final Obstacle[] WALL =
@@ -116,8 +116,8 @@ public class Pathing {
     public final Obstacle[] obstacles;
 
     private static Rectangle2d faceHitBox(Pose2d face) {
-      final Transform2d transform = new Transform2d(new Translation2d(1.0, 0.0), Rotation2d.kZero);
-      return new Rectangle2d(face.plus(transform), 2.75, 0.75);
+      final Transform2d transform = new Transform2d(new Translation2d(0.5, 0.0), Rotation2d.kZero);
+      return new Rectangle2d(face.plus(transform), 1.5, 1.0);
     }
 
     PathObstacles(Pose2d hitBox, Obstacle[]... obstacles) {
@@ -159,8 +159,8 @@ public class Pathing {
     }
 
     public boolean insideHitBox(Translation2d position) {
-      return (blueHitBox.contains(position) && AllianceSymmetry.isBlue())
-          || (redHitBox.contains(position) && AllianceSymmetry.isRed());
+      return (AllianceSymmetry.isBlue() && blueHitBox.contains(position))
+          || (AllianceSymmetry.isRed() && redHitBox.contains(position));
     }
   }
 }

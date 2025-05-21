@@ -14,7 +14,7 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.SimCtx;
 import igknighters.constants.ConstValues.Conv;
-import igknighters.subsystems.climber.ClimberConstants.PivotConstants;
+import igknighters.subsystems.climber.ClimberConstants.kPivot;
 import sham.ShamMechanism;
 import sham.ShamMechanism.Friction;
 import sham.ShamMechanism.HardLimits;
@@ -40,27 +40,24 @@ public class PivotSim extends Pivot {
             new DCMotorExt(DCMotor.getKrakenX60Foc(1), 1),
             shamMCX,
             KilogramSquareMeters.of(.3),
-            GearRatio.reduction(PivotConstants.GEAR_RATIO),
+            GearRatio.reduction(kPivot.GEAR_RATIO),
             Friction.of(DCMotor.getKrakenX60Foc(1), Volt.of(1.0)),
             // MechanismDynamics.forArm(Pound.of(9.0), Inches.of(6)),
             MechanismDynamics.zero(),
-            HardLimits.of(
-                Rotations.of(PivotConstants.REVERSE_LIMIT),
-                Rotations.of(PivotConstants.FORWARD_LIMIT + 0.02)),
+            HardLimits.of(Rotations.of(kPivot.STOW_ANGLE), Rotations.of(kPivot.STAGE_ANGLE + 0.02)),
             0,
             simCtx.robot().timing());
     simCtx.robot().addMechanism(wristMechanism);
 
     controlLoop =
         ClosedLoop.forVoltageAngle(
-            PIDFeedback.forAngular(Volts, PivotConstants.KP, PivotConstants.KD),
+            PIDFeedback.forAngular(Volts, kPivot.KP, kPivot.KD),
             SimpleFeedforward.forVoltage(Rotations, 0.0, 0.0, 0.0, simCtx.robot().timing().dt()));
     shamMCX.setBrakeMode(false); // do not enable, this feature is broken
-    shamMCX.configSensorToMechanismRatio(PivotConstants.GEAR_RATIO);
+    shamMCX.configSensorToMechanismRatio(kPivot.GEAR_RATIO);
     shamMCX.configureCurrentLimit(
         CurrentLimits.of(
-            Amps.of(PivotConstants.STATOR_CURRENT_LIMIT),
-            Amps.of(PivotConstants.SUPPLY_CURRENT_LIMIT)));
+            Amps.of(kPivot.STATOR_CURRENT_LIMIT), Amps.of(kPivot.SUPPLY_CURRENT_LIMIT)));
   }
 
   @Override

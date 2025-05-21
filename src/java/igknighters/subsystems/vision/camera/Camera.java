@@ -4,7 +4,6 @@ import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -87,15 +86,4 @@ public abstract class Camera extends Component {
    * @return The last seen tags
    */
   public abstract List<Integer> getSeenTags();
-
-  /**
-   * Updates any internal pose estimators to the robots heading.
-   *
-   * @param timestamp The timestamp of the update in FPGA time
-   * @param heading The heading of the robot
-   */
-  public abstract void updateHeading(double timestamp, Rotation2d heading);
-
-  /** Clears the heading buffer of the camera. */
-  public abstract void clearHeading();
 }

@@ -43,7 +43,7 @@ public class IntakeCommands {
   public static Command expel(Intake intake, BooleanSupplier isL1) {
     return Commands.either(
             runVoltage(intake, 14.0),
-            Commands.either(runVoltage(intake, 7.0), runVoltage(intake, 12.0), isL1),
+            Commands.either(runVoltage(intake, 7.0), runVoltage(intake, 9.0), isL1),
             isHolding(intake, Holding.ALGAE))
         .withName("Expel");
   }

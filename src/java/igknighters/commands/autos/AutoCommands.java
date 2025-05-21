@@ -35,6 +35,7 @@ import igknighters.subsystems.superStructure.SuperStructureState;
 import igknighters.subsystems.swerve.Swerve;
 import igknighters.subsystems.vision.Vision;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import monologue.GlobalField;
@@ -59,7 +60,7 @@ public class AutoCommands {
         new TrapezoidProfile(
             new TrapezoidProfile.Constraints(
                 kElevator.MAX_VELOCITY * kElevator.PULLEY_RADIUS,
-                kElevator.MAX_ACCELERATION * kElevator.PULLEY_RADIUS));
+                kElevator.MAX_ACCELERATION_AUTO * kElevator.PULLEY_RADIUS));
     final var stowState = new TrapezoidProfile.State(SuperStructureState.Stow.elevatorMeters, 0.0);
     final var intakeStake =
         new TrapezoidProfile.State(SuperStructureState.IntakeHpClose.elevatorMeters, 0.0);
@@ -188,7 +189,7 @@ public class AutoCommands {
             };
         return Commands.defer(cmdSup, Set.of(swerve));
       } else {
-        DriverStation.reportError("womp womp", false);
+        DriverStation.reportError("there is no final pose in the auto routine", false);
         return Commands.none();
       }
     }
@@ -270,17 +271,19 @@ public class AutoCommands {
     }
 
     public Command build() {
+      final AtomicBoolean flag = new AtomicBoolean(false);
       headCommand.addCommands(Commands.print(bodyCommand.getRequirements().toString()));
       bodyCommand.addCommands(
           new ScheduleCommand(
-              loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))));
+              loggedCmd(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))),
+          Commands.runOnce(() -> flag.set(true)));
       routine
           .active()
           .onTrue(
               headCommand
                   .andThen(new ScheduleCommand(bodyCommand.withName(routine.name() + "_AutoBody")))
                   .withName(routine.name() + "_AutoHead"));
-      return routine.cmd();
+      return routine.cmd(flag::get);
     }
   }
 

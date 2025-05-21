@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public class VisionConstants {
   public static final class kVision {
-    public static final double ROOT_TRUST = 0.75;
+    public static final double ROOT_TRUST = 1.0;
 
     public static final double MAX_Z_DELTA = 0.2;
     public static final double MAX_ANGLE_DELTA = 5.0 * Conv.DEGREES_TO_RADIANS;
@@ -25,13 +25,12 @@ public class VisionConstants {
                   new Translation3d(0.158, -0.269, 0.187),
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS)),
-              // TODO
               new CameraIntrinsics(
-                  913.51,
-                  912.47,
-                  660.17,
-                  397.42,
-                  new double[] {0.049, -0.08, 0.0, 0.0, 0.024, -0.002, 0.004, 0.0})),
+                  899.32,
+                  899.04,
+                  610.20,
+                  386.27,
+                  new double[] {0.054, -0.074, 0, 0, 0.017, -0.003, 0.01, 0.004})),
           new CameraConfig(
               "front_right",
               new Pose3d(
@@ -39,11 +38,11 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
-                  913.61,
-                  912.90,
-                  641.63,
-                  363.79,
-                  new double[] {0.046, -0.066, 0.0, 0.0, 0.013, -0.002, 0.005, 0.001})),
+                  907.53,
+                  907.04,
+                  679.9,
+                  439.38,
+                  new double[] {0.053, -0.09, 0.001, 0, 0.035, -0.005, 0.01, 0.002})),
           new CameraConfig(
               "back_left",
               new Pose3d(
@@ -53,13 +52,12 @@ public class VisionConstants {
                       8.0 * Conv.INCHES_TO_METERS),
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -160.0 * Conv.DEGREES_TO_RADIANS)),
-              // TODO
               new CameraIntrinsics(
-                  913.61,
-                  912.90,
-                  641.63,
-                  363.79,
-                  new double[] {0.046, -0.066, 0.0, 0.0, 0.013, -0.002, 0.005, 0.001})),
+                  909.81,
+                  909.35,
+                  652.63,
+                  388.09,
+                  new double[] {0.049, -0.072, -0.001, 0, 0.014, -0.003, 0.007, 0.002})),
           new CameraConfig(
               "back_right",
               new Pose3d(
@@ -70,20 +68,36 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 160.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
-                  913.51,
-                  912.47,
-                  660.17,
-                  397.42,
-                  new double[] {0.049, -0.08, 0.0, 0.0, 0.024, -0.002, 0.004, 0.0})),
+                  915.28,
+                  914.69,
+                  664.29,
+                  387.37,
+                  new double[] {0.045, -0.066, 0.001, 0, 0.011, -0.002, 0.005, 0.001})),
         };
 
     public static final LerpTable DISTANCE_TRUST_COEFFICIENT =
         new LerpTable(
             new LerpTable.LerpTableEntry(0.0, 1.0),
-            new LerpTable.LerpTableEntry(1.5, 1.0),
-            new LerpTable.LerpTableEntry(2.5, 0.8),
-            new LerpTable.LerpTableEntry(5.0, 0.5),
+            new LerpTable.LerpTableEntry(0.65, 1.0),
+            new LerpTable.LerpTableEntry(1.5, 0.7),
+            new LerpTable.LerpTableEntry(2.5, 0.4),
+            new LerpTable.LerpTableEntry(5.0, 0.25),
             new LerpTable.LerpTableEntry(8.0, 0.0));
+
+    public static final LerpTable AREA_TRUST_COEFFICIENT =
+        new LerpTable(
+            new LerpTable.LerpTableEntry(0.0, 0.0),
+            new LerpTable.LerpTableEntry(0.2, 0.45),
+            new LerpTable.LerpTableEntry(1.0, 0.55),
+            new LerpTable.LerpTableEntry(4.0, 0.75),
+            new LerpTable.LerpTableEntry(7.5, 1.0));
+
+    public static final LerpTable PIXEL_OFFSET_TRUST_COEFFICIENT =
+        new LerpTable(
+            new LerpTable.LerpTableEntry(0.0, 1.0),
+            new LerpTable.LerpTableEntry(0.2, 1.0),
+            new LerpTable.LerpTableEntry(0.65, 0.75),
+            new LerpTable.LerpTableEntry(1.0, 0.35));
 
     public static final LerpTable LINEAR_VELOCITY_TRUST_COEFFICIENT =
         new LerpTable(
@@ -124,5 +138,7 @@ public class VisionConstants {
             put(22, 1.0); // REEF
           }
         };
+
+    public static final double MIN_TARGET_AREA = 0.25; // 0.25% of the image area
   }
 }

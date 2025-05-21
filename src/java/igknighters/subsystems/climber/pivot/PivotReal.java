@@ -17,20 +17,17 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
 import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.climber.ClimberConstants;
-import igknighters.subsystems.climber.ClimberConstants.PivotConstants;
+import igknighters.subsystems.climber.ClimberConstants.kPivot;
 import igknighters.util.can.CANSignalManager;
 
 public class PivotReal extends Pivot {
 
-  private final TalonFX leader =
-      new TalonFX(PivotConstants.LEADER_MOTOR_ID, ClimberConstants.CANBUS);
-  private final TalonFX follower =
-      new TalonFX(PivotConstants.FOLLOWER_MOTOR_ID, ClimberConstants.CANBUS);
-  private final CANcoder encoder = new CANcoder(PivotConstants.ENCODER_ID, ClimberConstants.CANBUS);
+  private final TalonFX leader = new TalonFX(kPivot.LEADER_MOTOR_ID, ClimberConstants.CANBUS);
+  private final TalonFX follower = new TalonFX(kPivot.FOLLOWER_MOTOR_ID, ClimberConstants.CANBUS);
+  private final CANcoder encoder = new CANcoder(kPivot.ENCODER_ID, ClimberConstants.CANBUS);
 
   private final BaseStatusSignal position, velocity, amps, voltage, encoderPosition;
 
-  private final VoltageOut controlReq = new VoltageOut(0.0).withUpdateFreqHz(0.0);
   private final NeutralOut neutralOut = new NeutralOut().withUpdateFreqHz(0.0);
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(0.0);
 
@@ -67,24 +64,14 @@ public class PivotReal extends Pivot {
   private final TalonFXConfiguration motorConfiguration() {
     var cfg = new TalonFXConfiguration();
 
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        PivotConstants.FORWARD_LIMIT * Conv.RADIANS_TO_ROTATIONS;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-    cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-        PivotConstants.REVERSE_LIMIT * Conv.RADIANS_TO_ROTATIONS;
-
     cfg.Voltage.PeakReverseVoltage = -5.5;
 
-    // cfg.MotionMagic.MotionMagicCruiseVelocity = PivotConstants.MAX_VELOCITY;
-    // cfg.MotionMagic.MotionMagicAcceleration = PivotConstants.MAX_ACCELERATION;
-
-    cfg.CurrentLimits.StatorCurrentLimit = PivotConstants.STATOR_CURRENT_LIMIT;
-    cfg.CurrentLimits.SupplyCurrentLimit = PivotConstants.SUPPLY_CURRENT_LIMIT;
+    cfg.CurrentLimits.StatorCurrentLimit = kPivot.STATOR_CURRENT_LIMIT;
+    cfg.CurrentLimits.SupplyCurrentLimit = kPivot.SUPPLY_CURRENT_LIMIT;
 
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     cfg.MotorOutput.Inverted =
-        PivotConstants.INVERT_MOTOR
+        kPivot.INVERT_MOTOR
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
 
@@ -94,10 +81,10 @@ public class PivotReal extends Pivot {
   private final CANcoderConfiguration encoderConfiguration() {
     var cfg = new CANcoderConfiguration();
 
-    cfg.MagnetSensor.MagnetOffset = PivotConstants.ANGLE_OFFSET;
+    cfg.MagnetSensor.MagnetOffset = kPivot.ANGLE_OFFSET;
     cfg.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
     cfg.MagnetSensor.SensorDirection =
-        PivotConstants.INVERT_ENCODER
+        kPivot.INVERT_ENCODER
             ? SensorDirectionValue.Clockwise_Positive
             : SensorDirectionValue.CounterClockwise_Positive;
 
@@ -108,10 +95,7 @@ public class PivotReal extends Pivot {
   public void setPositionRads(double moveToRads) {
     super.targetRads = moveToRads;
     controlledLastCycle = true;
-    log("moveToRads", moveToRads);
-    leader.setControl(
-        controlReq.withOutput(
-            log("controllerOutput", pidController.calculate(radians, moveToRads))));
+    voltageOut(pidController.calculate(radians, moveToRads));
   }
 
   @Override
@@ -127,6 +111,11 @@ public class PivotReal extends Pivot {
   public void voltageOut(double voltage) {
     super.targetRads = Double.NaN;
     controlledLastCycle = true;
+    if (voltage < 0.0 && super.radians < kPivot.STOW_ANGLE) {
+      voltage = 0.0;
+    } else if (voltage > 0.0 && super.radians > kPivot.STAGE_ANGLE) {
+      voltage = 0.0;
+    }
     leader.setControl(voltageOut.withOutput(voltage));
   }
 

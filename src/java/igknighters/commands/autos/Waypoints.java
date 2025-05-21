@@ -21,6 +21,7 @@ public enum Waypoints {
   FarMid_M,
   Intake,
   StartingInside,
+  StartingCenter,
   StartingOutside;
 
   public String to(Waypoints wp) {
