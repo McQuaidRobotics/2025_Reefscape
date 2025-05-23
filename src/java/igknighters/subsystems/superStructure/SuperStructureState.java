@@ -26,7 +26,6 @@ public enum SuperStructureState implements StructSerializable {
   IntakeHpFar(26.2 * INCHES_TO_METERS, -48.0 * DEGREES_TO_RADIANS),
   AntiTilt(MIN_HEIGHT + 0.05, MAX_ANGLE, 1.0);
 
-  
   public final double elevatorMeters;
   public final double wristRads;
   public final double toleranceScalar;

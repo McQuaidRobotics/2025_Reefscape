@@ -25,5 +25,7 @@ public class ClimberConstants {
     public static final double STOW_ANGLE = -155.0 * Conv.DEGREES_TO_RADIANS;
 
     public static final double ANGLE_OFFSET = -0.03271484375;
+    // Map encoder discontinuity and protect reverse drive
+    public static final double CLIMB_REVERSE_DRIVE_MAX = 2.1;
   }
 }
