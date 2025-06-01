@@ -23,7 +23,6 @@ import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
 import igknighters.util.plumbing.TunableValues;
 import java.util.function.DoubleSupplier;
-
 import wayfinder.controllers.Types.ChassisConstraints;
 import wayfinder.controllers.Types.Constraints;
 import wpilibExt.AllianceSymmetry;
@@ -103,12 +102,9 @@ public class DriverController {
                     localizer,
                     () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
                     new ChassisConstraints(
-                      new Constraints(
-                        kSwerve.MAX_DRIVE_VELOCITY * 0.5,
-                        kSwerve.MAX_DRIVE_ACCELERATION
-                      ),
-                      kSwerve.CONSTRAINTS.rotation()
-                    ),
+                        new Constraints(
+                            kSwerve.MAX_DRIVE_VELOCITY * 0.5, kSwerve.MAX_DRIVE_ACCELERATION),
+                        kSwerve.CONSTRAINTS.rotation()),
                     true)
                 .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));

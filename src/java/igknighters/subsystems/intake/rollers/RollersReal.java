@@ -131,7 +131,8 @@ public class RollersReal extends Rollers {
         (DISTANCE_LERP.lerp(movingAverage.calculate(distance.getValueAsDouble()))
                 + CORAL_HALF_WIDTH)
             - (INTAKE_WIDTH / 2.0);
-    //super.gamepieceDistance = distance.getValueAsDouble() + CORAL_HALF_WIDTH - (INTAKE_WIDTH / 2.0);
+    // super.gamepieceDistance = distance.getValueAsDouble() + CORAL_HALF_WIDTH - (INTAKE_WIDTH /
+    // 2.0);
 
     super.radiansPerSecond = velocity.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS;
     log("radiansPerSecondPerSecond", acceleration.getValueAsDouble() * Conv.ROTATIONS_TO_RADIANS);
