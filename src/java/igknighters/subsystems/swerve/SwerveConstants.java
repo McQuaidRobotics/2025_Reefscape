@@ -92,7 +92,7 @@ public class SwerveConstants {
     public static final double DRIVEBASE_RADIUS =
         Math.hypot(DRIVEBASE_WIDTH / 2.0, DRIVEBASE_WIDTH / 2.0);
 
-    public static final double DEMO_DETUNE = 0.5;
+    public static final double DEMO_DETUNE = 1.0;
     public static final double MAX_DRIVE_VELOCITY =
         kDriveMotor.MAX_VELOCITY * kWheel.RADIUS * DEMO_DETUNE;
     public static final double MAX_DRIVE_ACCELERATION = MAX_DRIVE_VELOCITY / 0.75;
