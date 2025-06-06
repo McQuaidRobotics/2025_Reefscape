@@ -19,18 +19,18 @@ public class VisionConstants {
 
     public static final CameraConfig[] CONFIGS =
         new CameraConfig[] {
-          // new CameraConfig(
-          //     "front_left",
-          //     new Pose3d(
-          //         new Translation3d(0.158, -0.269, 0.187),
-          //         new Rotation3d(
-          //             0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS)),
-          //     new CameraIntrinsics(
-          //         899.32,
-          //         899.04,
-          //         610.20,
-          //         386.27,
-          //         new double[] {0.054, -0.074, 0, 0, 0.017, -0.003, 0.01, 0.004})),
+          new CameraConfig(
+              "front_left",
+              new Pose3d(
+                  new Translation3d(0.158, -0.269, 0.187),
+                  new Rotation3d(
+                      0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS)),
+              new CameraIntrinsics(
+                  899.32,
+                  899.04,
+                  610.20,
+                  386.27,
+                  new double[] {0.037, -0.051, 0, -0.001, -0.004, -0.001, 0.002, 0 })),
           new CameraConfig(
               "front_right",
               new Pose3d(
@@ -42,7 +42,7 @@ public class VisionConstants {
                   907.04,
                   679.9,
                   439.38,
-                  new double[] {0.047, -0.079, 0.00, -0.001, 0.022, -0.002, 0.005, 0.00})),
+                  new double[] {0.038, -0.031, 0, -0.001, -0.021, 0, 0.004, 0.003})),
           new CameraConfig(
               "back_left",
               new Pose3d(
@@ -57,7 +57,7 @@ public class VisionConstants {
                   909.35,
                   652.63,
                   388.09,
-                  new double[] {0.046, -0.071, -0.002, 0.001, 0.01, -0.002, 0.003, 0})),
+                  new double[] {0.046, -0.071, -0.002, 0.001, 0.01, -0.002, 0.003, 0 })),
           new CameraConfig(
               "back_right",
               new Pose3d(
@@ -72,7 +72,7 @@ public class VisionConstants {
                   914.69,
                   664.29,
                   387.37,
-                  new double[] {0.028, -0.012, -0.001, 0.001, -0.032, 0, 0.002, 0.002})),
+                  new double[] {0.028, -0.012, -0.001, 0.001, -0.032, 0, 0.002, 0.002 })),
         };
 
     public static final LerpTable DISTANCE_TRUST_COEFFICIENT =
