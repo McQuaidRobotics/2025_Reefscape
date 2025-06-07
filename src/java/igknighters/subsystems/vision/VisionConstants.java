@@ -26,10 +26,10 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
-                  899.32,
-                  899.04,
-                  610.20,
-                  386.27,
+                  909.42,
+                  911.15,
+                  660.37,
+                  361.85,
                   new double[] {0.037, -0.051, 0, -0.001, -0.004, -0.001, 0.002, 0})),
           new CameraConfig(
               "front_right",
@@ -38,10 +38,10 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -25.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
-                  907.53,
-                  907.04,
-                  679.9,
-                  439.38,
+                  925.61,
+                  925.37,
+                  684.96,
+                  377.97,
                   new double[] {0.038, -0.031, 0, -0.001, -0.021, 0, 0.004, 0.003})),
           new CameraConfig(
               "back_left",
@@ -53,10 +53,10 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, -160.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
-                  909.81,
-                  909.35,
-                  652.63,
-                  388.09,
+                  905.93,
+                  906.52,
+                  662.53,
+                  364.85,
                   new double[] {0.046, -0.071, -0.002, 0.001, 0.01, -0.002, 0.003, 0})),
           new CameraConfig(
               "back_right",
@@ -68,10 +68,10 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 160.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
-                  915.28,
-                  914.69,
-                  664.29,
-                  387.37,
+                  903.33,
+                  904.19,
+                  682.44,
+                  365.46,
                   new double[] {0.028, -0.012, -0.001, 0.001, -0.032, 0, 0.002, 0.002})),
         };
 
