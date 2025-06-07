@@ -30,7 +30,7 @@ public class VisionConstants {
                   899.04,
                   610.20,
                   386.27,
-                  new double[] {0.037, -0.051, 0, -0.001, -0.004, -0.001, 0.002, 0 })),
+                  new double[] {0.037, -0.051, 0, -0.001, -0.004, -0.001, 0.002, 0})),
           new CameraConfig(
               "front_right",
               new Pose3d(
@@ -57,7 +57,7 @@ public class VisionConstants {
                   909.35,
                   652.63,
                   388.09,
-                  new double[] {0.046, -0.071, -0.002, 0.001, 0.01, -0.002, 0.003, 0 })),
+                  new double[] {0.046, -0.071, -0.002, 0.001, 0.01, -0.002, 0.003, 0})),
           new CameraConfig(
               "back_right",
               new Pose3d(
@@ -72,7 +72,7 @@ public class VisionConstants {
                   914.69,
                   664.29,
                   387.37,
-                  new double[] {0.028, -0.012, -0.001, 0.001, -0.032, 0, 0.002, 0.002 })),
+                  new double[] {0.028, -0.012, -0.001, 0.001, -0.032, 0, 0.002, 0.002})),
         };
 
     public static final LerpTable DISTANCE_TRUST_COEFFICIENT =
