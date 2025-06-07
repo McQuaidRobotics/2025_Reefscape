@@ -8,9 +8,10 @@ import wayfinder.controllers.Types.ChassisConstraints;
 import wpilibExt.Speeds;
 
 public class TeleopSwerveProfiled extends TeleopSwerveBaseCmd {
-  
+  private final ChassisConstraints constraint;
   public TeleopSwerveProfiled(Swerve swerve, DriverController controller, ChassisConstraints constraints) {
     super(swerve, controller);
+    constraint = constraints;
   }
 
   @Override
@@ -24,6 +25,6 @@ public class TeleopSwerveProfiled extends TeleopSwerveBaseCmd {
             vt.getY() * kSwerve.MAX_DRIVE_VELOCITY,
             rotationStick().getX() * kSwerve.MAX_ANGULAR_VELOCITY);
 
-    swerve.drive(fieldSpeeds);
+    swerve.drive(fieldSpeeds, constraint);
   }
 }
