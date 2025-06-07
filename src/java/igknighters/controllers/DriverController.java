@@ -14,6 +14,8 @@ import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
+import igknighters.commands.teleop.TeleopSwerveSingleAxisCmd;
+import igknighters.commands.teleop.TeleopSwerveTraditionalCmd;
 // import igknighters.commands.tests.WheelRadiusCharacterization;
 // import igknighters.commands.tests.WheelRadiusCharacterization.Direction;
 import igknighters.constants.FieldConstants;
@@ -93,7 +95,7 @@ public class DriverController {
                     false)
                 .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
-
+                    
     this.Y.whileTrue(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Net))
         .whileTrue(
             new TeleopSwerveHeadingCmd(
@@ -144,7 +146,13 @@ public class DriverController {
     // DPAD
     this.DPR.onTrue(ClimberCommands.stow(climber));
 
-    this.DPD.onTrue(ClimberCommands.stage(climber));
+    // this.DPD.onTrue(ClimberCommands.stage(climber));
+    this.DPD.onTrue(
+      Commands.parallel(
+        ClimberCommands.stage(climber),
+        new TeleopSwerveHeadingCmd(swerve, this, localizer, null, null, false)
+      )
+    );
 
     this.DPL.whileTrue(Commands.none());
 
