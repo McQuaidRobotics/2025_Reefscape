@@ -9,7 +9,9 @@ import wpilibExt.Speeds;
 
 public class TeleopSwerveProfiled extends TeleopSwerveBaseCmd {
   private final ChassisConstraints constraint;
-  public TeleopSwerveProfiled(Swerve swerve, DriverController controller, ChassisConstraints constraints) {
+
+  public TeleopSwerveProfiled(
+      Swerve swerve, DriverController controller, ChassisConstraints constraints) {
     super(swerve, controller);
     constraint = constraints;
   }

@@ -14,8 +14,7 @@ import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
-// import igknighters.commands.tests.WheelRadiusCharacterization;
-// import igknighters.commands.tests.WheelRadiusCharacterization.Direction;
+import igknighters.commands.teleop.TeleopSwerveProfiled;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.superStructure.SuperStructureState;
@@ -144,20 +143,17 @@ public class DriverController {
     // DPAD
     this.DPR.onTrue(ClimberCommands.stow(climber));
 
-    this.DPD.onTrue(ClimberCommands.stage(climber));
-    // this.DPD.whileTrue(
-    //     Commands.parallel(
-    //         ClimberCommands.stage(climber),
-    //         new TeleopSwerveHeadingCmd(
-    //             swerve,
-    //             this,
-    //             localizer,
-    //             () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-    //             new ChassisConstraints(
-    //                 new Constraints(
-    //                     kSwerve.MAX_DRIVE_VELOCITY * 0.3, kSwerve.MAX_DRIVE_ACCELERATION),
-    //                 kSwerve.CONSTRAINTS.rotation()),
-    //             false)));
+    // this.DPD.onTrue(ClimberCommands.stage(climber));
+    this.DPD.whileTrue(
+        Commands.parallel(
+            ClimberCommands.stage(climber),
+            new TeleopSwerveProfiled(
+                swerve,
+                this,
+                new ChassisConstraints(
+                    new Constraints(
+                        kSwerve.MAX_DRIVE_VELOCITY * .5, kSwerve.MAX_DRIVE_ACCELERATION * .5),
+                    kSwerve.CONSTRAINTS.rotation()))));
 
     this.DPL.whileTrue(Commands.none());
 
