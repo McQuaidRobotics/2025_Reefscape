@@ -2,6 +2,7 @@ package igknighters.subsystems.climber;
 
 import igknighters.Robot;
 import igknighters.SimCtx;
+import igknighters.constants.ConstValues.Conv;
 import igknighters.subsystems.Subsystems.ExclusiveSubsystem;
 import igknighters.subsystems.climber.pivot.Pivot;
 import igknighters.subsystems.climber.pivot.PivotReal;
@@ -9,6 +10,7 @@ import igknighters.subsystems.climber.pivot.PivotSim;
 
 public class Climber implements ExclusiveSubsystem {
   private final Pivot pivot;
+  private final ClimberVisualizer visualizer = new ClimberVisualizer();
 
   public Climber(SimCtx simCtx) {
     if (Robot.isReal()) {
@@ -26,6 +28,10 @@ public class Climber implements ExclusiveSubsystem {
     return pivot.isAtPosition(position, tolerance);
   }
 
+  public double getPivotPosition() {
+    return pivot.getPositionRads();
+  }
+
   public void voltageOut(double voltage) {
     pivot.voltageOut(voltage);
   }
@@ -33,5 +39,6 @@ public class Climber implements ExclusiveSubsystem {
   @Override
   public void periodic() {
     pivot.periodic();
+    visualizer.updatePosition(getPivotPosition() * Conv.RADIANS_TO_DEGREES);
   }
 }
