@@ -26,11 +26,11 @@ public class VisionConstants {
                   new Rotation3d(
                       0.0, -15.0 * Conv.DEGREES_TO_RADIANS, 25.0 * Conv.DEGREES_TO_RADIANS)),
               new CameraIntrinsics(
-                  909.42,
-                  911.15,
-                  660.37,
-                  361.85,
-                  new double[] {0.037, -0.051, 0, -0.001, -0.004, -0.001, 0.002, 0})),
+                  887.99,
+                  891.20,
+                  635.58,
+                  422.38,
+                  new double[] {0.048, -0.031, 0.002, -0.001, -0.028, 0.002, 0.011, 0.005})),
           new CameraConfig(
               "front_right",
               new Pose3d(
