@@ -112,8 +112,13 @@ public class PivotReal extends Pivot {
     super.targetRads = Double.NaN;
     controlledLastCycle = true;
     if (voltage < 0.0 && super.radians < kPivot.STOW_ANGLE) {
+      // goto stow from cage
+      voltage = 0.0;
+    } else if (voltage < 0.0 && super.radians > kPivot.CLIMB_REVERSE_DRIVE_MAX) {
+      // don't drive thorugh climber uprights
       voltage = 0.0;
     } else if (voltage > 0.0 && super.radians > kPivot.STAGE_ANGLE) {
+      // goto cage from stow
       voltage = 0.0;
     }
     leader.setControl(voltageOut.withOutput(voltage));

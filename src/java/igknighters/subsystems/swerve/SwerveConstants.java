@@ -80,8 +80,11 @@ public class SwerveConstants {
     public static final class kSteerEncoder {
       public static final boolean INVERT = false;
 
+      // public static final double[] ENCODER_OFFSETS_ROTATIONS =
+      //     new double[] {-0.219482421875, -0.384521484375, 0.355224609375, -0.1943359375};
+
       public static final double[] ENCODER_OFFSETS_ROTATIONS =
-          new double[] {-0.219482421875, -0.384521484375, 0.355224609375, -0.1943359375};
+          new double[] {-0.212891, -0.395020, 0.353516, -0.198242};
     }
   }
 
@@ -100,14 +103,14 @@ public class SwerveConstants {
     public static final LerpTable TELEOP_TRANSLATION_AXIS_CURVE =
         new LerpTable(
             new LerpTableEntry(0.0, 0.0),
-            new LerpTableEntry(0.05, 0.0), // deadzone
-            new LerpTableEntry(0.7, 0.55),
-            new LerpTableEntry(1.0, 1.0));
+            new LerpTableEntry(0.12, 0.0), // deadzone
+            new LerpTableEntry(0.7, 0.48),
+            new LerpTableEntry(1.0, 0.85));
 
     public static final LerpTable TELEOP_ROTATION_AXIS_CURVE =
         new LerpTable(
             new LerpTableEntry(0.0, 0.0),
-            new LerpTableEntry(0.05, 0.0), // deadzone
+            new LerpTableEntry(0.12, 0.0), // deadzone
             new LerpTableEntry(0.5, 0.3),
             new LerpTableEntry(0.7, 0.6),
             new LerpTableEntry(1.0, 1.0));

@@ -14,8 +14,6 @@ import igknighters.commands.OperatorTarget;
 import igknighters.commands.SuperStructureCommands;
 import igknighters.commands.SwerveCommands;
 import igknighters.commands.teleop.TeleopSwerveHeadingCmd;
-// import igknighters.commands.tests.WheelRadiusCharacterization;
-// import igknighters.commands.tests.WheelRadiusCharacterization.Direction;
 import igknighters.constants.FieldConstants;
 import igknighters.subsystems.Subsystems;
 import igknighters.subsystems.superStructure.SuperStructureState;
@@ -23,6 +21,8 @@ import igknighters.subsystems.swerve.SwerveConstants.kSwerve;
 import igknighters.util.logging.BootupLogger;
 import igknighters.util.plumbing.TunableValues;
 import java.util.function.DoubleSupplier;
+import wayfinder.controllers.Types.ChassisConstraints;
+import wayfinder.controllers.Types.Constraints;
 import wpilibExt.AllianceSymmetry;
 
 public class DriverController {
@@ -64,7 +64,8 @@ public class DriverController {
                             : Rotation2d.fromDegrees(-angle);
                       }
                     },
-                    kSwerve.CONSTRAINTS)
+                    kSwerve.CONSTRAINTS,
+                    false)
                 .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow))
         .onFalse(
@@ -86,7 +87,8 @@ public class DriverController {
                     this,
                     localizer,
                     () -> AllianceSymmetry.isBlue() ? Rotation2d.kCW_Pi_2 : Rotation2d.kCCW_Pi_2,
-                    kSwerve.CONSTRAINTS)
+                    kSwerve.CONSTRAINTS,
+                    false)
                 .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
@@ -97,7 +99,11 @@ public class DriverController {
                     this,
                     localizer,
                     () -> AllianceSymmetry.isBlue() ? Rotation2d.kZero : Rotation2d.k180deg,
-                    kSwerve.CONSTRAINTS)
+                    new ChassisConstraints(
+                        new Constraints(
+                            kSwerve.MAX_DRIVE_VELOCITY * 0.5, kSwerve.MAX_DRIVE_ACCELERATION),
+                        kSwerve.CONSTRAINTS.rotation()),
+                    true)
                 .onlyIf(shouldAutoAlign))
         .onFalse(SuperStructureCommands.holdAt(superStructure, SuperStructureState.Stow));
 
@@ -137,6 +143,16 @@ public class DriverController {
     this.DPR.onTrue(ClimberCommands.stow(climber));
 
     this.DPD.onTrue(ClimberCommands.stage(climber));
+    // this.DPD.whileTrue(
+    //     Commands.parallel(
+    //         ClimberCommands.stage(climber),
+    //         new TeleopSwerveProfiled(
+    //             swerve,
+    //             this,
+    //             new ChassisConstraints(
+    //                 new Constraints(
+    //                     kSwerve.MAX_DRIVE_VELOCITY * .5, kSwerve.MAX_DRIVE_ACCELERATION * .5),
+    //                 kSwerve.CONSTRAINTS.rotation()))));
 
     this.DPL.whileTrue(Commands.none());
 

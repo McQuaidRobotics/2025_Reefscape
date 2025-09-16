@@ -20,6 +20,7 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
   private final Supplier<Rotation2d> headingSupplier;
   private final Controller<Rotation2d, Double, Rotation2d, Constraints> rotController;
   private final ChassisConstraints constraints;
+  private final boolean fullConstraints;
 
   private Rotation2d lastHeading = Rotation2d.kZero;
 
@@ -28,13 +29,15 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
       DriverController controller,
       Localizer localizer,
       Supplier<Rotation2d> heading,
-      ChassisConstraints constraints) {
+      ChassisConstraints constraints,
+      boolean fullConstraints) {
     super(swerve, controller);
     addRequirements(swerve);
     this.localizer = localizer;
     this.headingSupplier = heading;
     this.rotController = ControllerFactories.basicRotationalController();
     this.constraints = constraints;
+    this.fullConstraints = fullConstraints;
   }
 
   private void reset() {
@@ -67,7 +70,11 @@ public class TeleopSwerveHeadingCmd extends TeleopSwerveBaseCmd {
             heading,
             constraints.rotation());
 
-    swerve.drivePreProfiled(Speeds.fromFieldRelative(vt.getX(), vt.getY(), omega));
+    if (fullConstraints) {
+      swerve.drive(Speeds.fromFieldRelative(vt.getX(), vt.getY(), omega), constraints);
+    } else {
+      swerve.drivePreProfiled(Speeds.fromFieldRelative(vt.getX(), vt.getY(), omega));
+    }
   }
 
   @Override
