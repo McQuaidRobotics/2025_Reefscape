@@ -99,13 +99,14 @@ public class SwerveConstants {
     public static final double MAX_DRIVE_ACCELERATION = MAX_DRIVE_VELOCITY / 0.75;
     public static final double MAX_ANGULAR_VELOCITY = (MAX_DRIVE_VELOCITY / DRIVEBASE_RADIUS);
     public static final double MAX_STEERING_VELOCITY = ModuleConstants.kSteerMotor.MAX_VELOCITY;
+    public static final double DRIVE_CTRL_RATIO = 1.0; // Max value 1.0
 
     public static final LerpTable TELEOP_TRANSLATION_AXIS_CURVE =
         new LerpTable(
             new LerpTableEntry(0.0, 0.0),
             new LerpTableEntry(0.12, 0.0), // deadzone
             new LerpTableEntry(0.7, 0.48),
-            new LerpTableEntry(1.0, 0.85));
+            new LerpTableEntry(1.0, DRIVE_CTRL_RATIO));
 
     public static final LerpTable TELEOP_ROTATION_AXIS_CURVE =
         new LerpTable(
